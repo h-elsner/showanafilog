@@ -336,7 +336,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.3 02/2019';                       {Major version}
-  appBuildno='2019-02-25';                         {Build per day}
+  appBuildno='2019-02-27';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
