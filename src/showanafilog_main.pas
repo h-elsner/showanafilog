@@ -410,6 +410,7 @@ const
   jsonMinLines=20;
   isep=';';
   hc=11;                                           {Hidden column}
+  ziff=['0'..'9'];                                 {valid digits}
 
 {Strings fpr KML or GPX}
   xmlvers='<?xml version="1.0" encoding="UTF-8"?>'; {ID XML/GPX header}
@@ -700,6 +701,16 @@ begin
               mtInformation,[mbHelp, mbOK], 0)=mrNone then
   OpenManual;
 end;
+
+function CleanNum(const s: string): string;        {Filter digits from String}
+var i: integer;
+begin
+  result:='';
+  for i:=1 to length(s) do
+    if s[i] in ziff then
+      result:=result+s[i];
+end;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1261,16 +1272,18 @@ end;
 procedure TForm1.ovGridCompareCells(Sender: TObject; ACol, ARow, BCol,
   BRow: Integer; var Result: integer);             {Alternative sorting routines}
 begin
-  if (ACol=1) or (ACol=2) or (ACol=3)then begin    {Sort date time}
-    result:=CompareText(ovGrid.Cells[1, ARow]+
-                        ovGrid.Cells[2, ARow]+
-                        ovGrid.Cells[3, ARow],
-                        ovGrid.Cells[1, BRow]+
-                        ovGrid.Cells[2, BRow]+
-                        ovGrid.Cells[3, BRow]);
-  end else begin
+  case ACol of
+    1..3: result:=CompareText(ovGrid.Cells[1, ARow]+             {Sort date time}
+                              ovGrid.Cells[2, ARow]+
+                              ovGrid.Cells[3, ARow],
+                              ovGrid.Cells[1, BRow]+
+                              ovGrid.Cells[2, BRow]+
+                              ovGrid.Cells[3, BRow]);
+    5..10: result:=StrToInt(CleanNum(ovGrid.Cells[ACol, Arow]))-
+                   StrToInt(CleanNum(ovGrid.Cells[BCol, Brow])); {Sort as Integer}
+  else
     result:=CompareText(ovGrid.Cells[ACol, ARow],
-            ovGrid.Cells[BCol, BRow]);             {default single cell}
+            ovGrid.Cells[BCol, BRow]);             {Default single cell as text}
   end;
   if ovGrid.SortOrder=soDescending then
     Result:=-Result;                               {Sort direction}

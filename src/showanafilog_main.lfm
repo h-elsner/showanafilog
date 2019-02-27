@@ -91,22 +91,22 @@ object Form1: TForm1
     Height = 453
     Top = 56
     Width = 796
-    ActivePage = TabSheet5
+    ActivePage = TabSheet1
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 4
+    TabIndex = 0
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
       Caption = 'ov'
-      ClientHeight = 415
-      ClientWidth = 790
+      ClientHeight = 425
+      ClientWidth = 788
       ImageIndex = 0
       object ovGrid: TStringGrid
         Left = 0
-        Height = 415
+        Height = 425
         Top = 0
-        Width = 790
+        Width = 788
         Align = alClient
         Color = clCream
         ColumnClickSorts = True
