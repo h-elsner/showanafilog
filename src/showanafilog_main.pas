@@ -119,6 +119,7 @@ History:
 1.3  2019-02-12 Pilot log book.
      2019-02-24 Thread handling improved.
                 Bug (missing JSON Parser) in LINUX version fixed.
+     2019-03-05 Keep default behaviour in selected cells of a table.
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -335,8 +336,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.3 02/2019';                       {Major version}
-  appBuildno='2019-02-27';                         {Build per day}
+  appVersion='V1.3 03/2019';                       {Major version}
+  appBuildno='2019-03-05';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -1529,11 +1530,12 @@ var w: integer;
 
   procedure ColorForCell(fb: TColor);              {Color for one cell}
   begin
-    csvGrid.Canvas.Brush.Color:=fb;
-    csvGrid.Canvas.Font.Color:=csvGrid.Font.Color;
-    csvGrid.Canvas.FillRect(aRect);
-    csvGrid.Canvas.TextOut(aRect.Left+2, aRect.Top+2,
-                           csvgrid.Cells[aCol, aRow]);
+    if not (gdSelected in aState) then begin       {Keep default behaviour for selected cell}
+      csvGrid.Canvas.Brush.Color:=fb;
+      csvGrid.Canvas.FillRect(aRect);
+      csvGrid.Canvas.TextOut(aRect.Left+2, aRect.Top+2,  {Restore text}
+                             csvgrid.Cells[aCol, aRow]);
+    end;
   end;
 
 begin
