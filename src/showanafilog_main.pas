@@ -240,13 +240,13 @@ type
     procedure cmnSaveAsClick(Sender: TObject);
     procedure cmnShowGMClick(Sender: TObject);
     procedure cmnShowOSMClick(Sender: TObject);
-    procedure csvGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-      aRect: TRect; aState: TGridDrawState);
     procedure csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
       Index: Integer);
     procedure csvGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure csvGridMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
+    procedure csvGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+      aState: TGridDrawState);
     procedure csvGridSelection(Sender: TObject; aCol, aRow: Integer);
     procedure dtlGridDblClick(Sender: TObject);
     procedure dtlGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -337,7 +337,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.3 03/2019';                       {Major version}
-  appBuildno='2019-03-05';                         {Build per day}
+  appBuildno='2019-03-08';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -1524,70 +1524,61 @@ begin                                             {Get additional info per cell}
   end;
 end;
 
-procedure TForm1.csvGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-  aRect: TRect; aState: TGridDrawState);           {Cells get colors}
+procedure TForm1.csvGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+  aState: TGridDrawState);                         {Cells get colors}
 var w: integer;
 
-  procedure ColorForCell(fb: TColor);              {Color for one cell}
-  begin
-    if not (gdSelected in aState) then begin       {Keep default behaviour for selected cell}
-      csvGrid.Canvas.Brush.Color:=fb;
-      csvGrid.Canvas.FillRect(aRect);
-      csvGrid.Canvas.TextOut(aRect.Left+2, aRect.Top+2,  {Restore text}
-                             csvgrid.Cells[aCol, aRow]);
-    end;
-  end;
-
 begin
-  if aRow>0 then begin                             {not for header}
+  if (aState=[]) and                               {Only if cell is not selected}
+     (aRow>0) then begin                           {not for header}
     if csvGrid.Cells[aCol, aRow]<>'' then begin
       case aCol of
         2: begin                                   {Battery level}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 0);
                if w>0 then begin
                  if w>50 then begin                {100%..51% green}
-                   ColorForCell(clGreen);
+                   csvGrid.Canvas.Brush.Color:=clGreen;
                    exit;
                  end;
                  if w<25 then begin                {0...24 red}
-                   ColorForCell(clRed);
+                   csvGrid.Canvas.Brush.Color:=clRed;
                    exit;
                  end else begin                    {25...50 Sats orange}
-                   ColorForCell(clDarkOrange);
+                   csvGrid.Canvas.Brush.Color:=clDarkOrange;
                    exit;
                  end;
                end else exit;
            end;
         5: begin                                   {flight state}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 99);
-             ColorForCell(Form2.ColorSourceFM(w));
+             csvGrid.Canvas.Brush.Color:=Form2.ColorSourceFM(w);
            end;
         6: begin                                   {alert state}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 99);
-             ColorForCell(Form2.ColorSourceAS(w));
+             csvGrid.Canvas.Brush.Color:=Form2.ColorSourceAS(w);
            end;
         8: if LowerCase(csvGrid.Cells[aCol, aRow])='true' then
-             ColorForCell(clMoneygreen);
+             csvGrid.Canvas.Brush.Color:=clMoneygreen;
         11: if csvGrid.Cells[aCol, aRow]<>'0' then {GPS error}
-              ColorForCell(clRed);
+              csvGrid.Canvas.Brush.Color:=clRed;
         12: begin                                  {Num sats}
                w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 0);
                  if w>0 then begin
                    if w>10 then begin              {11...x Sats green}
-                     ColorForCell(clGreen);
+                     csvGrid.Canvas.Brush.Color:=clGreen;
                      exit;
                    end;
                    if w<5 then begin               {1...4 Sats red}
-                     ColorForCell(clRed);
+                     csvGrid.Canvas.Brush.Color:=clRed;
                      exit;
                   end else begin                   {5...10 Sats rose}
-                    ColorForCell(clAttention);
+                    csvGrid.Canvas.Brush.Color:=clAttention;
                     exit;
                   end;
                 end else exit;
              end;
          20: if csvGrid.Cells[aCol, aRow]<>'0' then
-               ColorForCell(clOrange);             {flip type}
+               csvGrid.Canvas.Brush.Color:=clOrange;  {flip type}
       end;
     end;
   end;

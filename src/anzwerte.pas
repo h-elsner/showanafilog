@@ -24,6 +24,8 @@ type
     PopupMenu1: TPopupMenu;
     SaveDialog1: TSaveDialog;
     addGrid: TStringGrid;
+    procedure addGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+      aState: TGridDrawState);
     procedure BitBtn1Click(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -33,8 +35,6 @@ type
     procedure cmnSaveAsClick(Sender: TObject);
     procedure addGridCompareCells(Sender: TObject; ACol, ARow, BCol,
       BRow: Integer; var Result: integer);
-    procedure addGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-      aRect: TRect; aState: TGridDrawState);
     procedure StringGrid1KeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
@@ -87,6 +87,33 @@ implementation
 procedure TForm2.BitBtn1Click(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TForm2.addGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+  aState: TGridDrawState);                         {Grid cells with colors}
+var w: integer;
+
+begin
+  if (aState=[]) and
+     (aRow>0) and                                  {No header and}
+     (aCol=0) then begin                           {only 1st column}
+    case idx of
+      5: begin                                     {Flight mode}
+           w:=StrToIntDef(addGrid.Cells[0, aRow], 99);
+           addGrid.Canvas.Brush.Color:=ColorSourceFM(w);
+         end;
+      6: begin                                     {Alert state}
+           w:=StrToIntDef(addGrid.Cells[0, aRow], 99);
+           addGrid.Canvas.Brush.Color:=ColorSourceAS(w);
+         end;
+      8: if LowerCase(addGrid.Cells[0, aRow])='true' then
+           addGrid.Canvas.Brush.Color:=clMoneyGreen; {GPS available}
+     11: if addGrid.Cells[0, aRow]<>'0' then
+           addGrid.Canvas.Brush.Color:=clRed;      {GPS error}
+     20: if addGrid.Cells[0, aRow]<>'0' then
+           addGrid.Canvas.Brush.Color:=clOrange;   {Flip type}
+    end;
+  end;
 end;
 
 procedure TForm2.FormActivate(Sender: TObject);
@@ -188,40 +215,6 @@ begin
   end;
   if addGrid.SortOrder=soDescending then
     Result:=-Result;                               {Sort direction}
-end;
-
-procedure TForm2.addGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-  aRect: TRect; aState: TGridDrawState);           {Grid cells with colors}
-var w: integer;
-
-  procedure ColorForCell(fb: TColor);              {Color to cell}
-  begin
-    addGrid.Canvas.Brush.Color:=fb;
-    addGrid.Canvas.Font.Color:=addGrid.Font.Color;
-    addGrid.Canvas.FillRect(aRect);
-    addGrid.Canvas.TextOut(aRect.Left+2, aRect.Top+2, addGrid.Cells[aCol, aRow]);
-  end;
-
-begin
-  if (aRow>0) and                                  {No header and}
-     (aCol=0) then begin                           {only 1st column}
-    case idx of
-      5: begin                                     {Flight mode}
-           w:=StrToIntDef(addGrid.Cells[0, aRow], 99);
-           ColorForCell(ColorSourceFM(w));
-         end;
-      6: begin                                     {Alert state}
-           w:=StrToIntDef(addGrid.Cells[0, aRow], 99);
-           ColorForCell(ColorSourceAS(w));
-         end;
-      8: if LowerCase(addGrid.Cells[0, aRow])='true' then
-           ColorForCell(clMoneyGreen);             {GPS available}
-     11: if addGrid.Cells[0, aRow]<>'0' then
-           ColorForCell(clRed);                    {GPS error}
-     20: if addGrid.Cells[0, aRow]<>'0' then
-           ColorForCell(clOrange);                 {Flip type}
-    end;
-  end;
 end;
 
 procedure TForm2.StringGrid1KeyUp(Sender: TObject; var Key: Word;

@@ -25,7 +25,7 @@ object Form2: TForm2
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColSpanning, goDblClickAutoSize, goSmoothScroll]
     TabOrder = 0
     OnCompareCells = addGridCompareCells
-    OnDrawCell = addGridDrawCell
+    OnPrepareCanvas = addGridPrepareCanvas
     ColWidths = (
       140
       60
