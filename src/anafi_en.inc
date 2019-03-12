@@ -1,10 +1,10 @@
 resourcestring                                     {english}
   manual='ShowAnafiLog.pdf';
   {$IFDEF LINUX}
-    DownURL='/downloads/ShowAnafiLog.tar.gz';
+      DownURL='/downloads/ShowAnafiLog.tar.gz';
   {$ELSE}
     {$IFDEF DARWIN}                                {MAC OS X}
-//      DownURL='/downloads/ShowAnafiLog.dmg.zip';
+      DownURL='/downloads/ShowAnafiLog.dmg.zip';
     {$ELSE}
       DownURL='/downloads/ShowAnafiLog.zip';
     {$ENDIF}
@@ -61,14 +61,21 @@ resourcestring                                     {english}
 {Tab page header}
   thdOverview='Overview';
   thdData='Log data';
-  thdDia='Charts';
-  thdDetails='Details';
+  thdDia='Chart altitude';
+  thdAtti='Charts attitude';
+  thdDetails='Meta data';
   thdSettings='Settings';
 
 {Captions and hints}
   hntLogDir='Select directory with Anafi JSON log files';
   capLogDir='Select log dir';
   hntChart1='Zooming with mouse wheel, panning with left mouse button hold';
+  dtSpeed='XYZ speed';
+  dtAngle='XYZ angle [rad]';
+  clnLeft='Zero left';
+  clnRight='Zero right';
+  hntChartListBox='Select/deselect charts for XYZ speed or angle';
+  hntChart2='Attitude of the aircraft: Charts for XYZ speed and angle';
 
 {Buttons}
   capClose='Close';

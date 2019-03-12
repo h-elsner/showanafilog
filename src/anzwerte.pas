@@ -5,8 +5,8 @@ unit anzwerte;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, TAGraph, TAIntervalSources, TASeries, Forms,
-  Controls, Graphics, Dialogs, Grids, Buttons, Menus, LCLIntf, LCLType,
+  Classes, SysUtils, FileUtil, TAGraph, TAIntervalSources, TASeries, TATools,
+  Forms, Controls, Graphics, Dialogs, Grids, Buttons, Menus, LCLIntf, LCLType,
   StdCtrls, Types;
 
 type
@@ -18,6 +18,9 @@ type
     Chart1: TChart;
     Chart1ConstantLine1: TConstantLine;
     Chart1LineSeries1: TLineSeries;
+    ChartToolset1: TChartToolset;
+    ChartToolset1PanDragTool1: TPanDragTool;
+    ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool;
     DateTimeIntervalChartSource1: TDateTimeIntervalChartSource;
     cmnClipbrd: TMenuItem;
     cmnSaveAs: TMenuItem;
@@ -27,6 +30,8 @@ type
     procedure addGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
     procedure BitBtn1Click(Sender: TObject);
+    procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure FormActivate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -87,6 +92,14 @@ implementation
 procedure TForm2.BitBtn1Click(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TForm2.Chart1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (ssCtrl in Shift) or                          {Klicken mit gedrückter Ctrl}
+     (ssMiddle in Shift) then                      {Klicken mit mittlerer Taste}
+    Chart1.ZoomFull;
 end;
 
 procedure TForm2.addGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;

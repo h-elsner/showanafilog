@@ -19,7 +19,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="3"/>
+      <MinorVersionNr Value="4"/>
       <CharSet Value="04B0"/>
       <StringTable CompanyName="Helmut Elsner" FileDescription="ShowAnafiLogs" ProductName="Log file evaluation" ProductVersion="1.0"/>
     </VersionInfo>

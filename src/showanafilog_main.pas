@@ -120,6 +120,7 @@ History:
      2019-02-24 Thread handling improved.
                 Bug (missing JSON Parser) in LINUX version fixed.
      2019-03-05 Keep default behaviour in selected cells of a table.
+1.4  2019-03-12 Attitude chart added
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -137,9 +138,10 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, TAGraph, TATransformations, TAIntervalSources,
-  TASeries, TATools, Forms, Controls, Graphics, fpjson, jsonparser,
-  Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage, EditBtn, math, Buttons,
-  strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, Types, anzwerte;
+  TASeries, TATools, TAChartListbox, Forms, Controls, Graphics, fpjson,
+  jsonparser, Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage, EditBtn, math,
+  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, Types,
+  anzwerte;
 
 {$I anafi_en.inc}                                  {Include a language file}
 {.$I anafi_dt.inc}
@@ -156,6 +158,15 @@ type
     Chart1: TChart;
     Chart1AreaSeries1: TAreaSeries;
     Chart1LineSeries1: TLineSeries;
+    Chart2: TChart;
+    Chart2ConstantLine1: TConstantLine;
+    Chart2ConstantLine2: TConstantLine;
+    Chart2LineSeries1: TLineSeries;
+    Chart2LineSeries2: TLineSeries;
+    Chart2LineSeries3: TLineSeries;
+    Chart2LineSeries4: TLineSeries;
+    Chart2LineSeries5: TLineSeries;
+    Chart2LineSeries6: TLineSeries;
     ChartAxisTransformations1: TChartAxisTransformations;
     cbExtrude: TCheckBox;
     cbHeader: TCheckBox;
@@ -164,16 +175,25 @@ type
     ChartAxisTransformations2AutoScaleAxisTransform1: TAutoScaleAxisTransform;
     btColor: TColorButton;
     cbCSVsep: TCheckBox;
+    ChartAxisTransformations3: TChartAxisTransformations;
+    ChartAxisTransformations3AutoScaleAxisTransform1: TAutoScaleAxisTransform;
+    ChartAxisTransformations4: TChartAxisTransformations;
+    ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform;
+    ChartListbox1: TChartListbox;
     ChartToolset1: TChartToolset;
     ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
     ChartToolset1PanDragTool1: TPanDragTool;
     ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool;
+    ChartToolset2: TChartToolset;
+    ChartToolset2PanDragTool1: TPanDragTool;
+    ChartToolset2ZoomMouseWheelTool1: TZoomMouseWheelTool;
     cmnClipbrd2: TMenuItem;
     cmnSaveAs2: TMenuItem;
     csvGrid: TStringGrid;
     boxConv: TGroupBox;
     DateTimeIntervalChartSource1: TDateTimeIntervalChartSource;
     boxLogBook: TGroupBox;
+    DateTimeIntervalChartSource2: TDateTimeIntervalChartSource;
     grpConv: TRadioGroup;
     lblDetails: TLabel;
     lblStat: TLabel;
@@ -226,6 +246,7 @@ type
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
     TabSheet5: TTabSheet;
+    TabSheet6: TTabSheet;
     XMLPropStorage1: TXMLPropStorage;
     procedure btConvClick(Sender: TObject);
     procedure btLogBookClick(Sender: TObject);
@@ -233,6 +254,8 @@ type
     procedure btCloseClick(Sender: TObject);
     procedure cbHeaderChange(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Chart2MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure cmnClipbrd2Click(Sender: TObject);
     procedure cmnClipbrdClick(Sender: TObject);
@@ -293,6 +316,7 @@ type
     procedure MakeKML;                             {Create KML from StringGrid}
     procedure MakeGPX;                             {Create GPX from StringGrid}
     procedure MakeHDia;                            {Fill H-diagrams}
+    procedure MakeAtti;                            {Fill attitude chart}
     procedure ChangeHeader;                        {Change column header}
     procedure KMLheader(klist: TStringList);       {KML header and meta data}
     procedure DoForm2Show(p: integer);             {Show additional chart}
@@ -336,8 +360,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.3 03/2019';                       {Major version}
-  appBuildno='2019-03-08';                         {Build per day}
+  appVersion='V1.4 03/2019';                       {Major version}
+  appBuildno='2019-03-12';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -385,8 +409,8 @@ const
                                   ovBattMax, ovBattMin, rsLocation, rsGPSfix);
 
 {Output data formats}
-  frmCoord= '0.000000000';
-  frmFloat= '0.000000';
+  frmCoord='0.000000000';
+  frmFloat='0.000000';
   frmOut1='0.0';
   frmOut2='0.00';
   hnsz='hh:nn:ss.zzz';
@@ -952,6 +976,7 @@ begin
   lblDetails.Caption:=rsMetaData;
   lblStat.Caption:=rsStatistics;
   Chart1.Hint:=hntChart1;
+  Chart2.Hint:=hntChart2;
 
   lblManual.Caption:=rsManual;
   lblManual.Hint:=GetExePath+manual;               {default}
@@ -1032,6 +1057,17 @@ begin
   TabSheet3.Caption:=thdDia;
   TabSheet4.Caption:=thdDetails;
   TabSheet5.Caption:=thdSettings;
+  TabSheet6.Caption:=thdAtti;
+
+  Chart2ConstantLine1.Title:=clnLeft;              {Setup attitude charts}
+  Chart2ConstantLine2.Title:=clnRight;
+  Chart2ConstantLine1.SeriesColor:=Chart2LineSeries1.SeriesColor;
+  Chart2ConstantLine2.SeriesColor:=Chart2LineSeries4.SeriesColor;
+  Chart2.AxisList[0].Title.Font.Color:=Chart2ConstantLine1.SeriesColor;
+  Chart2.AxisList[2].Title.Font.Color:=Chart2ConstantLine2.SeriesColor;
+  Chart2.AxisList[0].Title.Caption:=dtSpeed+tab1+UnitToStr(15, false);
+  Chart2.AxisList[2].Title.Caption:=dtAngle;
+  ChartListBox1.Hint:=hntChartListBox;
 
   csvGrid.ColCount:=23;                            {Data columns, fix number of cols}
   csvGrid.RowCount:=6;
@@ -1252,7 +1288,7 @@ end;
 
 procedure TForm1.mmnSettingsClick(Sender: TObject); {Go to Settings page}
 begin
-  PageControl1.ActivePageIndex:=4;
+  PageControl1.ActivePageIndex:=5;
 end;
 
 procedure TForm1.mmnTasClick(Sender: TObject);     {Recompute TAS from xyz-Speed}
@@ -1265,6 +1301,7 @@ begin
   if ovGrid.Tag<>csvgrid.Tag then begin            {A new file selected}
     LoadOneFile(ovGrid.Tag);
     MakeHDia;
+    MakeAtti;
   end;
   if (PageControl1.Tag>0) then                     {Switch to previous Tab}
     PageControl1.ActivePageIndex:=PageControl1.Tag;
@@ -1306,16 +1343,12 @@ end;
 procedure TForm1.PageControl1Change(Sender: TObject); {Save previous Tab}
 begin
   case PageControl1.ActivePageIndex of
-    1: PageControl1.Tag:=PageControl1.ActivePageIndex;
-    2: begin
-         PageControl1.Tag:=PageControl1.ActivePageIndex;
-         MakeHDia;
-       end;
-    3: begin
-         PageControl1.Tag:=PageControl1.ActivePageIndex;
-         dtlGridReSize;
-       end;
+    2: MakeHDia;
+    3: MakeAtti;
+    4: dtlGridReSize;
   end;
+  if PageControl1.ActivePageIndex>0 then
+    PageControl1.Tag:=PageControl1.ActivePageIndex;
 end;
 
 procedure TForm1.staGridKeyUp(Sender: TObject; var Key:  {Statistics short keys}
@@ -1359,12 +1392,21 @@ begin
     Chart1.ZoomFull;
 end;
 
+procedure TForm1.Chart2MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (ssCtrl in Shift) or                          {Klicken mit gedrückter Ctrl}
+     (ssMiddle in Shift) then                      {Klicken mit mittlerer Taste}
+    Chart2.ZoomFull;
+end;
+
+
 procedure TForm1.cmnClipbrd2Click(Sender: TObject); {Menu for data table}
 begin
   csvGrid.CopyToClipboard(false);                  {Data table}
 end;
 
-procedure TForm1.cmnClipbrdClick(Sender: TObject); {Context meny Clipboard}
+procedure TForm1.cmnClipbrdClick(Sender: TObject); {Context menu Clipboard}
 var templist: TStringList;
 begin
   case PageControl1.ActivePageIndex of
@@ -1378,7 +1420,8 @@ begin
          ovGrid.Cols[hc].Assign(templist);         {Restore hidden column}
          templist.Free;
        end;
-    2: Chart1.CopyToClipboardBitmap;               {Charts}
+    2: Chart1.CopyToClipboardBitmap;               {Chart altitude}
+    3: Chart2.CopyToClipboardBitmap;               {Charts attitude}
   end;
 end;
 
@@ -1415,10 +1458,17 @@ begin
            end;
          end;
        end;
-    2: begin                                       {Charts}
+    2: begin                                       {Chart altitude}
          SaveDialog1.FileName:=SaveDialog1.FileName+pext;
          if SaveDialog1.Execute then begin
            Chart1.SaveToFile(TPortableNetworkGraphic, SaveDialog1.FileName);
+           StatusBar1.Panels[4].Text:=SaveDialog1.FileName+tab1+rsSaved;
+         end;
+       end;
+    3: begin                                       {Attitude}
+         SaveDialog1.FileName:=SaveDialog1.FileName+pext;
+         if SaveDialog1.Execute then begin
+           Chart2.SaveToFile(TPortableNetworkGraphic, SaveDialog1.FileName);
            StatusBar1.Panels[4].Text:=SaveDialog1.FileName+tab1+rsSaved;
          end;
        end;
@@ -1862,7 +1912,7 @@ begin
   bld:=TPortableNetworkGraphic.Create;             {create PNG-picture}
   try
     bld.Canvas.Clear; {sicherstellen, dass bld bereits vollständig erzeugt wurde}
-    ScreenDC:=Form1.Canvas.Handle;                 {whole application}
+    ScreenDC:=Canvas.Handle;                       {Whole program window}
     bld.LoadFromDevice(ScreenDC);
     bld.SaveToFile(fn);
   finally
@@ -2219,6 +2269,47 @@ begin
   end;
 end;
 
+procedure TForm1.MakeAtti;                         {Fill attitude chart}
+var i: integer;
+    w: double;
+    bg: TDateTime;
+begin
+  if csvGrid.RowCount>jsonMinLines then begin      {minimum 20 lines}
+    Chart2LineSeries1.Title:=csvGrid.Cells[13, 0]; {Write titles from headers}
+    Chart2LineSeries2.Title:=csvGrid.Cells[14, 0];
+    Chart2LineSeries3.Title:=csvGrid.Cells[15, 0];
+    Chart2LineSeries4.Title:=csvGrid.Cells[16, 0];
+    Chart2LineSeries5.Title:=csvGrid.Cells[17, 0];
+    Chart2LineSeries6.Title:=csvGrid.Cells[18, 0];
+    Chart2LineSeries1.Clear;                       {xyz speed}
+    Chart2LineSeries2.Clear;
+    Chart2LineSeries3.Clear;
+    Chart2LineSeries4.Clear;                       {xyz angle}
+    Chart2LineSeries5.Clear;
+    Chart2LineSeries6.Clear;
+    Chart2.ZoomFull;                               {Reset zoom if any}
+    for i:=1 to csvGrid.RowCount-1 do begin        {Create Diagrams from csvGrid}
+      try
+        bg:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, i]); {Time base}
+        w:=ConvUnit(13, StrToFloat(csvGrid.Cells[13, i]));    {speed vx}
+        Chart2LineSeries1.AddXY(bg, w);
+        w:=ConvUnit(14, StrToFloat(csvGrid.Cells[14, i]));    {speed vy}
+        Chart2LineSeries2.AddXY(bg, w);
+        w:=-ConvUnit(15, StrToFloat(csvGrid.Cells[15, i]));   {Vertical speed}
+        Chart2LineSeries3.AddXY(bg, w);
+        w:=StrToFloat(csvGrid.Cells[16, i]);       {Angle phi}
+        Chart2LineSeries4.AddXY(bg, w);
+        w:=StrToFloat(csvGrid.Cells[17, i]);       {Angle theta}
+        Chart2LineSeries5.AddXY(bg, w);
+        w:=StrToFloat(csvGrid.Cells[18, i]);       {Angle psi - heading}
+        Chart2LineSeries6.AddXY(bg, w);
+      except                                       {Error data conversion}
+        w:=0;                                      {value = 0}
+      end;
+    end;
+  end;
+end;
+
 procedure TForm1.MakeCSV;                          {Create CSV file from csvGrid}
 var fn: string;
 begin
@@ -2368,18 +2459,16 @@ begin
   end;
 end;
 
-{Visualization: http://www.doarama.com/info
-So on that note how about working on a converter to change the CSV files to
-the proper GPX or IGC files to work in http://www.doarama.com/.
+{GPX format:
+ http://www.topografix.com/gpx.asp
+ http://www.topografix.com/gpx/1/1/
+ https://en.wikipedia.org/wiki/GPS_Exchange_Format
+ http://www.doarama.com/api/0.2/docs
+ http://publicgpx.blog-me.de/2010/11/13/gpx-dateiformat-1/
 
-GPX format:
-http://www.topografix.com/gpx.asp
-http://www.topografix.com/gpx/1/1/
-https://en.wikipedia.org/wiki/GPS_Exchange_Format
-http://www.doarama.com/api/0.2/docs
-http://publicgpx.blog-me.de/2010/11/13/gpx-dateiformat-1/
-
-Show GPX or KML files: http://www.atlsoft.de/gpx/   }
+Show GPX or KML files: http://www.atlsoft.de/gpx/
+                       https://ayvri.com/
+}
 
 procedure TForm1.MakeGPX;                          {Create GPX from StringGrid}
 var i, p, state: integer;
@@ -2453,6 +2542,7 @@ begin
 end;
 
 {https://parrotpilots.com/threads/best-pilot-log-book-format.1320/}
+
 procedure TForm1.CreateLogBook;                    {Create Pilot log book}
 var outlist: TStringList;
     sep: Char;

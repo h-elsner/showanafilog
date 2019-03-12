@@ -111,8 +111,10 @@ object Form2: TForm2
     Title.Text.Strings = (
       'TAChart'
     )
+    Toolset = ChartToolset1
     Anchors = [akTop, akLeft, akRight, akBottom]
     Color = clCream
+    OnMouseUp = Chart1MouseUp
     object Chart1LineSeries1: TLineSeries
       LinePen.Color = clNavy
       LinePen.Width = 2
@@ -200,5 +202,17 @@ object Form2: TForm2
     Filter = '*.png|*.png|*.csv|*.csv'
     left = 392
     top = 114
+  end
+  object ChartToolset1: TChartToolset
+    left = 328
+    top = 40
+    object ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool
+      ZoomFactor = 1.1
+      ZoomRatio = 0.9090909090909
+    end
+    object ChartToolset1PanDragTool1: TPanDragTool
+      Shift = [ssLeft]
+      Directions = [pdLeft, pdRight]
+    end
   end
 end

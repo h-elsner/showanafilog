@@ -1,11 +1,11 @@
 object Form1: TForm1
-  Left = 1093
+  Left = 1058
   Height = 553
   Top = 123
-  Width = 811
+  Width = 846
   AllowDropFiles = True
   ClientHeight = 533
-  ClientWidth = 811
+  ClientWidth = 846
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
   KeyPreview = True
@@ -24,7 +24,7 @@ object Form1: TForm1
     Left = 0
     Height = 23
     Top = 510
-    Width = 811
+    Width = 846
     Panels = <    
       item
         Width = 80
@@ -47,7 +47,7 @@ object Form1: TForm1
     Left = 120
     Height = 23
     Top = 8
-    Width = 356
+    Width = 391
     ShowHidden = False
     ButtonWidth = 23
     Glyph.Data = {
@@ -87,14 +87,14 @@ object Form1: TForm1
     OnDblClick = LogDirDblClick
   end
   object PageControl1: TPageControl
-    Left = 8
-    Height = 453
-    Top = 56
-    Width = 796
-    ActivePage = TabSheet2
+    Left = 6
+    Height = 445
+    Top = 64
+    Width = 833
+    ActivePage = TabSheet6
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 1
+    TabIndex = 3
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -155,14 +155,14 @@ object Form1: TForm1
     end
     object TabSheet3: TTabSheet
       Caption = 'hdia'
-      ClientHeight = 415
-      ClientWidth = 790
+      ClientHeight = 425
+      ClientWidth = 788
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 415
+        Height = 425
         Top = 0
-        Width = 790
+        Width = 788
         AxisList = <        
           item
             Grid.Visible = False
@@ -219,10 +219,110 @@ object Form1: TForm1
         end
       end
     end
+    object TabSheet6: TTabSheet
+      Caption = 'atti'
+      ClientHeight = 417
+      ClientWidth = 825
+      ImageIndex = 12
+      object Chart2: TChart
+        Left = 0
+        Height = 392
+        Top = 0
+        Width = 825
+        AxisList = <        
+          item
+            Grid.Visible = False
+            Marks.LabelBrush.Style = bsClear
+            Minors = <>
+            Title.LabelFont.Orientation = 900
+            Title.LabelFont.Style = [fsBold]
+            Title.Visible = True
+            Title.LabelBrush.Style = bsClear
+            Transformations = ChartAxisTransformations3
+          end        
+          item
+            Grid.Visible = False
+            Alignment = calBottom
+            Marks.Format = '%2:s'
+            Marks.LabelBrush.Style = bsClear
+            Marks.Source = DateTimeIntervalChartSource2
+            Marks.Style = smsLegend
+            Minors = <>
+            Title.LabelBrush.Style = bsClear
+          end        
+          item
+            Grid.Visible = False
+            Alignment = calRight
+            Marks.LabelBrush.Style = bsClear
+            Minors = <>
+            Title.LabelFont.Orientation = 2700
+            Title.LabelFont.Style = [fsBold]
+            Title.Visible = True
+            Title.LabelBrush.Style = bsClear
+            Transformations = ChartAxisTransformations4
+          end>
+        BackColor = clCream
+        Foot.Brush.Color = clBtnFace
+        Foot.Font.Color = clBlue
+        Title.Brush.Color = clBtnFace
+        Title.Font.Color = clBlue
+        Title.Text.Strings = (
+          'TAChart'
+        )
+        Toolset = ChartToolset2
+        Align = alClient
+        PopupMenu = PopupMenu1
+        OnMouseUp = Chart2MouseUp
+        object Chart2LineSeries1: TLineSeries
+          AxisIndexY = 0
+          LinePen.Color = clRed
+        end
+        object Chart2LineSeries2: TLineSeries
+          AxisIndexY = 0
+          LinePen.Color = clGreen
+        end
+        object Chart2LineSeries3: TLineSeries
+          AxisIndexY = 0
+          LinePen.Color = clBlue
+        end
+        object Chart2LineSeries4: TLineSeries
+          AxisIndexY = 2
+          LinePen.Color = clFuchsia
+        end
+        object Chart2LineSeries5: TLineSeries
+          AxisIndexY = 2
+          LinePen.Color = clLime
+        end
+        object Chart2LineSeries6: TLineSeries
+          AxisIndexY = 2
+          LinePen.Color = clAqua
+        end
+        object Chart2ConstantLine1: TConstantLine
+          AxisIndexX = 0
+          Position = 0
+        end
+        object Chart2ConstantLine2: TConstantLine
+          AxisIndexX = 2
+          Position = 0
+        end
+      end
+      object ChartListbox1: TChartListbox
+        Left = 0
+        Height = 25
+        Top = 392
+        Width = 825
+        Chart = Chart2
+        Align = alBottom
+        Color = clCream
+        Columns = 8
+        ItemHeight = 0
+        TabOrder = 1
+      end
+    end
     object TabSheet4: TTabSheet
       Caption = 'dtl'
-      ClientHeight = 415
-      ClientWidth = 790
+      ClientHeight = 425
+      ClientWidth = 788
       ImageIndex = 3
       object dtlGrid: TStringGrid
         Left = 8
@@ -256,9 +356,9 @@ object Form1: TForm1
       end
       object lblDetails: TLabel
         Left = 8
-        Height = 17
+        Height = 15
         Top = 8
-        Width = 58
+        Width = 51
         Caption = 'lblDetails'
         Font.Style = [fsBold]
         ParentColor = False
@@ -266,9 +366,9 @@ object Form1: TForm1
       end
       object lblStat: TLabel
         Left = 432
-        Height = 17
+        Height = 15
         Top = 8
-        Width = 40
+        Width = 36
         Caption = 'lblStat'
         Font.Style = [fsBold]
         ParentColor = False
@@ -526,7 +626,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object btClose: TBitBtn
-    Left = 707
+    Left = 742
     Height = 32
     Top = 8
     Width = 97
@@ -579,7 +679,7 @@ object Form1: TForm1
     TabOrder = 4
   end
   object btScrShot: TBitBtn
-    Left = 595
+    Left = 630
     Height = 32
     Top = 8
     Width = 97
@@ -617,7 +717,7 @@ object Form1: TForm1
     TabOrder = 3
   end
   object btConv: TBitBtn
-    Left = 486
+    Left = 521
     Height = 32
     Top = 8
     Width = 97
@@ -655,7 +755,7 @@ object Form1: TForm1
     TabOrder = 2
   end
   object ProgressFile: TProgressBar
-    Left = 595
+    Left = 630
     Height = 10
     Top = 48
     Width = 209
@@ -665,17 +765,17 @@ object Form1: TForm1
     TabOrder = 6
   end
   object SaveDialog1: TSaveDialog
-    left = 512
-    top = 160
+    left = 448
+    top = 288
   end
   object XMLPropStorage1: TXMLPropStorage
     StoredValues = <>
-    left = 608
-    top = 160
+    left = 448
+    top = 112
   end
   object TabImages: TImageList
-    left = 512
-    top = 112
+    left = 448
+    top = 168
     Bitmap = {
       4C69140000001000000010000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFBFBFBFFF7F7F7FFF7F7F7FFFFFFFFFFFFFFFFFFFFFFF
@@ -1321,26 +1421,26 @@ object Form1: TForm1
     }
   end
   object ChartAxisTransformations1: TChartAxisTransformations
-    left = 512
-    top = 224
+    left = 736
+    top = 128
     object ChartAxisTransformations1AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
   end
   object ChartAxisTransformations2: TChartAxisTransformations
-    left = 608
-    top = 224
+    left = 736
+    top = 184
     object ChartAxisTransformations2AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
   end
   object DateTimeIntervalChartSource1: TDateTimeIntervalChartSource
     Steps = [dtsHour, dtsMinute, dtsSecond]
-    left = 608
-    top = 112
+    left = 736
+    top = 248
   end
   object MainMenu1: TMainMenu
     Images = TabImages
-    left = 512
-    top = 296
+    left = 448
+    top = 368
     object mmnFile: TMenuItem
       Caption = 'file'
       object mmnOpen: TMenuItem
@@ -1898,8 +1998,8 @@ object Form1: TForm1
   end
   object PopupMenu1: TPopupMenu
     Images = TabImages
-    left = 608
-    top = 296
+    left = 576
+    top = 368
     object cmnSaveAs: TMenuItem
       Caption = 'Save'
       Bitmap.Data = {
@@ -1985,8 +2085,8 @@ object Form1: TForm1
   end
   object PopupMenu2: TPopupMenu
     Images = TabImages
-    left = 680
-    top = 296
+    left = 736
+    top = 384
     object cmnSaveAs2: TMenuItem
       Caption = 'Save'
       Bitmap.Data = {
@@ -2156,12 +2256,12 @@ object Form1: TForm1
     end
   end
   object LogDirDialog: TSelectDirectoryDialog
-    left = 688
-    top = 224
+    left = 448
+    top = 232
   end
   object ChartToolset1: TChartToolset
-    left = 680
-    top = 112
+    left = 736
+    top = 296
     object ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool
       ZoomFactor = 1.1
       ZoomRatio = 0.9090909090909
@@ -2176,6 +2276,35 @@ object Form1: TForm1
     object ChartToolset1PanDragTool1: TPanDragTool
       Shift = [ssLeft]
       Directions = [pdLeft, pdRight]
+    end
+  end
+  object DateTimeIntervalChartSource2: TDateTimeIntervalChartSource
+    left = 576
+    top = 232
+  end
+  object ChartToolset2: TChartToolset
+    left = 576
+    top = 296
+    object ChartToolset2ZoomMouseWheelTool1: TZoomMouseWheelTool
+      ZoomFactor = 1.1
+      ZoomRatio = 0.9090909090909
+    end
+    object ChartToolset2PanDragTool1: TPanDragTool
+      Shift = [ssLeft]
+      Directions = [pdLeft, pdRight]
+      EscapeCancels = True
+    end
+  end
+  object ChartAxisTransformations3: TChartAxisTransformations
+    left = 576
+    top = 112
+    object ChartAxisTransformations3AutoScaleAxisTransform1: TAutoScaleAxisTransform
+    end
+  end
+  object ChartAxisTransformations4: TChartAxisTransformations
+    left = 576
+    top = 168
+    object ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
   end
 end

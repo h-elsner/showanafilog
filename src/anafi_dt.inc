@@ -1,10 +1,10 @@
-resourcestring                                     {english}
+resourcestring                                     {deutsch}
   manual='ShowAnafiLog.pdf';
   {$IFDEF LINUX}
     DownURL='/downloads/ShowAnafiLog_de.tar.gz';
   {$ELSE}
-    {$IFDEF DARWIN}
-//      DownURL='/downloads/ShowAnafiLog_de.dmg.zip';  {MAC OS X}
+    {$IFDEF DARWIN}                                {MAC OS X}
+      DownURL='/downloads/ShowAnafiLog_de.dmg.zip';
     {$ELSE}
       DownURL='/downloads/ShowAnafiLog_de.zip';
     {$ENDIF}
@@ -12,7 +12,7 @@ resourcestring                                     {english}
 
   {Alternative column header data}
     ahdr0 ='Zeit ab Einschalten';
-    ahdr1 ='Batterie Ladezustand';
+    ahdr1 ='Batterieladezustand';
     ahdr2 ='RC Breitengrad';
     ahdr3 ='RC Längengrad';
     ahdr4 ='Flug Modus';
@@ -60,15 +60,22 @@ resourcestring                                     {english}
 
   {Tab page header}
     thdOverview='Übersicht';
-    thdData='Log Daten';
-    thdDia='Diagramme';
-    thdDetails='Details';
+    thdData='Logdaten';
+    thdDia='Höhendiagramm';
+    thdAtti='Fluglage';
+    thdDetails='Metadaten';
     thdSettings='Einstellungen';
 
   {Captions and hints}
     hntLogDir='Wähle ein Verzeichnis mit Anafi JSON log Dateien aus';
     capLogDir='Wähle Verzeichnis';
     hntChart1='Zoomen mit Mausrad, Verschieben mit gehaltener linken Maustaste';
+    dtSpeed='XYZ Geschw.';
+    dtAngle='XYZ Winkel [rad]';
+    clnLeft='0-Linie links';
+    clnRight='0-Linie rechts';
+    hntChartListBox='An-/abwählen der Diagramme für XYZ Geschwindigkeit oder Winkel';
+    hntChart2='Fluglage des Kopters: Diagramme für XYZ Geschwindigkeit und Winkel';
 
   {Buttons}
     capClose='Beenden';
