@@ -1,4 +1,4 @@
-ShowAnafiLogs V1.1 02/2019
+ShowAnafiLogs V1.4 03/2019
 
 Contact:
 helmut.elsner@live.com
@@ -34,4 +34,5 @@ History:
      2019-02-24 Thread handling improved. 
                 Bug (missing JSON Parser) in LINUX version fixed.
      2019-03-05 Keep default behaviour in selected cells of a table.
+1.4  2019-03-12 Attitude chart added
 
