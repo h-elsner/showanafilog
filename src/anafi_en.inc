@@ -4,7 +4,7 @@ resourcestring                                     {english}
       DownURL='/downloads/ShowAnafiLog.tar.gz';
   {$ELSE}
     {$IFDEF DARWIN}                                {MAC OS X}
-      DownURL='/downloads/ShowAnafiLog.dmg.zip';
+      DownURL='/downloads/ShowAnafiLog.dmg';
     {$ELSE}
       DownURL='/downloads/ShowAnafiLog.zip';
     {$ENDIF}
@@ -155,4 +155,8 @@ resourcestring                                     {english}
   hntLogBook='Output format for Pilot log book';
   capCrLogBook='Create';
   hntCrLogBook='Create Pilot log book from all JSON files in selected directory';
+  capTable='Table settings';
+  hntTable='Some extra behaviour of the data table';
+  capDegree='Angle as degree';
+  hntDegree='Overwrite original angle values with values in degree';
 

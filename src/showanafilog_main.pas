@@ -121,6 +121,7 @@ History:
                 Bug (missing JSON Parser) in LINUX version fixed.
      2019-03-05 Keep default behaviour in selected cells of a table.
 1.4  2019-03-12 Attitude chart added
+     2019-03-23 Alternative degrees for angle in Details table
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -155,6 +156,7 @@ type
     btScrShot: TBitBtn;
     btClose: TBitBtn;
     btConv: TBitBtn;
+    cbHeader: TCheckBox;
     Chart1: TChart;
     Chart1AreaSeries1: TAreaSeries;
     Chart1LineSeries1: TLineSeries;
@@ -169,7 +171,6 @@ type
     Chart2LineSeries6: TLineSeries;
     ChartAxisTransformations1: TChartAxisTransformations;
     cbExtrude: TCheckBox;
-    cbHeader: TCheckBox;
     ChartAxisTransformations1AutoScaleAxisTransform1: TAutoScaleAxisTransform;
     ChartAxisTransformations2: TChartAxisTransformations;
     ChartAxisTransformations2AutoScaleAxisTransform1: TAutoScaleAxisTransform;
@@ -187,6 +188,7 @@ type
     ChartToolset2: TChartToolset;
     ChartToolset2PanDragTool1: TPanDragTool;
     ChartToolset2ZoomMouseWheelTool1: TZoomMouseWheelTool;
+    cbDegree: TCheckBox;
     cmnClipbrd2: TMenuItem;
     cmnSaveAs2: TMenuItem;
     csvGrid: TStringGrid;
@@ -194,6 +196,7 @@ type
     DateTimeIntervalChartSource1: TDateTimeIntervalChartSource;
     boxLogBook: TGroupBox;
     DateTimeIntervalChartSource2: TDateTimeIntervalChartSource;
+    boxTable: TGroupBox;
     grpConv: TRadioGroup;
     lblDetails: TLabel;
     lblStat: TLabel;
@@ -361,11 +364,12 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.4 03/2019';                       {Major version}
-  appBuildno='2019-03-12';                         {Build per day}
+  appBuildno='2019-03-23';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
   email='helmut.elsner@live.com';
+  githublink='https://github.com/h-elsner/showanafilog';
 
 {Define if input in JSON data is always metric else
  depends on control device settings (variable)}
@@ -461,7 +465,7 @@ implementation
 
 { TForm1 }
 
-{Some standard routines to handle data structures}
+///////////// Some standard routines to handle data structures ////////////////
 
 function SekToDT(numsek: string; mode: integer): TDateTime;  {Timestring to DT}
                                 {mode 0: Number seconds to TDatetime
@@ -501,7 +505,7 @@ begin
 end;
 
 { 2018-11-17 12:12:56.979  into
-  2018-11-17T12:12:56.979Z or
+  2018-11-17T12:12:56.979Z for KML or
   2018-11-17T12:12:56Z for GPX}
 function GoogleTime(tp: string; gx: boolean=false): string;
 begin                                              {Default: KML}
@@ -571,7 +575,7 @@ begin
     4: result:='Landing';
     5: result:='Emergency';
     6: result:='Armed';                            {different kind of arming ?}
-    7: result:='Armed';                            {Starting?}
+    7: result:='Armed';                            {Starting ?}
   end;
 end;
 
@@ -581,10 +585,10 @@ begin
   result:=rsUnknown+tab1+s;
   snr:=StrToIntDef(trim(s), 99);
   case snr of
-    0: result:='None';                             {Normal flight ?}
-    1: result:='Normal flight';                    {Manual flight ?}
-    2: result:='Anafi shut down';
-    3: result:='Battery level crucial';
+    0: result:='No alert';                         {Normal flight}
+    1: result:='User emergency alert';
+    2: result:='Cut out alert';                    {Anafi shut down?}
+    3: result:='Battery level critical';
     4: result:='Battery level low';
     5: result:='Flight angle exceeded';
   end;
@@ -597,6 +601,10 @@ begin
   snr:=StrToIntDef(trim(s), 99);
   case snr of
     0: result:='None';                             {Normal flight ?}
+(*    1: result:='Front';
+    2: result:='Back';
+    3: result:='Right';
+    4: result:='Left';       *)
   end;
 end;
 
@@ -607,6 +615,9 @@ begin
   snr:=StrToIntDef(trim(s), 99);
   case snr of
     0: result:='No error';                         {Normal flight ?}
+(*    1: result:='Not in outdoor mode';
+    2: result:='GPS not fixed';
+    3: result:='Compass not calibrated';         *)
   end;
 end;
 
@@ -619,6 +630,7 @@ end;
 
 function AltHeaderToStr(idx: integer): string;
 begin
+  result:=rsUnKnown;                               {If idx is not in range}
   case idx of
      0: result:=rsDateTime;
      1: result:=ahdr0;                             {Time since boot [ms]'}
@@ -737,7 +749,7 @@ begin
 end;
 
 
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Sub-thread overview //////////////////////////////
 
 constructor TMyThread.Create(CreateSuspended : boolean);
 begin
@@ -955,7 +967,7 @@ begin
   Form1.ovGrid.Cells[hc, idx]:=s;                  {Write into hidden column}
 end;
 
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// Main thread ///////////////////////////////////
 
 procedure TForm1.FormCreate(Sender: TObject);      {Initialize the application}
 var i: integer;
@@ -988,7 +1000,8 @@ begin
   {$ENDIF}
   end;
   lblDownload.Caption:=rsLatest;
-  lblDownload.Hint:=homepage+downURL;
+//  lblDownload.Hint:=homepage+downURL;
+  lblDownload.Hint:=githublink;
 
   cbExtrude.Caption:=capExtrude;
   cbExtrude.Hint:=hntExtrude;
@@ -996,6 +1009,8 @@ begin
   cbHeader.Hint:=hntHeader;
   cbCSVsep.Caption:=capCSVsep;
   cbCSVsep.Hint:=hntCSVsep;
+  cbDegree.Caption:=capDegree;
+  cbDegree.Hint:=hntDegree;
 
 {Menus}
   mmnFile.Caption:=mniFile;
@@ -1051,6 +1066,8 @@ begin
   boxConv.Hint:=hntBoxConv;
   boxLogBook.Caption:=rsLogBook;
   boxLogBook.Hint:=hntCrLogBook;
+  boxTable.Caption:=capTable;
+  boxTable.Hint:=hntTable;
 
   TabSheet1.Caption:=thdOverview;
   TabSheet2.Caption:=thdData;
@@ -1063,8 +1080,8 @@ begin
   Chart2ConstantLine2.Title:=clnRight;
   Chart2ConstantLine1.SeriesColor:=Chart2LineSeries1.SeriesColor;
   Chart2ConstantLine2.SeriesColor:=Chart2LineSeries4.SeriesColor;
-  Chart2.AxisList[0].Title.Font.Color:=Chart2ConstantLine1.SeriesColor;
-  Chart2.AxisList[2].Title.Font.Color:=Chart2ConstantLine2.SeriesColor;
+  Chart2.AxisList[0].Title.LabelFont.Color:=Chart2ConstantLine1.SeriesColor;
+  Chart2.AxisList[2].Title.LabelFont.Color:=Chart2ConstantLine2.SeriesColor;
   Chart2.AxisList[0].Title.Caption:=dtSpeed+tab1+UnitToStr(15, false);
   Chart2.AxisList[2].Title.Caption:=dtAngle;
   ChartListBox1.Hint:=hntChartListBox;
@@ -1184,7 +1201,7 @@ end;
 
 procedure TForm1.lblDownloadClick(Sender: TObject);        {Click link homepage}
 begin
-  if OpenURL(homepage+DownURL) then
+  if OpenURL(lblDownload.Hint) then
     lblDownload.Font.Color:=clPurple;
 end;
 
@@ -1347,7 +1364,8 @@ begin
     3: MakeAtti;
     4: dtlGridReSize;
   end;
-  if PageControl1.ActivePageIndex>0 then
+  if (PageControl1.ActivePageIndex>0) and          {not Overview}
+     (PageControl1.ActivePageIndex<5) then         {not Settings}
     PageControl1.Tag:=PageControl1.ActivePageIndex;
 end;
 
@@ -1562,7 +1580,8 @@ begin                                             {Get additional info per cell}
       13..15, 19: result:=FrmValue;
       16..18: result:=AltHeaderToStr(aCol)+'='+
                       FormatFloat(frmFloat,
-                      ConvUnit(aCol, StrToFloat(csvGrid.Cells[aCol, aRow]), true))+
+                      ConvUnit(aCol, StrToFloat(csvGrid.Cells[aCol, aRow]),
+                               not cbDegree.Checked))+
                       UnitToStr(aCol, true, true); {with conversion to °}
       20: result:=AltHeaderToStr(aCol)+': '+
                   FlipTypeToStr(csvGrid.Cells[aCol, aRow]);
@@ -1740,7 +1759,7 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
          w:=StrToFloat(csvGrid.Cells[idx, i]);
          case idx of
            13..15: w:=-w;                          {speed_v xyz reverse in chart}
-           16..18: w:=ConvUnit(idx, w, true);      {rad to °}
+           16..18: w:=ConvUnit(idx, w, not cbDegree.Checked);  {rad to °}
          end;
          w:=ConvUnit(idx, w);                      {metric or, imperial}
          ts:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, i]);
@@ -2168,8 +2187,11 @@ begin
                     3: lonc:=j2.Items[k].AsFloat;
                     8: lonp:=j2.Items[k].AsFloat;
                     9: latp:=j2.Items[k].AsFloat;
-                    12..17: csvGrid.Cells[k+1, i+1]:=
+                    12..14: csvGrid.Cells[k+1, i+1]:=
                               FormatFloat(frmFloat, j2.Items[k].AsFloat);
+                    15..17: csvGrid.Cells[k+1, i+1]:=
+                              FormatFloat(frmFloat,
+                              ConvUnit(k+1, j2.Items[k].AsFloat, cbDegree.Checked));
                     18: alt:=j2.Items[k].AsFloat;
                     20: tas:=j2.Items[k].AsFloat;
                   else

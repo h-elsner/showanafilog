@@ -1,0 +1,39 @@
+ShowAnafiLogs V1.4 03/2019
+
+Contact:
+helmut.elsner@live.com
+http://h-elsner.mooo.com
+
+Download latest version (frequently updated):
+http://h-elsner.mooo.com/downloads/ShowAnafiLog.zip
+
+History:
+0.1  2019-01-19 Proof of concept, no functionality
+0.2  2019-01-23 Load Data working, Charts working
+     2019-01-24 Faster start-up, bugfixes, KML export
+0.3  2019-01-25 Additional chart or counter table in extra window
+     2019-01-26 GPX export is working, Main menu and context menus added.
+                Recompute air speed when missing.
+0.4  2019-01-27 Drag & Drop of files or directories.
+                Cursor in charts in second window is moving
+                with the selection in the data table.
+0.5  2019-01-28 Unit conversion added solved.
+                Assumption: JSON Input always Metric
+                F5 to reload all files.
+                Anafi splash screen by Augustine.
+0.6  2019-01-29 Sort overview table by header click,
+                double-click inverts the sorting.
+1.0  2019-01-31 Final Release. Missing Context menu added.
+                User Manual updated.
+1.1  2019-02-02 Fill overview table by 2nd thread.
+     2019-02-03 Use advantage of multi-thread. Start-up faster.
+1.2  2019-02-04 Zooming, panning and horizontal cursor (Ctrl-key + mouse)
+                added to Charts.
+     2019-02-08 Progress bar added. Date of manufacture on Details page.
+1.3  2019-02-12 Pilot log book.
+     2019-02-24 Thread handling improved. 
+                Bug (missing JSON Parser) in LINUX version fixed.
+     2019-03-05 Keep default behaviour in selected cells of a table.
+1.4  2019-03-12 Attitude chart added
+     2019-03-23 Alternative degrees for angle in Details table
+

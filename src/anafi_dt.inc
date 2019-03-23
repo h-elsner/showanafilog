@@ -155,4 +155,8 @@ resourcestring                                     {deutsch}
     hntLogBook='Ausgabe Format für das Pilot Logbuch';
     capCrLogBook='Ablegen';
     hntCrLogBook='Legt ein Pilot Logbuch von allen JSON Logdateien im ausgewählten Verzeichn is an';
+    capTable='Tabelleneinstellungen';
+    hntTable='Alternatives Verhalten der Datentabelle';
+    capDegree='Winkel in Grad';
+    hntDegree='Überschreibe die originalen Werte in Radiant mit Werten in Grad';
 
