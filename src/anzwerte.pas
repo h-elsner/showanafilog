@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, TAGraph, TAIntervalSources, TASeries, TATools,
   Forms, Controls, Graphics, Dialogs, Grids, Buttons, Menus, LCLIntf, LCLType,
-  StdCtrls, Types;
+  StdCtrls, ExtCtrls, Types;
 
 type
 
@@ -24,6 +24,7 @@ type
     DateTimeIntervalChartSource1: TDateTimeIntervalChartSource;
     cmnClipbrd: TMenuItem;
     cmnSaveAs: TMenuItem;
+    edTime: TEdit;
     PopupMenu1: TPopupMenu;
     SaveDialog1: TSaveDialog;
     addGrid: TStringGrid;
@@ -52,6 +53,7 @@ type
 
     function ColorSourceFM(w: integer): TColor;
     function ColorSourceAS(w: integer): TColor;
+    procedure MoveVCursor(x: double; p: integer);  {Time and label position}
   end;
 
 var
@@ -88,6 +90,19 @@ implementation
 {$R *.lfm}
 
 { TForm2 }
+
+procedure TForm2.MoveVCursor(x: double; p: integer); {Move vertical cursor}
+var lft: integer;
+begin
+  Chart1ConstantLine1.Position:=x;                 {Red cursor}
+  edTime.Text:=FormatDateTime('hh:nn:ss', x);      {Time label at cursor}
+  lft:=p*(Chart1.Width-edTime.Width) div 10000+(edTime.Width div 2);
+  if lft<Chart1.Left then                          {Left/right borders for label}
+    lft:=Chart1.Left;
+  if lft+edTime.Width+BitBtn1.Width>Chart1.Width then
+    lft:=Chart1.Width-edTime.Width-BitBtn1.Width;
+  edTime.Left:=lft;                                {Position time label}
+end;
 
 procedure TForm2.BitBtn1Click(Sender: TObject);
 begin
@@ -181,8 +196,8 @@ procedure TForm2.FormatGrid;                       {StringGrid format columns}
 begin
   if addGrid.Visible then
     addGrid.ColWidths[2]:=addGrid.Width-
-                              addGrid.ColWidths[0]-
-                              addGrid.ColWidths[1]-nicecols;
+                          addGrid.ColWidths[0]-
+                          addGrid.ColWidths[1]-nicecols;
 end;
 
 procedure TForm2.FormResize(Sender: TObject);      {StringGrid format columns}

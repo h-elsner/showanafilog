@@ -121,7 +121,8 @@ History:
                 Bug (missing JSON Parser) in LINUX version fixed.
      2019-03-05 Keep default behaviour in selected cells of a table.
 1.4  2019-03-12 Attitude chart added
-     2019-03-23 Alternative degrees for angle in Details table
+     2019-03-23 Alternative degrees for angle in Details table.
+     2019-03-27 Time label at cursor in additional chart.
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -364,7 +365,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.4 03/2019';                       {Major version}
-  appBuildno='2019-03-23';                         {Build per day}
+  appBuildno='2019-03-27';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -1731,6 +1732,7 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
     DoForm2Show(400);
     Form2.Caption:=rsStatCopy;
     Form2.addGrid.Visible:=true;
+    Form2.edTime.Visible:=false;
     Form2.addGrid.Assign(staGrid);
     Form2.addGrid.AutoSizeColumns;
     Form2.FormatGrid;
@@ -1750,11 +1752,9 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
      Form2.Chart1.AxisList[0].Title.Caption:=AltHeaderToStr(idx)+   {y-axis}
                                              tab1+UnitToStr(idx, false, convert);
      Form2.Chart1.Visible:=true;
+     Form2.edTime.Visible:=true;
      Form2.Chart1LineSeries1.BeginUpdate;
-       Form2.Chart1ConstantLine1.Position:=        {Show Cursor}
-         ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0,
-                      StrToIntDef(StatusBar1.Panels[2].Text, 1)]);
-
+       Form2.MoveVCursor(ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, 1]), 0);
        for i:=1 to csvGrid.RowCount-1 do begin     {Create chart}
          w:=StrToFloat(csvGrid.Cells[idx, i]);
          case idx of
@@ -1778,11 +1778,9 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
      Form2.Chart1.AxisList[0].Title.Caption:=AltHeaderToStr(idx)+   {y-axis}
                                              tab1+UnitToStr(idx, false);
      Form2.Chart1.Visible:=true;
+     Form2.edTime.Visible:=true;
      Form2.Chart1LineSeries1.BeginUpdate;
-     Form2.Chart1ConstantLine1.Position:=          {Show Cursor}
-       ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0,
-                    StrToIntDef(StatusBar1.Panels[2].Text, 1)]);
-
+       Form2.MoveVCursor(ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, 1]), 0);
        for i:=1 to csvGrid.RowCount-1 do begin
          w:=ConvUnit(idx, StrToIntDef(csvGrid.Cells[idx, i], 0));
          ts:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, i]);
@@ -1809,6 +1807,7 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
      DoForm2Show(600);
      Form2.addGrid.ColCount:=3;
      Form2.addGrid.Visible:=true;
+     Form2.edTime.Visible:=false;
      Form2.Caption:=rsList+AltHeaderToStr(idx);
 
      for i:=1 to csvGrid.RowCount-1 do begin       {Read data}
@@ -1868,6 +1867,7 @@ begin
   if IsColumn then begin
     Form2.addGrid.RowCount:=1;                     {Kill all}
     Form2.addGrid.Visible:=false;
+    Form2.edTime.Visible:=false;
     Form2.Chart1LineSeries1.Clear;
     Form2.Chart1.Visible:=false;
     case index of
@@ -1901,12 +1901,16 @@ begin
 end;
 
 procedure TForm1.csvGridSelection(Sender: TObject; aCol, aRow: Integer);
-begin                                              {Show line number}
+var ts, tb, te: TDateTime;
+begin                                              {Cell selected}
   if aRow>0 then begin
-    StatusBar1.Panels[2].Text:=IntToStr(aRow);
-    if Form2.Chart1ConstantLine1.Active then       {Show Cursor}
-      Form2.Chart1ConstantLine1.Position:=
-        ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, aRow]);
+    StatusBar1.Panels[2].Text:=IntToStr(aRow);     {Show line number}
+    if Form2.Chart1ConstantLine1.Active then begin {Show Cursor}
+      ts:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, aRow]);
+      tb:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, 1]);
+      te:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, csvGrid.RowCount-1]);
+      Form2.MoveVCursor(ts, round((ts-tb)/(te-tb)*10000));
+    end;                                           {Where we are in time line}
   end;
 end;
 

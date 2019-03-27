@@ -91,10 +91,10 @@ object Form1: TForm1
     Height = 393
     Top = 64
     Width = 833
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -130,14 +130,14 @@ object Form1: TForm1
     end
     object TabSheet2: TTabSheet
       Caption = 'dat'
-      ClientHeight = 355
-      ClientWidth = 827
+      ClientHeight = 365
+      ClientWidth = 825
       ImageIndex = 1
       object csvGrid: TStringGrid
         Left = 0
-        Height = 425
+        Height = 365
         Top = 0
-        Width = 788
+        Width = 825
         Align = alClient
         Color = clCream
         ColCount = 23

@@ -35,7 +35,7 @@ object Form2: TForm2
     )
   end
   object BitBtn1: TBitBtn
-    Left = 534
+    Left = 535
     Height = 26
     Top = 232
     Width = 91
@@ -125,6 +125,19 @@ object Form2: TForm2
       Pen.Color = clRed
       Position = 0
     end
+  end
+  object edTime: TEdit
+    Left = 8
+    Height = 23
+    Top = 232
+    Width = 64
+    Alignment = taCenter
+    Anchors = [akLeft, akBottom]
+    Color = clCream
+    ReadOnly = True
+    TabOrder = 3
+    TextHint = 'hh:nn:ss'
+    Visible = False
   end
   object DateTimeIntervalChartSource1: TDateTimeIntervalChartSource
     left = 392
