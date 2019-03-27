@@ -6,6 +6,7 @@ http://h-elsner.mooo.com
 
 Download latest version (frequently updated):
 http://h-elsner.mooo.com/downloads/ShowAnafiLog.zip
+or https://github.com/h-elsner/showanafilog
 
 History:
 0.1  2019-01-19 Proof of concept, no functionality
@@ -35,5 +36,5 @@ History:
                 Bug (missing JSON Parser) in LINUX version fixed.
      2019-03-05 Keep default behaviour in selected cells of a table.
 1.4  2019-03-12 Attitude chart added
-     2019-03-23 Alternative degrees for angle in Details table
-
+     2019-03-23 Alternative degrees for angle in Details table.
+     2019-03-27 Time label at cursor in additional chart.
