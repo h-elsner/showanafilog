@@ -38,3 +38,6 @@ History:
 1.4  2019-03-12 Attitude chart added
      2019-03-23 Alternative degrees for angle in Details table.
      2019-03-27 Time label at cursor in additional chart.
+     2019-03-28 Refresh tabs if changed. Dotted lines as zero axis line.
+                Toggle Attitude chart: All -> Speed -> Angle -> Nick/Roll -> All.
+
