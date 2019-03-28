@@ -89,6 +89,7 @@ Form1.Tag:         Indicates if first run done (1=done}
 csvGrid.Tag:       Current used file index (1...n)
 ovGrid.Tag:        Selected file index
 PageControl1.Tag:  Last used tab-page
+cbDegree.Tag:      Something changed in Settings that needs reload
 
 Form.Activate --> BuildList --> ReadOneFile, the first
                   Start thread to fill overview.
@@ -123,6 +124,8 @@ History:
 1.4  2019-03-12 Attitude chart added
      2019-03-23 Alternative degrees for angle in Details table.
      2019-03-27 Time label at cursor in additional chart.
+     2019-03-28 Refresh tabs if changed. Dotted lines as zero axis line.
+                Toggle Attitude chart: All -> Speed -> Angle -> Nick/Roll -> All.
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -256,11 +259,13 @@ type
     procedure btLogBookClick(Sender: TObject);
     procedure btScrShotClick(Sender: TObject);
     procedure btCloseClick(Sender: TObject);
+    procedure cbDegreeChange(Sender: TObject);
     procedure cbHeaderChange(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Chart2MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure ChartListbox1DblClick(Sender: TObject);
     procedure cmnClipbrd2Click(Sender: TObject);
     procedure cmnClipbrdClick(Sender: TObject);
     procedure cmnSaveAs2Click(Sender: TObject);
@@ -283,6 +288,7 @@ type
     procedure FormDropFiles(Sender: TObject; const FileNames: array of String);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure grpConvClick(Sender: TObject);
+    procedure grpUnitClick(Sender: TObject);
     procedure lblDownloadClick(Sender: TObject);
     procedure lblDownloadMouseEnter(Sender: TObject);
     procedure lblDownloadMouseLeave(Sender: TObject);
@@ -365,7 +371,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.4 03/2019';                       {Major version}
-  appBuildno='2019-03-27';                         {Build per day}
+  appBuildno='2019-03-28';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -1012,6 +1018,7 @@ begin
   cbCSVsep.Hint:=hntCSVsep;
   cbDegree.Caption:=capDegree;
   cbDegree.Hint:=hntDegree;
+  cbDegree.Tag:=0;
 
 {Menus}
   mmnFile.Caption:=mniFile;
@@ -1200,6 +1207,11 @@ begin
   StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
 end;
 
+procedure TForm1.grpUnitClick(Sender: TObject);            {Unit setting changed}
+begin
+  cbDegree.Tag:=1;
+end;
+
 procedure TForm1.lblDownloadClick(Sender: TObject);        {Click link homepage}
 begin
   if OpenURL(lblDownload.Hint) then
@@ -1361,6 +1373,10 @@ end;
 procedure TForm1.PageControl1Change(Sender: TObject); {Save previous Tab}
 begin
   case PageControl1.ActivePageIndex of
+    1: if (cbDegree.Tag=1) and
+          (Form1.Tag=1)
+       then LoadOneFile(csvGrid.Tag);
+
     2: MakeHDia;
     3: MakeAtti;
     4: dtlGridReSize;
@@ -1368,6 +1384,7 @@ begin
   if (PageControl1.ActivePageIndex>0) and          {not Overview}
      (PageControl1.ActivePageIndex<5) then         {not Settings}
     PageControl1.Tag:=PageControl1.ActivePageIndex;
+  PageControl1.ActivePage.Refresh;                 {Redraw the page}
 end;
 
 procedure TForm1.staGridKeyUp(Sender: TObject; var Key:  {Statistics short keys}
@@ -1380,6 +1397,7 @@ end;
 
 procedure TForm1.FormActivate(Sender: TObject);    {Start running with settings from XML}
 var dir: string;
+    i, k: integer;
 begin
   StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
   if Tag=0 then begin                              {first start}
@@ -1396,6 +1414,11 @@ end;
 procedure TForm1.btCloseClick(Sender: TObject);    {Button Close}
 begin
   Close;
+end;
+
+procedure TForm1.cbDegreeChange(Sender: TObject);  {Setting changed}
+begin
+  cbDegree.Tag:=1;                                 {Indicates that setting changed}
 end;
 
 procedure TForm1.cbHeaderChange(Sender: TObject);  {Use alternative Header}
@@ -1419,6 +1442,53 @@ begin
     Chart2.ZoomFull;
 end;
 
+procedure TForm1.ChartListbox1DblClick(Sender: TObject); {Toggle Attitude Charts}
+var i: integer;
+
+  procedure SetSpeed;
+  begin
+    ChartListBox1.Checked[3]:=false;               {Angles}
+    ChartListBox1.Checked[4]:=false;
+    ChartListBox1.Checked[5]:=false;               {Heading}
+    ChartListBox1.Checked[7]:=false;
+    Chart2.AxisList[2].Visible:=false;             {right axis (angle)}
+    ChartListBox1.Tag:=1;
+  end;
+
+  procedure SetAngle;
+  begin
+    ChartListBox1.Checked[0]:=false;               {Speed}
+    ChartListBox1.Checked[1]:=false;
+    ChartListBox1.Checked[2]:=false;
+    ChartListBox1.Checked[6]:=false;               {Zero axis lines}
+    Chart2.AxisList[0].Visible:=false;             {left axis (speed)}
+    ChartListBox1.Tag:=2;
+  end;
+
+  procedure SetNickRoll;
+  begin
+    ChartListBox1.Checked[0]:=false;               {Speed}
+    ChartListBox1.Checked[1]:=false;
+    ChartListBox1.Checked[2]:=false;
+    ChartListBox1.Checked[5]:=false;               {Heading}
+    ChartListBox1.Checked[6]:=false;               {Zero axis lines}
+    Chart2.AxisList[0].Visible:=false;             {left axis (speed)}
+    ChartListBox1.Tag:=3;
+  end;
+
+begin
+  for i:=0 to ChartListBox1.SeriesCount-1 do
+    ChartListBox1.Checked[i]:=true;
+  Chart2.AxisList[0].Visible:=true;                {left axis (speed)}
+  Chart2.AxisList[2].Visible:=true;                {right axis (angle)}
+  case ChartListBox1.Tag of
+    0: SetSpeed;
+    1: SetAngle;
+    2: SetNickRoll;
+  else
+    ChartLIstBox1.Tag:=0;
+  end;
+end;
 
 procedure TForm1.cmnClipbrd2Click(Sender: TObject); {Menu for data table}
 begin
@@ -2060,60 +2130,60 @@ var inf: TFileStream;
   procedure WriteDtlGrid;                          {Fill Details table}
   var sn: string;
   begin
-   dtlGrid.BeginUpdate;                            {Fill Details from level 0}
-     keyw:=datProdName;
-     dtlGrid.Cells[0, 1]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 1]:=j0.FindPath(keyw).AsString;
-     keyw:=datProdID;
-     dtlGrid.Cells[0, 2]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 2]:=j0.FindPath(keyw).AsString;
-     keyw:=datVersion;
-     dtlGrid.Cells[0, 3]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 3]:=j0.FindPath(keyw).AsString;
+    dtlGrid.BeginUpdate;                           {Fill Details from level 0}
+      keyw:=datProdName;
+      dtlGrid.Cells[0, 1]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 1]:=j0.FindPath(keyw).AsString;
+      keyw:=datProdID;
+      dtlGrid.Cells[0, 2]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 2]:=j0.FindPath(keyw).AsString;
+      keyw:=datVersion;
+      dtlGrid.Cells[0, 3]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 3]:=j0.FindPath(keyw).AsString;
 
-     keyw:=datSerialNo;
-     sn:= j0.FindPath(keyw).AsString;
-     dtlGrid.Cells[0, 4]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 4]:=sn;
-     dtlGrid.Cells[0, 5]:=rsManufacture;
-     dtlGrid.Cells[1, 5]:=SerialToManufacture(sn);
+      keyw:=datSerialNo;
+      sn:= j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[0, 4]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 4]:=sn;
+      dtlGrid.Cells[0, 5]:=rsManufacture;
+      dtlGrid.Cells[1, 5]:=SerialToManufacture(sn);
 
-     keyw:=datHWvers;
-     dtlGrid.Cells[0, 6]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 6]:=j0.FindPath(keyw).AsString;
-     keyw:=datSWvers;
-     dtlGrid.Cells[0, 7]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 7]:=j0.FindPath(keyw).AsString;
+      keyw:=datHWvers;
+      dtlGrid.Cells[0, 6]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 6]:=j0.FindPath(keyw).AsString;
+      keyw:=datSWvers;
+      dtlGrid.Cells[0, 7]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 7]:=j0.FindPath(keyw).AsString;
 
-     keyw:=datRuntimeTotal;                        {Runtime total possibly with days}
-     dtlGrid.Cells[0, 8]:=prepKeyw(keyw);
-     trt:=SekToDT(j0.FindPath(keyw).AsString, 1);
-     dtlGrid.Cells[1, 8]:=FormatDateTime(hns, trt);
-     if trt>=1 then
-       dtlGrid.Cells[1, 8]:=IntTostr(trunc(trt))+'d '+dtlGrid.Cells[1, 7];
+      keyw:=datRuntimeTotal;                       {Runtime total possibly with days}
+      dtlGrid.Cells[0, 8]:=prepKeyw(keyw);
+      trt:=SekToDT(j0.FindPath(keyw).AsString, 1);
+      dtlGrid.Cells[1, 8]:=FormatDateTime(hns, trt);
+      if trt>=1 then
+      dtlGrid.Cells[1, 8]:=IntTostr(trunc(trt))+'d '+dtlGrid.Cells[1, 7];
 
-     keyw:=datCrash;
-     dtlGrid.Cells[0, 9]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 9]:=j0.FindPath(keyw).AsString;
-     keyw:=datRCmodel;
-     dtlGrid.Cells[0, 10]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 10]:=j0.FindPath(keyw).AsString;
-     keyw:=datRCapp;
-     dtlGrid.Cells[0, 11]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 11]:=j0.FindPath(keyw).AsString;
-     keyw:=datUUID;
-     dtlGrid.Cells[0, 12]:=UpCase(keyw);
-     dtlGrid.Cells[1, 12]:=FormatUUID(j0.FindPath(keyw).AsString);
-     keyw:=datGPSavail;
-     dtlGrid.Cells[0, 13]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 13]:=j0.FindPath(keyw).AsString;
-     keyw:=datGPSlat;
-     dtlGrid.Cells[0, 14]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 14]:=FormatFloat(frmCoord, j0.FindPath(keyw).AsFloat);
-     keyw:=datGPSlon;
-     dtlGrid.Cells[0, 15]:=prepKeyw(keyw);
-     dtlGrid.Cells[1, 15]:=FormatFloat(frmCoord, j0.FindPath(keyw).AsFloat);
-   dtlGrid.EndUpdate;
+      keyw:=datCrash;
+      dtlGrid.Cells[0, 9]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 9]:=j0.FindPath(keyw).AsString;
+      keyw:=datRCmodel;
+      dtlGrid.Cells[0, 10]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 10]:=j0.FindPath(keyw).AsString;
+      keyw:=datRCapp;
+      dtlGrid.Cells[0, 11]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 11]:=j0.FindPath(keyw).AsString;
+      keyw:=datUUID;
+      dtlGrid.Cells[0, 12]:=UpCase(keyw);
+      dtlGrid.Cells[1, 12]:=FormatUUID(j0.FindPath(keyw).AsString);
+      keyw:=datGPSavail;
+      dtlGrid.Cells[0, 13]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 13]:=j0.FindPath(keyw).AsString;
+      keyw:=datGPSlat;
+      dtlGrid.Cells[0, 14]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 14]:=FormatFloat(frmCoord, j0.FindPath(keyw).AsFloat);
+      keyw:=datGPSlon;
+      dtlGrid.Cells[0, 15]:=prepKeyw(keyw);
+      dtlGrid.Cells[1, 15]:=FormatFloat(frmCoord, j0.FindPath(keyw).AsFloat);
+    dtlGrid.EndUpdate;
   end;
 
   procedure WriteStaGrid;                          {Fill statistics table}
@@ -2247,6 +2317,7 @@ begin
       finally
         inf.Free;
         Screen.Cursor:=crDefault;
+        cbDegree.Tag:=0;                           {Reload done}
       end;                                         {End load and read file}
     end;                                           {End if file exists}
   end;                                             {End if file name available}

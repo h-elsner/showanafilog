@@ -72,8 +72,8 @@ resourcestring                                     {english}
   hntChart1='Zooming with mouse wheel, panning with left mouse button hold';
   dtSpeed='XYZ speed';
   dtAngle='XYZ angle [rad]';
-  clnLeft='Zero left';
-  clnRight='Zero right';
+  clnLeft='Zero line left';
+  clnRight='Zero line right';
   hntChartListBox='Select/deselect charts for XYZ speed or angle';
   hntChart2='Attitude of the aircraft: Charts for XYZ speed and angle';
 

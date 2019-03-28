@@ -1,10 +1,10 @@
 object Form1: TForm1
   Left = 1058
-  Height = 501
+  Height = 532
   Top = 123
   Width = 846
   AllowDropFiles = True
-  ClientHeight = 481
+  ClientHeight = 512
   ClientWidth = 846
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -23,7 +23,7 @@ object Form1: TForm1
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 458
+    Top = 489
     Width = 846
     Panels = <    
       item
@@ -88,13 +88,13 @@ object Form1: TForm1
   end
   object PageControl1: TPageControl
     Left = 6
-    Height = 393
+    Height = 424
     Top = 64
     Width = 833
-    ActivePage = TabSheet2
+    ActivePage = TabSheet6
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 1
+    TabIndex = 3
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -221,12 +221,12 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'atti'
-      ClientHeight = 355
-      ClientWidth = 827
+      ClientHeight = 396
+      ClientWidth = 825
       ImageIndex = 12
       object Chart2: TChart
         Left = 0
-        Height = 392
+        Height = 371
         Top = 0
         Width = 825
         AxisList = <        
@@ -299,30 +299,33 @@ object Form1: TForm1
         end
         object Chart2ConstantLine1: TConstantLine
           AxisIndexX = 0
+          Pen.Style = psDash
           Position = 0
         end
         object Chart2ConstantLine2: TConstantLine
           AxisIndexX = 2
+          Pen.Style = psDash
           Position = 0
         end
       end
       object ChartListbox1: TChartListbox
         Left = 0
         Height = 25
-        Top = 392
+        Top = 371
         Width = 825
         Chart = Chart2
         Align = alBottom
         Color = clCream
         Columns = 8
         ItemHeight = 0
+        OnDblClick = ChartListbox1DblClick
         TabOrder = 1
       end
     end
     object TabSheet4: TTabSheet
       Caption = 'dtl'
-      ClientHeight = 355
-      ClientWidth = 827
+      ClientHeight = 396
+      ClientWidth = 825
       ImageIndex = 3
       object dtlGrid: TStringGrid
         Left = 8
@@ -377,7 +380,7 @@ object Form1: TForm1
     end
     object TabSheet5: TTabSheet
       Caption = 'set'
-      ClientHeight = 365
+      ClientHeight = 396
       ClientWidth = 825
       ImageIndex = 4
       object grpUnit: TRadioGroup
@@ -402,6 +405,7 @@ object Form1: TForm1
           'Metric'
           'Imperial'
         )
+        OnClick = grpUnitClick
         ParentColor = False
         TabOrder = 1
       end
@@ -632,6 +636,7 @@ object Form1: TForm1
           Top = 40
           Width = 70
           Caption = 'cbDegree'
+          OnChange = cbDegreeChange
           TabOrder = 1
         end
       end
