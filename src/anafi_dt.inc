@@ -97,6 +97,7 @@ resourcestring                                     {deutsch}
     errWrongData='Kein Anafi JSON log oder falsche Daten in der Datei';
     errMissingFiles='Keine JSON Datei im Verzeichnis';
     errLessData='Nicht genug Datensätze in der Datei ';
+    errWrongValue='Fehlender oder ungültiger Wert';
     rsChart='Diagramm für ';
     rsList='Werte und Zähler für ';
     rsStatCopy='Kopie der Statistik';

@@ -97,6 +97,7 @@ resourcestring                                     {english}
   errWrongData='Not an Anafi flight log or wrong data format in file ';
   errMissingFiles='No JSON files in directory';
   errLessData='Not enough datasets in file ';
+  errWrongValue='Missing or invalid value';
   rsChart='Chart for ';
   rsList='Value counter for ';
   rsStatCopy='Copy of statistics';

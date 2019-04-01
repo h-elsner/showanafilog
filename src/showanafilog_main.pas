@@ -126,6 +126,7 @@ History:
      2019-03-27 Time label at cursor in additional chart.
      2019-03-28 Refresh tabs if changed. Dotted lines as zero axis line.
                 Toggle Attitude chart: All -> Speed -> Angle -> Nick/Roll -> All.
+     2019-03-31 Cell hints updated for all tables. Skip wrong data in meta data.
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -272,15 +273,17 @@ type
     procedure cmnSaveAsClick(Sender: TObject);
     procedure cmnShowGMClick(Sender: TObject);
     procedure cmnShowOSMClick(Sender: TObject);
+    procedure csvGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+      var HintText: String);
     procedure csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
       Index: Integer);
     procedure csvGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure csvGridMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
     procedure csvGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
     procedure csvGridSelection(Sender: TObject; aCol, aRow: Integer);
     procedure dtlGridDblClick(Sender: TObject);
+    procedure dtlGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+      var HintText: String);
     procedure dtlGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -313,9 +316,13 @@ type
     procedure ovGridClick(Sender: TObject);
     procedure ovGridCompareCells(Sender: TObject; ACol, ARow, BCol,
       BRow: Integer; var Result: integer);
+    procedure ovGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+      var HintText: String);
     procedure ovGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure ovGridSelection(Sender: TObject; aCol, aRow: Integer);
     procedure PageControl1Change(Sender: TObject);
+    procedure staGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+      var HintText: String);
     procedure staGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 
   private
@@ -371,7 +378,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.4 03/2019';                       {Major version}
-  appBuildno='2019-03-28';                         {Build per day}
+  appBuildno='2019-03-31';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -1357,6 +1364,12 @@ begin
     Result:=-Result;                               {Sort direction}
 end;
 
+procedure TForm1.ovGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+  var HintText: String);
+begin
+  HintText:=ovGrid.Cells[aCol, aRow];
+end;
+
 procedure TForm1.ovGridKeyUp(Sender: TObject; var Key: Word;
                              Shift: TShiftState);  {Overview short keys}
 begin
@@ -1387,6 +1400,12 @@ begin
   PageControl1.ActivePage.Refresh;                 {Redraw the page}
 end;
 
+procedure TForm1.staGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+  var HintText: String);
+begin
+  HintText:=staGrid.Cells[aCol, aRow];
+end;
+
 procedure TForm1.staGridKeyUp(Sender: TObject; var Key:  {Statistics short keys}
                               Word; Shift: TShiftState);
 begin
@@ -1397,7 +1416,6 @@ end;
 
 procedure TForm1.FormActivate(Sender: TObject);    {Start running with settings from XML}
 var dir: string;
-    i, k: integer;
 begin
   StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
   if Tag=0 then begin                              {first start}
@@ -1451,7 +1469,6 @@ var i: integer;
     ChartListBox1.Checked[4]:=false;
     ChartListBox1.Checked[5]:=false;               {Heading}
     ChartListBox1.Checked[7]:=false;
-    Chart2.AxisList[2].Visible:=false;             {right axis (angle)}
     ChartListBox1.Tag:=1;
   end;
 
@@ -1461,7 +1478,6 @@ var i: integer;
     ChartListBox1.Checked[1]:=false;
     ChartListBox1.Checked[2]:=false;
     ChartListBox1.Checked[6]:=false;               {Zero axis lines}
-    Chart2.AxisList[0].Visible:=false;             {left axis (speed)}
     ChartListBox1.Tag:=2;
   end;
 
@@ -1472,15 +1488,12 @@ var i: integer;
     ChartListBox1.Checked[2]:=false;
     ChartListBox1.Checked[5]:=false;               {Heading}
     ChartListBox1.Checked[6]:=false;               {Zero axis lines}
-    Chart2.AxisList[0].Visible:=false;             {left axis (speed)}
     ChartListBox1.Tag:=3;
   end;
 
 begin
   for i:=0 to ChartListBox1.SeriesCount-1 do
     ChartListBox1.Checked[i]:=true;
-  Chart2.AxisList[0].Visible:=true;                {left axis (speed)}
-  Chart2.AxisList[2].Visible:=true;                {right axis (angle)}
   case ChartListBox1.Tag of
     0: SetSpeed;
     1: SetAngle;
@@ -1582,6 +1595,12 @@ begin
   else                                             {Anafi GPS coords instead RC}
     OpenURL(URLosm(csvGrid.Cells[10, csvGrid.Selection.Top],
                    csvGrid.Cells[9, csvGrid.Selection.Top]))
+end;
+
+procedure TForm1.csvGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+  var HintText: String);
+begin
+  HintText:=GetCellInfo(aCol, aRow);
 end;
 
 procedure TForm1.RestoreTAS;                       {Compute tas from vx, vy, vz}
@@ -1960,16 +1979,6 @@ begin
     csvGrid.CopyToClipboard(true);
 end;
 
-procedure TForm1.csvGridMouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);                                     {Cell hint}
-var aCol, aRow: longint;
-begin
-  aCol:=0;
-  aRow:=0;
-  csvGrid.MouseToCell(x, y, aCol, aRow);
-  csvGrid.Hint:=GetCellInfo(aCol, aRow);
-end;
-
 procedure TForm1.csvGridSelection(Sender: TObject; aCol, aRow: Integer);
 var ts, tb, te: TDateTime;
 begin                                              {Cell selected}
@@ -1987,6 +1996,12 @@ end;
 procedure TForm1.dtlGridDblClick(Sender: TObject); {Show in GoogleMaps}
 begin
   OpenURL(URLGMap(dtlGrid.Cells[1, 14], dtlGrid.Cells[1, 15]));
+end;
+
+procedure TForm1.dtlGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
+  var HintText: String);
+begin
+  HintText:=dtlGrid.Cells[1, aRow];
 end;
 
 procedure TForm1.dtlGridKeyUp(Sender: TObject;     {Ctrl+c copy}
@@ -2127,22 +2142,41 @@ var inf: TFileStream;
     i, k, ttasmax, taltmax, tp, batt, battmin, tbattmin, tdistmax: integer;
     tme, trt: TDateTime;
 
+    function GetMString(const kw: string): string; {Skip destroyed data in file}
+    begin
+      try
+        result:=j0.FindPath(keyw).AsString;
+      except
+        result:=errWrongValue;
+      end;
+    end;
+
+    function GetMFloat(const kw: string): double; {Skip destroyed data in file}
+    begin
+      try
+        result:=j0.FindPath(keyw).AsFloat;
+      except
+        result:=0;
+      end;
+    end;
+
+
   procedure WriteDtlGrid;                          {Fill Details table}
   var sn: string;
   begin
     dtlGrid.BeginUpdate;                           {Fill Details from level 0}
       keyw:=datProdName;
       dtlGrid.Cells[0, 1]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 1]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 1]:=GetMString(keyw);
       keyw:=datProdID;
       dtlGrid.Cells[0, 2]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 2]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 2]:=GetMString(keyw);
       keyw:=datVersion;
       dtlGrid.Cells[0, 3]:=prepKeyw(keyw);
       dtlGrid.Cells[1, 3]:=j0.FindPath(keyw).AsString;
 
       keyw:=datSerialNo;
-      sn:= j0.FindPath(keyw).AsString;
+      sn:= GetMString(keyw);
       dtlGrid.Cells[0, 4]:=prepKeyw(keyw);
       dtlGrid.Cells[1, 4]:=sn;
       dtlGrid.Cells[0, 5]:=rsManufacture;
@@ -2150,39 +2184,39 @@ var inf: TFileStream;
 
       keyw:=datHWvers;
       dtlGrid.Cells[0, 6]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 6]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 6]:=GetMString(keyw);
       keyw:=datSWvers;
       dtlGrid.Cells[0, 7]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 7]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 7]:=GetMString(keyw);
 
       keyw:=datRuntimeTotal;                       {Runtime total possibly with days}
       dtlGrid.Cells[0, 8]:=prepKeyw(keyw);
-      trt:=SekToDT(j0.FindPath(keyw).AsString, 1);
+      trt:=SekToDT(GetMString(keyw), 1);
       dtlGrid.Cells[1, 8]:=FormatDateTime(hns, trt);
       if trt>=1 then
       dtlGrid.Cells[1, 8]:=IntTostr(trunc(trt))+'d '+dtlGrid.Cells[1, 7];
 
       keyw:=datCrash;
       dtlGrid.Cells[0, 9]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 9]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 9]:=GetMString(keyw);;
       keyw:=datRCmodel;
       dtlGrid.Cells[0, 10]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 10]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 10]:=GetMString(keyw);
       keyw:=datRCapp;
       dtlGrid.Cells[0, 11]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 11]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 11]:=GetMString(keyw);
       keyw:=datUUID;
       dtlGrid.Cells[0, 12]:=UpCase(keyw);
-      dtlGrid.Cells[1, 12]:=FormatUUID(j0.FindPath(keyw).AsString);
+      dtlGrid.Cells[1, 12]:=FormatUUID(GetMString(keyw));
       keyw:=datGPSavail;
       dtlGrid.Cells[0, 13]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 13]:=j0.FindPath(keyw).AsString;
+      dtlGrid.Cells[1, 13]:=GetMString(keyw);
       keyw:=datGPSlat;
       dtlGrid.Cells[0, 14]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 14]:=FormatFloat(frmCoord, j0.FindPath(keyw).AsFloat);
+      dtlGrid.Cells[1, 14]:=FormatFloat(frmCoord, GetMFloat(keyw));
       keyw:=datGPSlon;
       dtlGrid.Cells[0, 15]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 15]:=FormatFloat(frmCoord, j0.FindPath(keyw).AsFloat);
+      dtlGrid.Cells[1, 15]:=FormatFloat(frmCoord, GetMFloat(keyw));
     dtlGrid.EndUpdate;
   end;
 
