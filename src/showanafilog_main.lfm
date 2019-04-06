@@ -4,7 +4,7 @@ object Form1: TForm1
   Top = 123
   Width = 846
   AllowDropFiles = True
-  ClientHeight = 509
+  ClientHeight = 512
   ClientWidth = 846
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -19,11 +19,11 @@ object Form1: TForm1
   SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbExtrude.Checked;cbHeader.Checked;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Text;LogDirDialog.FileName;LogDirDialog.InitialDir;PageControl1.TabIndex;SaveDialog1.InitialDir;Width;cbDegree.Checked'
   ShowHint = True
   ShowInTaskBar = stNever
-  LCLVersion = '1.8.0.6'
+  LCLVersion = '1.8.4.0'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 25
-    Top = 484
+    Height = 23
+    Top = 489
     Width = 846
     Panels = <    
       item
@@ -45,7 +45,7 @@ object Form1: TForm1
   end
   object LogDir: TDirectoryEdit
     Left = 120
-    Height = 27
+    Height = 23
     Top = 8
     Width = 391
     ShowHidden = False
@@ -88,13 +88,13 @@ object Form1: TForm1
   end
   object PageControl1: TPageControl
     Left = 6
-    Height = 421
+    Height = 432
     Top = 64
     Width = 833
-    ActivePage = TabSheet4
+    ActivePage = TabSheet6
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 4
+    TabIndex = 3
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -156,38 +156,44 @@ object Form1: TForm1
     end
     object TabSheet3: TTabSheet
       Caption = 'hdia'
-      ClientHeight = 386
-      ClientWidth = 827
+      ClientHeight = 404
+      ClientWidth = 825
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 425
+        Height = 404
         Top = 0
-        Width = 788
+        Width = 825
         AxisList = <        
           item
             Grid.Visible = False
+            Marks.LabelBrush.Style = bsClear
             Minors = <>
             Title.LabelFont.Color = clNavy
             Title.LabelFont.Orientation = 900
             Title.LabelFont.Style = [fsBold]
             Title.Visible = True
+            Title.LabelBrush.Style = bsClear
             Transformations = ChartAxisTransformations1
           end        
           item
             Alignment = calBottom
             Marks.Format = '%2:s'
+            Marks.LabelBrush.Style = bsClear
             Marks.Source = DateTimeIntervalChartSource1
             Marks.Style = smsLabel
             Minors = <>
+            Title.LabelBrush.Style = bsClear
           end        
           item
             Alignment = calRight
+            Marks.LabelBrush.Style = bsClear
             Minors = <>
             Title.LabelFont.Color = clRed
             Title.LabelFont.Orientation = 2700
             Title.LabelFont.Style = [fsBold]
             Title.Visible = True
+            Title.LabelBrush.Style = bsClear
             Transformations = ChartAxisTransformations2
           end>
         BackColor = clCream
@@ -216,38 +222,44 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'atti'
-      ClientHeight = 386
-      ClientWidth = 827
+      ClientHeight = 404
+      ClientWidth = 825
       ImageIndex = 12
       object Chart2: TChart
         Left = 0
-        Height = 386
+        Height = 384
         Top = 0
-        Width = 712
+        Width = 825
         AxisList = <        
           item
             Grid.Visible = False
+            Marks.LabelBrush.Style = bsClear
             Minors = <>
             Title.LabelFont.Orientation = 900
             Title.LabelFont.Style = [fsBold]
             Title.Visible = True
+            Title.LabelBrush.Style = bsClear
             Transformations = ChartAxisTransformations3
           end        
           item
             Grid.Visible = False
             Alignment = calBottom
             Marks.Format = '%2:s'
+            Marks.LabelBrush.Style = bsClear
             Marks.Source = DateTimeIntervalChartSource2
             Marks.Style = smsLegend
             Minors = <>
+            Title.LabelBrush.Style = bsClear
           end        
           item
             Grid.Visible = False
             Alignment = calRight
+            Marks.LabelBrush.Style = bsClear
             Minors = <>
             Title.LabelFont.Orientation = 2700
             Title.LabelFont.Style = [fsBold]
             Title.Visible = True
+            Title.LabelBrush.Style = bsClear
             Transformations = ChartAxisTransformations4
           end>
         BackColor = clCream
@@ -298,14 +310,14 @@ object Form1: TForm1
         end
       end
       object ChartListbox1: TChartListbox
-        Left = 712
-        Height = 386
-        Top = 0
-        Width = 115
+        Left = 0
+        Height = 20
+        Top = 384
+        Width = 825
         Chart = Chart2
-        Align = alRight
+        Align = alBottom
         Color = clCream
-        Columns = 1
+        Columns = 8
         ItemHeight = 0
         OnDblClick = ChartListbox1DblClick
         TabOrder = 1
@@ -313,8 +325,8 @@ object Form1: TForm1
     end
     object TabSheet4: TTabSheet
       Caption = 'dtl'
-      ClientHeight = 386
-      ClientWidth = 827
+      ClientHeight = 396
+      ClientWidth = 825
       ImageIndex = 3
       object dtlGrid: TStringGrid
         Left = 8
@@ -354,9 +366,9 @@ object Form1: TForm1
       end
       object lblDetails: TLabel
         Left = 8
-        Height = 17
+        Height = 15
         Top = 8
-        Width = 58
+        Width = 51
         Caption = 'lblDetails'
         Font.Style = [fsBold]
         ParentColor = False
@@ -364,9 +376,9 @@ object Form1: TForm1
       end
       object lblStat: TLabel
         Left = 432
-        Height = 17
+        Height = 15
         Top = 8
-        Width = 40
+        Width = 36
         Caption = 'lblStat'
         Font.Style = [fsBold]
         ParentColor = False
@@ -392,8 +404,8 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 54
-        ClientWidth = 183
+        ClientHeight = 52
+        ClientWidth = 181
         Color = clScrollBar
         ItemIndex = 0
         Items.Strings = (
@@ -412,8 +424,8 @@ object Form1: TForm1
         BorderSpacing.Around = 2
         BorderSpacing.InnerBorder = 3
         Caption = 'boxConv'
-        ClientHeight = 254
-        ClientWidth = 215
+        ClientHeight = 252
+        ClientWidth = 213
         Color = clScrollBar
         ParentColor = False
         TabOrder = 0
@@ -431,8 +443,8 @@ object Form1: TForm1
           ChildSizing.ShrinkVertical = crsScaleChilds
           ChildSizing.Layout = cclLeftToRightThenTopToBottom
           ChildSizing.ControlsPerLine = 1
-          ClientHeight = 87
-          ClientWidth = 190
+          ClientHeight = 85
+          ClientWidth = 188
           Color = clBackground
           ItemIndex = 0
           Items.Strings = (
@@ -489,8 +501,8 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 176
-        ClientWidth = 183
+        ClientHeight = 174
+        ClientWidth = 181
         Color = clScrollBar
         ItemIndex = 4
         Items.Strings = (
@@ -538,8 +550,8 @@ object Form1: TForm1
         Top = 16
         Width = 185
         Caption = 'boxLogBook'
-        ClientHeight = 150
-        ClientWidth = 183
+        ClientHeight = 148
+        ClientWidth = 181
         Color = clScrollBar
         ParentColor = False
         TabOrder = 3
@@ -557,8 +569,8 @@ object Form1: TForm1
           ChildSizing.ShrinkVertical = crsScaleChilds
           ChildSizing.Layout = cclLeftToRightThenTopToBottom
           ChildSizing.ControlsPerLine = 1
-          ClientHeight = 71
-          ClientWidth = 134
+          ClientHeight = 69
+          ClientWidth = 132
           ItemIndex = 0
           Items.Strings = (
             'Text'
@@ -611,8 +623,8 @@ object Form1: TForm1
         Top = 192
         Width = 185
         Caption = 'boxTable'
-        ClientHeight = 79
-        ClientWidth = 183
+        ClientHeight = 77
+        ClientWidth = 181
         Color = clScrollBar
         ParentColor = False
         TabOrder = 4
@@ -639,7 +651,7 @@ object Form1: TForm1
   end
   object lblSelDir: TLabel
     Left = 16
-    Height = 17
+    Height = 15
     Top = 12
     Width = 10
     Caption = 'ld'

@@ -112,6 +112,7 @@ resourcestring                                     {english}
   rsNo='No';
   rsLocation='Location';
   rsGPSfix='GPS fix at start';
+  rsFrom=' from ';
 
 {Menu items}
   mniFile='&File';

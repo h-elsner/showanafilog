@@ -112,6 +112,7 @@ resourcestring                                     {deutsch}
     rsNo='Nein';
     rsLocation='Standort';
     rsGPSfix='GPS fix beim Start';
+    rsFrom=' von ';
 
   {Menu items}
     mniFile='&Datei';

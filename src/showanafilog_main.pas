@@ -131,6 +131,8 @@ History:
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
 
+Tester: Dietmar K.,
+
 See also:
 http://blog.nirsoft.net/2009/05/17/antivirus-companies-cause-a-big-headache-to-small-developers/
 
@@ -377,8 +379,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.4 03/2019';                       {Major version}
-  appBuildno='2019-03-31';                         {Build per day}
+  appVersion='V1.4 04/2019';                       {Major version}
+  appBuildno='2019-04-06';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -570,7 +572,7 @@ begin
     else
       y:=2010+y;
     snd:=EncodeDateTime(y, ord(upcase(sn[12]))-64, 1, 0, 0, 0, 0);
-    result:='No '+copy(sn, 13, 6)+' from '+FormatDateTime('mmmm yyyy', snd);
+    result:='No '+copy(sn, 13, 6)+rsFrom+FormatDateTime('mmmm yyyy', snd);
   except
     result:=rsUnknown;
   end;
@@ -615,10 +617,10 @@ begin
   snr:=StrToIntDef(trim(s), 99);
   case snr of
     0: result:='None';                             {Normal flight ?}
-(*    1: result:='Front';
+    1: result:='Front';
     2: result:='Back';
     3: result:='Right';
-    4: result:='Left';       *)
+    4: result:='Left';
   end;
 end;
 
@@ -629,7 +631,7 @@ begin
   snr:=StrToIntDef(trim(s), 99);
   case snr of
     0: result:='No error';                         {Normal flight ?}
-(*    1: result:='Not in outdoor mode';
+(*  1: result:='Not in outdoor mode';
     2: result:='GPS not fixed';
     3: result:='Compass not calibrated';         *)
   end;
@@ -1128,7 +1130,10 @@ begin
   staGrid.Cells[0, 5]:=ovBattMin;
   staGrid.Width:=staGrid.ColWidths[0]+staGrid.ColWidths[1]+staGrid.ColWidths[2];
 
-{$IFDEF LINUX}
+{$IFDEF LINUX}                                     {Tuning for LINUX GUI}
+//  ChartListBox1.Height:=26;
+  ChartListBox1.Align:=alRight;
+  ChartListBox1.Width:=130;
   dtlGrid.Height:=392;
   staGrid.Height:=152;
 {$ENDIF}
