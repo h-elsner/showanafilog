@@ -98,6 +98,7 @@ resourcestring                                     {deutsch}
     errMissingFiles='Keine JSON Datei im Verzeichnis';
     errLessData='Nicht genug Datensätze in der Datei ';
     errWrongValue='Fehlender oder ungültiger Wert';
+    errRename='Kann Datei nicht umbenennen';
     rsChart='Diagramm für ';
     rsList='Werte und Zähler für ';
     rsStatCopy='Kopie der Statistik';
@@ -113,6 +114,7 @@ resourcestring                                     {deutsch}
     rsLocation='Standort';
     rsGPSfix='GPS fix beim Start';
     rsFrom=' von ';
+    rsFilesRenamed='Dateien umbenannt';
 
   {Menu items}
     mniFile='&Datei';
@@ -128,6 +130,7 @@ resourcestring                                     {deutsch}
     mniScrShot='&Screenshot';
     mniTas='Air speed berechnen';
     mniLogBook='Erstelle Pilot Logbuch';
+    mniRename='JSON Dateien mit Datum/Zeit umbenennen';
 
     mniHelp='&Hilfe';
     mniHomepage='Homepage';

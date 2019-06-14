@@ -127,6 +127,7 @@ History:
      2019-03-28 Refresh tabs if changed. Dotted lines as zero axis line.
                 Toggle Attitude chart: All -> Speed -> Angle -> Nick/Roll -> All.
      2019-03-31 Cell hints updated for all tables. Skip wrong data in meta data.
+1.5  2019-06-14 Rename JSON files with date/time stamp.
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -216,6 +217,7 @@ type
     MenuItem1: TMenuItem;
     cmnShowGM: TMenuItem;
     cmnShowOSM: TMenuItem;
+    mmnRename: TMenuItem;
     mmnLogBook: TMenuItem;
     mmnManual: TMenuItem;
     mmnHomepage: TMenuItem;
@@ -312,6 +314,7 @@ type
     procedure mmnLogBookClick(Sender: TObject);
     procedure mmnManualClick(Sender: TObject);
     procedure mmnOpenClick(Sender: TObject);
+    procedure mmnRenameClick(Sender: TObject);
     procedure mmnScrShotClick(Sender: TObject);
     procedure mmnSettingsClick(Sender: TObject);
     procedure mmnTasClick(Sender: TObject);
@@ -379,8 +382,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.4 04/2019';                       {Major version}
-  appBuildno='2019-04-06';                         {Build per day}
+  appVersion='V1.5 06/2019';                       {Major version}
+  appBuildno='2019-06-14';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -1043,6 +1046,7 @@ begin
   mmnScrShot.Caption:=mniScrShot;
   mmnTas.Caption:=mniTas;
   mmnLogBook.Caption:=mniLogBook;
+  mmnRename.Caption:=mniRename;
 
   mmnHelp.Caption:=mniHelp;
   mmnManual.Caption:=rsManual;
@@ -1321,6 +1325,58 @@ begin
     LogDirDialog.InitialDir:=LogDir.Text;
   if LogDirDialog.Execute then
     LogDir.Text:=LogDirDialog.FileName;
+end;
+
+procedure TForm1.mmnRenameClick(Sender: TObject);  {Menu Rename files with date/time}
+var filelist: TStringList;
+    i, zhl: integer;
+    fn, fnnew, ts, uuid: string;
+    inf: TFileStream;
+    j0: TJsonData;                                 {1. level}
+begin
+  ProgressFile.Position:=0;
+  zhl:=0;                                          {File counter}
+  if (LogDir.Text<>'') and
+      DirectoryExists(LogDir.Text) then begin      {only when Directory valid}
+    filelist:=TStringList.Create;
+    try
+      if SuchFile(LogDir.Text, wldcd+jext, filelist)>0 then begin
+        StatusBar1.Panels[0].Text:=rsFiles+dpkt+IntToStr(filelist.Count);
+        StatusBar1.Panels[4].Text:='';             {Empty file name field}
+        ProgressFile.Max:=filelist.Count;
+        try
+          for i:=0 to filelist.Count-1 do begin
+            uuid:='';
+            ts:='';                                {Timestamp}
+            fn:=ExtractFileName(filelist[i]);
+            try
+              inf:=TFileStream.Create(filelist[i], fmOpenRead or fmShareDenyWrite);
+              j0:=GetJson(inf);                    {load whole JSON file, level 0}
+              ts:=j0.FindPath(datUTC).AsString;
+              uuid:=j0.FindPath(datUUID).AsString;
+            finally
+              inf.Free;
+            end;
+            if (ts<>'') and (length(uuid)>6) then begin
+              fnnew:=StringReplace(filelist[i], fn,
+                     ts+uscr+copy(uuid, 1, 6)+jext, [rfIgnoreCase]);
+              if RenameFile(filelist[i], fnnew)    {Rename file}
+                then inc(zhl);                     {Count successful renamed files}
+              ProgressFile.Position:=i;
+              StatusBar1.Panels[1].Text:=IntToStr(zhl);
+            end;
+          end;
+        except
+          StatusBar1.Panels[4].Text:=errRename+tab2+fn;
+        end;
+        StatusBar1.Panels[4].Text:=IntToStr(zhl)+tab1+rsFilesRenamed;
+        if zhl>0 then
+          BuildList;                               {Reload file list}
+      end;                                         {No JSON files available}
+    finally
+      FileList.Free;
+    end;
+  end;                                             {No valid directory}
 end;
 
 procedure TForm1.mmnScrShotClick(Sender: TObject); {Menu Screenshot}
@@ -2150,7 +2206,7 @@ var inf: TFileStream;
     function GetMString(const kw: string): string; {Skip destroyed data in file}
     begin
       try
-        result:=j0.FindPath(keyw).AsString;
+        result:=j0.FindPath(kw).AsString;
       except
         result:=errWrongValue;
       end;
@@ -2159,7 +2215,7 @@ var inf: TFileStream;
     function GetMFloat(const kw: string): double; {Skip destroyed data in file}
     begin
       try
-        result:=j0.FindPath(keyw).AsFloat;
+        result:=j0.FindPath(kw).AsFloat;
       except
         result:=0;
       end;

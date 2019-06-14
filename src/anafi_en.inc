@@ -98,6 +98,7 @@ resourcestring                                     {english}
   errMissingFiles='No JSON files in directory';
   errLessData='Not enough datasets in file ';
   errWrongValue='Missing or invalid value';
+  errRename='Could not rename file';
   rsChart='Chart for ';
   rsList='Value counter for ';
   rsStatCopy='Copy of statistics';
@@ -113,6 +114,7 @@ resourcestring                                     {english}
   rsLocation='Location';
   rsGPSfix='GPS fix at start';
   rsFrom=' from ';
+  rsFilesRenamed='files renamed';
 
 {Menu items}
   mniFile='&File';
@@ -128,6 +130,7 @@ resourcestring                                     {english}
   mniScrShot='&Screenshot';
   mniTas='Recompute air speed';
   mniLogBook='Create Pilot log book';
+  mniRename='Rename JSON files with date/time stamp';
 
   mniHelp='&Help';
   mniHomepage='Homepage';
