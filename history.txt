@@ -1,12 +1,13 @@
-ShowAnafiLogs V1.4 03/2019
+ShowAnafiLogs V1.5 06/2019
 
 Contact:
 helmut.elsner@live.com
 http://h-elsner.mooo.com
 
-Download latest version (frequently updated):
+Download latest version:
 http://h-elsner.mooo.com/downloads/ShowAnafiLog.zip
-or https://github.com/h-elsner/showanafilog
+or 
+https://github.com/h-elsner/showanafilog
 
 History:
 0.1  2019-01-19 Proof of concept, no functionality
@@ -41,4 +42,5 @@ History:
      2019-03-28 Refresh tabs if changed. Dotted lines as zero axis line.
                 Toggle Attitude chart: All -> Speed -> Angle -> Nick/Roll -> All.
      2019-03-31 Cell hints updated for all tables. Skip wrong data in meta data.
+1.5  2019-06-14 Rename JSON files with date/time stamp.
 
