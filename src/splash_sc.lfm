@@ -1224,7 +1224,7 @@ object Form4: TForm4
     Top = 8
     Width = 385
     Alignment = taCenter
-    Caption = 'ShowAnafiLogs  V1.4 03/2019'
+    Caption = 'ShowAnafiLogs  V1.5 07/2019'
     Color = clSkyBlue
     Font.Color = clCream
     Font.Height = -21

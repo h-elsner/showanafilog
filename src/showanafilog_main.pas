@@ -128,11 +128,12 @@ History:
                 Toggle Attitude chart: All -> Speed -> Angle -> Nick/Roll -> All.
      2019-03-31 Cell hints updated for all tables. Skip wrong data in meta data.
 1.5  2019-06-14 Rename JSON files with date/time stamp.
+     2019-07-12 Updated "flying_state".
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
 
-Tester: Dietmar K.,
+Tester: Agustine, Dietmar K., liger 1956, DIRK_ANAFI, Landbo
 
 See also:
 http://blog.nirsoft.net/2009/05/17/antivirus-companies-cause-a-big-headache-to-small-developers/
@@ -149,8 +150,7 @@ uses
   Classes, SysUtils, FileUtil, TAGraph, TATransformations, TAIntervalSources,
   TASeries, TATools, TAChartListbox, Forms, Controls, Graphics, fpjson,
   jsonparser, Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage, EditBtn, math,
-  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, Types,
-  anzwerte;
+  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, anzwerte;
 
 {$I anafi_en.inc}                                  {Include a language file}
 {.$I anafi_dt.inc}
@@ -382,8 +382,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.5 06/2019';                       {Major version}
-  appBuildno='2019-06-14';                         {Build per day}
+  appVersion='V1.5 07/2019';                       {Major version}
+  appBuildno='2019-07-12';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/mydat/';
@@ -581,6 +581,7 @@ begin
   end;
 end;
 
+{https://developer.parrot.com/docs/olympe/arsdkng_ardrone3_piloting.html}
 function F_StateToStr(s: string): string;          {JSON flying_state (5)}
 var snr: integer;
 begin
@@ -593,8 +594,12 @@ begin
     3: result:='Flying';
     4: result:='Landing';
     5: result:='Emergency';
-    6: result:='Armed';                            {different kind of arming ?}
-    7: result:='Armed';                            {Starting ?}
+    6: result:='Waiting for user take off';        {Waiting for user action to take off}
+    7: result:='Motor ramping';
+    8: result:='Emergency landing';                {Emergency landing state.
+                               Drone autopilot has detected defective sensor(s).
+                               Only Yaw argument in PCMD is taken into account.
+                               All others flying commands are ignored.}
   end;
 end;
 
@@ -613,6 +618,7 @@ begin
   end;
 end;
 
+{possibly this: olympe.enums.animation.type}
 function FlipTypeToStr(s: string): string;         {JSON flip_type (20)}
 var snr: integer;
 begin
@@ -622,8 +628,8 @@ begin
     0: result:='None';                             {Normal flight ?}
     1: result:='Front';
     2: result:='Back';
-    3: result:='Right';
-    4: result:='Left';
+    3: result:='Right';                            {its right side goes up, is it left?}
+    4: result:='Left';                             {its left side goes up, is it right?}
   end;
 end;
 
@@ -1330,14 +1336,15 @@ end;
 procedure TForm1.mmnRenameClick(Sender: TObject);  {Menu Rename files with date/time}
 var filelist: TStringList;
     i, zhl: integer;
-    fn, fnnew, ts, uuid: string;
+    fn, newfn, ts, uuid: string;
     inf: TFileStream;
     j0: TJsonData;                                 {1. level}
-begin
+
+begin                                              {New feature in V1.5}
   ProgressFile.Position:=0;
   zhl:=0;                                          {File counter}
   if (LogDir.Text<>'') and
-      DirectoryExists(LogDir.Text) then begin      {only when Directory valid}
+      DirectoryExists(LogDir.Text) then begin      {Only when Directory valid}
     filelist:=TStringList.Create;
     try
       if SuchFile(LogDir.Text, wldcd+jext, filelist)>0 then begin
@@ -1352,15 +1359,15 @@ begin
             try
               inf:=TFileStream.Create(filelist[i], fmOpenRead or fmShareDenyWrite);
               j0:=GetJson(inf);                    {load whole JSON file, level 0}
-              ts:=j0.FindPath(datUTC).AsString;
-              uuid:=j0.FindPath(datUUID).AsString;
+              ts:=j0.FindPath(datUTC).AsString;    {Date/time from Metadata}
+              uuid:=j0.FindPath(datUUID).AsString; {UUID from Metadata}
             finally
               inf.Free;
             end;
             if (ts<>'') and (length(uuid)>6) then begin
-              fnnew:=StringReplace(filelist[i], fn,
+              newfn:=StringReplace(filelist[i], fn,
                      ts+uscr+copy(uuid, 1, 6)+jext, [rfIgnoreCase]);
-              if RenameFile(filelist[i], fnnew)    {Rename file}
+              if RenameFile(filelist[i], newfn)    {Rename file}
                 then inc(zhl);                     {Count successful renamed files}
               ProgressFile.Position:=i;
               StatusBar1.Panels[1].Text:=IntToStr(zhl);
