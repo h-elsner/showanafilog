@@ -43,4 +43,5 @@ History:
                 Toggle Attitude chart: All -> Speed -> Angle -> Nick/Roll -> All.
      2019-03-31 Cell hints updated for all tables. Skip wrong data in meta data.
 1.5  2019-06-14 Rename JSON files with date/time stamp.
+     2019-07-12 Updated "flying_state".
 
