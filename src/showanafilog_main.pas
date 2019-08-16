@@ -386,7 +386,7 @@ const
   appBuildno='2019-07-12';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
-  hpmydat='/mydat/';
+  hpmydat='/pdf/';
   email='helmut.elsner@live.com';
   githublink='https://github.com/h-elsner/showanafilog';
 
@@ -611,7 +611,7 @@ begin
   case snr of
     0: result:='No alert';                         {Normal flight}
     1: result:='User emergency alert';
-    2: result:='Cut out alert';                    {Anafi shut down?}
+    2: result:='Cut out alert';                    {Something hit/blocked propeller}
     3: result:='Battery level critical';
     4: result:='Battery level low';
     5: result:='Flight angle exceeded';
