@@ -640,9 +640,9 @@ begin
   snr:=StrToIntDef(trim(s), 99);
   case snr of
     0: result:='No error';                         {Normal flight ?}
-(*  1: result:='Not in outdoor mode';
+    1: result:='Not in outdoor mode';
     2: result:='GPS not fixed';
-    3: result:='Compass not calibrated';         *)
+    3: result:='Compass not calibrated';
   end;
 end;
 
