@@ -129,6 +129,7 @@ History:
      2019-03-31 Cell hints updated for all tables. Skip wrong data in meta data.
 1.5  2019-06-14 Rename JSON files with date/time stamp.
      2019-07-12 Updated "flying_state".
+1.6  2019-11-06 Resolve Product_ID
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -138,6 +139,27 @@ Tester: Agustine, Dietmar K., liger 1956, DIRK_ANAFI, Landbo
 See also:
 http://blog.nirsoft.net/2009/05/17/antivirus-companies-cause-a-big-headache-to-small-developers/
 
+-----------------------------
+https://www.drohnen-forum.de/index.php/Thread/41391-Flugdatenspeicher/?postID=277218
+
+Man kann im Internet - Parrot.de, nach der Anmeldung, unter "my Parrot" die
+Daten anfordern. Unter Einstellungen des eigenen Konto, besteht die Möglichkeit.
+Man bekommt dann eine Mail mit ZIP-Dateien, welche die JSON-Dateien enthält.
+Der Download link ist aber nur 10 Tage gültig.
+
+--------------------------------
+https://www.drohnen-forum.de/index.php/Thread/39045-log-bin-Datei-auf-SD-Card/?postID=254229
+Habe noch eine zweite Option gefunden, um an die json Files für den
+FlightData Manager zu kommen, z.B. wenn du deine Flüge nicht in der
+Parrot Cloud speichern willst:
+- In der FF6 App auf My.Parrot gehen.
+- Dort sind dann ja unter "Meine Flüge" deine Flüge aufgelistet.
+- Hinter einem der Flüge auf das "Upload-Symbol" (Pfeil nach oben) tippen.
+- Dann z.B. deinen E-Mail Client auswählen und die Daten an deine E-Mail Adresse senden.
+
+Die sind dann als json File in FlightData Manager importierbar.
+
+-
 *)
 
 unit showanafilog_main;
@@ -206,6 +228,7 @@ type
     DateTimeIntervalChartSource2: TDateTimeIntervalChartSource;
     boxTable: TGroupBox;
     grpConv: TRadioGroup;
+    lblProduct: TLabel;
     lblDetails: TLabel;
     lblStat: TLabel;
     grpDia: TRadioGroup;
@@ -382,8 +405,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.5 07/2019';                       {Major version}
-  appBuildno='2019-07-12';                         {Build per day}
+  appVersion='V1.6 11/2019';                       {Major version}
+  appBuildno='2019-11-06';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -394,11 +417,11 @@ const
  depends on control device settings (variable)}
   metric=true;                                     {assumption, always metric}
   useau=false;                                     {use alternative units like km}
-  mtoft=3.2808399;
+  mtoft=3.2808399;                                 {meter to feet}
 
 {Links}
   gmapURL='https://maps.google.com/maps';
-  osmURL='https://www.openstreetmap.org/';
+  osmURL='https://www.openstreetmap.org/';         {OSM link}
   starticon='http://maps.google.com/mapfiles/dir_0.png';       {blue}
   stopicon='http://maps.google.com/mapfiles/dir_walk_60.png';  {grey}
   aircrafticon='http://earth.google.com/images/kml-icons/track-directional/track-0.png';
@@ -613,8 +636,59 @@ begin
     1: result:='User emergency alert';
     2: result:='Cut out alert';                    {Something hit/blocked propeller}
     3: result:='Battery level critical';
-    4: result:='Battery level low';
+    4: result:='Battery level low; RTH in < 3min';
     5: result:='Flight angle exceeded';
+  end;
+end;
+
+{https://parrotpilots.com/threads/anafi-thermal-data-overlay.3074/
+
+https://forum.developer.parrot.com/t/skycontroller-vs-skycontroller2/4490/7
+
+static const uint16_t ARDISCOVERY_Discovery_ProductTable[ARDISCOVERY_PRODUCT_MAX] =
+    // BLE Service
+    [ARDISCOVERY_PRODUCT_MINIDRONE]     = 0x0900,
+    [ARDISCOVERY_PRODUCT_MINIDRONE_EVO_LIGHT] = 0x0907,
+    [ARDISCOVERY_PRODUCT_MINIDRONE_EVO_BRICK] = 0x0909,
+    [ARDISCOVERY_PRODUCT_MINIDRONE_EVO_HYDROFOIL] = 0x090a,
+    [ARDISCOVERY_PRODUCT_MINIDRONE_DELOS3] = 0x090b,
+    [ARDISCOVERY_PRODUCT_MINIDRONE_WINGX] = 0x0910,
+
+    // NSNet Service
+    [ARDISCOVERY_PRODUCT_ARDRONE]       = 0x0901,
+    [ARDISCOVERY_PRODUCT_JS]            = 0x0902,
+    [ARDISCOVERY_PRODUCT_SKYCONTROLLER] = 0x0903,
+    [ARDISCOVERY_PRODUCT_JS_EVO_LIGHT]  = 0x0905,
+    [ARDISCOVERY_PRODUCT_JS_EVO_RACE]   = 0x0906,
+    [ARDISCOVERY_PRODUCT_BEBOP_2]       = 0x090c,
+    [ARDISCOVERY_PRODUCT_POWER_UP]      = 0x090d,
+    [ARDISCOVERY_PRODUCT_EVINRUDE]      = 0x090e,
+    [ARDISCOVERY_PRODUCT_UNKNOWNPRODUCT_4] = 0x0911,
+
+    // USB Service
+    [ARDISCOVERY_PRODUCT_SKYCONTROLLER_2] = 0x090f,
+
+    // Unsupported Service
+    [ARDISCOVERY_PRODUCT_TINOS] = 0x0912,
+}
+
+function ProdIDtoLabel(s: string): string;         {Parrot Product IDs}
+var prID: integer;
+begin
+  result:=s;                                       {Default}
+  try
+    prID:=StrToInt(s);
+  except
+    prID:=0;
+  end;
+  case prID of
+    2305: result:='Bebop 1';                       {901'h}
+    2307: result:='Skycontroller';                 {903'h}
+    2316: result:='Bebop 2';                       {90c'h}
+    2318: result:='Disco';                         {90e'h}
+    2319: result:='Skycontroller 2';               {90f'h}
+    2324: result:='Anafi 4K-HDR';                  {914'h}
+    2329: result:='Anafi Thermal';                 {919'h}
   end;
 end;
 
@@ -747,7 +821,8 @@ begin
     result:=6365692*arccos(sin(lat1*pi/180)*sin(lat2*pi/180)+
             cos(lat1*pi/180)*cos(lat2*pi/180)*cos((lon1-lon2)*pi/180));
 
-    if (result>50000) or                           {> 50km = implausible values}
+    if IsNan(result) or
+       (result>30000) or                           {> 30km = implausible values}
        (result<0.005) then                         {reduce errors due to GPS uncertainty}
       result:=0;
   except
@@ -2238,7 +2313,9 @@ var inf: TFileStream;
       dtlGrid.Cells[1, 1]:=GetMString(keyw);
       keyw:=datProdID;
       dtlGrid.Cells[0, 2]:=prepKeyw(keyw);
-      dtlGrid.Cells[1, 2]:=GetMString(keyw);
+      sn:=GetMString(keyw);
+      lblProduct.Caption:=ProdIDtoLabel(sn);
+      dtlGrid.Cells[1, 2]:=sn+': '+lblProduct.Caption;
       keyw:=datVersion;
       dtlGrid.Cells[0, 3]:=prepKeyw(keyw);
       dtlGrid.Cells[1, 3]:=j0.FindPath(keyw).AsString;
