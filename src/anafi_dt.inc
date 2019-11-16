@@ -52,8 +52,10 @@ resourcestring                                     {deutsch}
     staHd1='Min/max Werte';
     staHd2='Erstes Auftreten';
 
-    dtlCol0='Details';
-    dtlCol1='Wert';
+    dtlJCol0='Details';
+    dtlJCol1='Wert';
+    dtlFCol0='Parameter';
+    dtlFCol1='Wert';
 
     altCount='Anzahl Werte';
     altDescription='Beschreibung';
@@ -92,7 +94,8 @@ resourcestring                                     {deutsch}
     rsScreen='Screen';
     rsUnKnown='Unbekannt';
     rsSaved='erfolgreich angelegt und gespeichert';
-    rsMetaData='Metadaten';
+    rsMetaDataJ='Metadaten JSON';
+    rsMetaDataF='Metadaten FDR';
     rsStatistics='Statistiken';
     errWrongData='Kein Anafi JSON log oder falsche Daten in der Datei';
     errMissingFiles='Keine JSON Datei im Verzeichnis';
@@ -131,6 +134,7 @@ resourcestring                                     {deutsch}
     mniTas='Air speed berechnen';
     mniLogBook='Erstelle Pilot Logbuch';
     mniRename='JSON Dateien mit Datum/Zeit umbenennen';
+    mniFDRlog='Metadaten aus FDR log anzeigen';
 
     mniHelp='&Hilfe';
     mniHomepage='Homepage';

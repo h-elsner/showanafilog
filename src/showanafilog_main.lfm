@@ -91,10 +91,10 @@ object Form1: TForm1
     Height = 432
     Top = 64
     Width = 833
-    ActivePage = TabSheet6
+    ActivePage = TabSheet4
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 3
+    TabIndex = 4
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -104,9 +104,9 @@ object Form1: TForm1
       ImageIndex = 0
       object ovGrid: TStringGrid
         Left = 0
-        Height = 386
+        Height = 404
         Top = 0
-        Width = 827
+        Width = 825
         Align = alClient
         Color = clCream
         ColumnClickSorts = True
@@ -333,6 +333,7 @@ object Form1: TForm1
         Height = 360
         Top = 32
         Width = 416
+        Anchors = [akTop, akLeft, akBottom]
         Color = clCream
         ColCount = 2
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goSmoothScroll, goCellHints, goTruncCellHints, goCellEllipsis]
@@ -445,7 +446,6 @@ object Form1: TForm1
           ChildSizing.ControlsPerLine = 1
           ClientHeight = 85
           ClientWidth = 188
-          Color = clBackground
           ItemIndex = 0
           Items.Strings = (
             '.kml'
@@ -463,7 +463,7 @@ object Form1: TForm1
           Width = 73
           Caption = 'cbExtrude'
           Checked = True
-          Color = clBackground
+          Color = clDefault
           ParentColor = False
           State = cbChecked
           TabOrder = 1
@@ -1581,6 +1581,41 @@ object Form1: TForm1
         ImageIndex = 20
         OnClick = mmnRenameClick
       end
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object mmnFDRlog: TMenuItem
+        Caption = 'FDRlog'
+        Bitmap.Data = {
+          36030000424D3603000000000000360000002800000010000000100000000100
+          1800000000000003000064000000640000000000000000000000FFFFFFFFFFFF
+          FFFFFF0000002020204040404040404040404040404040404040404040404040
+          40404040404040606060FFFFFFFFFFFFFFFFFF000000FFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFFFFFFF404040FFFFFFFFFFFF
+          FFFFFF000000FFFFFFFFFFFFFFFFFFFFFFFF7F7F7F5050504040404040404040
+          40606060FFFFFF404040FFFFFFFFFFFFFFFFFF000000FFFFFF6F6F6F60606060
+          6060303030EFEFEFDFDFDFC0C0C0A0A0A0606060FFFFFF404040FFFFFFFFFFFF
+          FFFFFF000000FFFFFF606060FFFFFFFFFFFF7F7F7F7F00007F3F3F7F7F7F6F6F
+          6FBFBFBFFFFFFF404040FFFFFFFFFFFFFFFFFF000000FFFFFF606060FFFFFFFF
+          FFFFFFFFFF7F7F7FBFBFBFFFFFFFFFFFFFFFFFFFFFFFFF404040FFFFFFFFFFFF
+          FFFFFF000000FFFFFF606060FFFFFFFFFFFFBFBFBF6060606060606060606060
+          60909090FFFFFF404040FFFFFFFFFFFFFFFFFF000000FFFFFF30303060606060
+          6060303030BFBFBFA0A0A0A0A0A0909090606060FFFFFF404040FFFFFFFFFFFF
+          FFFFFF000000FFFFFF606060FFFFFFFFFFFF7F7F7F7F7F7FBFBFBFDFDFDFBFBF
+          BF6F6F6FFFFFFF40404000000000000000000000000060606030303060606060
+          60603030304000007F3F3F7F7F7F7F7F7FFFFFFFFFFFFF4040403F7F7F6FCFCF
+          6FCFCF6FCFCF6FCFCF6FCFCF6FCFCF6FCFCF30AFAF3030307F7F7F7F7F7F7F7F
+          7F7F7F7F7F7F7F4040407F7F7F7FFFFF7FFFFF7FFFFF7FFFFF7FFFFF7FFFFF7F
+          FFFF6FCFCF2000007F00007F00007F00007F00007F00000000007F7F7F7FFFFF
+          7FFFFF7FFFFF7FFFFF7FFFFF7FFFFF7FFFFF6FCFCF000000FFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFF7F7F7FBFFFFFBFFFFFBFFFFFBFFFFF7FFFFF7FFFFF7F
+          FFFF6FCFCF000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5F3F00BF7F00
+          BF7F00BF7F005F3F3F7F7F7F7F7F7F7F7F7F3F7F7F000000FFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFF3F3F007F7F007F7F007F7F00000000FFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        }
+        OnClick = mmnFDRlogClick
+      end
     end
     object mmnHelp: TMenuItem
       Caption = 'Help'
@@ -1698,5 +1733,10 @@ object Form1: TForm1
     top = 168
     object ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
+  end
+  object FDRDialog: TOpenDialog
+    Filter = 'FDR log files|*.bin'
+    left = 448
+    top = 424
   end
 end

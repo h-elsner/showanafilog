@@ -130,6 +130,7 @@ History:
 1.5  2019-06-14 Rename JSON files with date/time stamp.
      2019-07-12 Updated "flying_state".
 1.6  2019-11-06 Resolve Product_ID
+     2019-11-16 Read meta data from FDR log files
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -240,6 +241,8 @@ type
     MenuItem1: TMenuItem;
     cmnShowGM: TMenuItem;
     cmnShowOSM: TMenuItem;
+    mmnFDRlog: TMenuItem;
+    N1: TMenuItem;
     mmnRename: TMenuItem;
     mmnLogBook: TMenuItem;
     mmnManual: TMenuItem;
@@ -261,6 +264,7 @@ type
     mmnCSVex: TMenuItem;
     MenuItem5: TMenuItem;
     mmnKMLex: TMenuItem;
+    FDRDialog: TOpenDialog;
     PopupMenu1: TPopupMenu;                        {for Overview and Charts}
     PopupMenu2: TPopupMenu;                        {For Details table}
     LogDirDialog: TSelectDirectoryDialog;
@@ -327,6 +331,7 @@ type
     procedure lblManualMouseLeave(Sender: TObject);
     procedure LogDirChange(Sender: TObject);
     procedure LogDirDblClick(Sender: TObject);
+    procedure mmnFDRlogClick(Sender: TObject);
     procedure mmnHomepageClick(Sender: TObject);
     procedure mmnCloseClick(Sender: TObject);
     procedure mmnCSVexClick(Sender: TObject);
@@ -369,6 +374,8 @@ type
     procedure MakeCSV;                             {Create CSV file from csvGrid}
     procedure RestoreTAS;                          {Compute tas from vx, vy, vz}
     procedure CreateLogBook;                       {Create Pilot log book}
+    procedure MetaGridInit(mode: integer);         {Set Details labels}
+    procedure ShowFDRlog(fn: string);              {Show meta data from FDR}
 
     function GetCellInfo(aCol, aRow: longint): string; {Cell info in data table}
     function ColorToKMLColor(const AColor: TColor; {Google Farbcodierung}
@@ -406,7 +413,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.6 11/2019';                       {Major version}
-  appBuildno='2019-11-06';                         {Build per day}
+  appBuildno='2019-11-16';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -527,23 +534,40 @@ begin
   end;
 end;
 
-{Conversion to internal time format.
-"date": "2018-11-10T094343-0500",     }
-function datUTCtoDT(tst: string): TDateTime;  {Convert JSON time stamp to DT
-                                    returns 0 if the string could not parsed}
-var dt, zt, ms: string;
+{Conversion ISO time stamp to internal time format.
+        "date": "2018-11-10T094343-0500",
+ FDR time stamp: 20181206T204438+0100}
+
+function datISOtoDT(tst: string; form: string=ymd): TDateTime;
+var dt, zt, zone: string;
+    direction: char;                               {Time zone + or -}
 begin
   dt:=ExtractWord(1, tst, ['T']);
   zt:=ExtractWord(2, tst, ['T']);
-  ms:=ExtractWord(2, zt, ['-']);
-  zt:=ExtractWord(1, zt, ['-']);
+  if length(zt)>10 then begin
+    direction:=zt[7];                              {+ or -}
+    zone:=copy(zt, 8, 4);
+  end else zone:='0000';;
+  zt:=copy(zt, 1, 6);
   try
-    result:=ScanDateTime(ymd, dt)+
-            ScanDateTime('hhnnss', zt)+
-            SekToDT(ms, 1);
+    result:=ScanDateTime(form, dt)+
+            ScanDateTime('hhnnss', zt);
+    if direction='-' then
+      result:=result-ScanDateTime('hhnn', zone)
+    else
+      if direction='+' then result:=result+ScanDateTime('hhnn', zone);
   except
     result:=0;
   end;
+end;
+
+function FDRtimeToStr(s: string): string;          {FDR date conversion to string}
+var tme: TDateTime;
+begin
+  result:='';
+  tme:=datISOtoDT(s, 'yyyymmdd');
+  if tme>0 then
+    result:=FormatDateTime(ymd+tab1+hns, tme);
 end;
 
 { 2018-11-17 12:12:56.979  into
@@ -981,7 +1005,7 @@ begin
       try
         if inf.Size>512 then begin                 {0.5kB minimal}
           j0:=GetJson(inf);                        {load whole JSON file, level 0}
-          tme:=datUTCtoDT(j0.FindPath(datUTC).AsString);
+          tme:=datISOtoDT(j0.FindPath(datUTC).AsString, ymd);
           res[1]:=FormatDateTime(ymd, tme);        {Date/Time from meta data}
           res[4]:=FormatDateTime(hns,              {Duration}
                                 SekToDT(j0.FindPath(datRunTime).AsString, 1));
@@ -1085,7 +1109,6 @@ begin
   LogDirDialog.Title:=hntLogDir;
   lblSelDir.Caption:=capLogDir;
   lblSelDir.Hint:=hntLogDir;
-  lblDetails.Caption:=rsMetaData;
   lblStat.Caption:=rsStatistics;
   Chart1.Hint:=hntChart1;
   Chart2.Hint:=hntChart2;
@@ -1128,6 +1151,7 @@ begin
   mmnTas.Caption:=mniTas;
   mmnLogBook.Caption:=mniLogBook;
   mmnRename.Caption:=mniRename;
+  mmnFDRlog.Caption:=mniFDRlog;
 
   mmnHelp.Caption:=mniHelp;
   mmnManual.Caption:=rsManual;
@@ -1200,9 +1224,7 @@ begin
     ovGrid.Cells[i, 0]:=header[i];
   ovGrid.ColWidths[hc]:=0;                         {Hidden column for log book}
 
-  dtlGrid.Cells[0, 0]:=dtlCol0;
-  dtlGrid.Cells[1, 0]:=dtlCol1;
-  dtlGrid.RowCount:=16;
+  MetaGridInit(0);                                 {Standard JSON labels}
 
   staGrid.RowCount:=6;
   staGrid.Cells[0, 0]:=rsStatistics;
@@ -1219,10 +1241,28 @@ begin
 //  ChartListBox1.Height:=26;
   ChartListBox1.Align:=alRight;
   ChartListBox1.Width:=130;
-  dtlGrid.Height:=392;
   staGrid.Height:=152;
 {$ENDIF}
 
+end;
+
+procedure TForm1.MetaGridInit(mode: integer);      {Set Details labels}
+begin
+  dtlGrid.Tag:=mode;
+  case mode of
+    0: begin
+         lblDetails.Caption:=rsMetaDataJ;
+         dtlGrid.Cells[0, 0]:=dtlJCol0;
+         dtlGrid.Cells[1, 0]:=dtlJCol1;
+         dtlGrid.RowCount:=16;
+       end;
+    1: begin
+         lblDetails.Caption:=rsMetaDataF;
+         dtlGrid.Cells[0, 0]:=dtlFCol0;
+         dtlGrid.Cells[1, 0]:=dtlFCol1;
+         dtlGrid.RowCount:=1;
+       end;
+  end;
 end;
 
 procedure TForm1.FormDblClick(Sender: TObject);    {About box on DblClick}
@@ -1350,6 +1390,94 @@ end;
 procedure TForm1.LogDirDblClick(Sender: TObject);  {Call file explorer}
 begin
   OpenDocument(IncludeTrailingPathDelimiter(LogDir.Text));
+end;
+
+procedure TForm1.mmnFDRlogClick(Sender: TObject);  {Menu Show meta data from FDR}
+begin
+  if FDRdialog.Execute then
+    ShowFDRlog(FDRdialog.FileName);
+end;
+
+{
+Parameter	                   Value
+hardware	                   anafi4k
+product.model.id	           0914
+build.date	                   Thu Nov 22 18:58:32 UTC 2018
+parrot.build.group	           drones
+parrot.build.product	           anafi
+parrot.build.project	           anafi
+parrot.build.uid	           anafi-4k-1.3.0
+parrot.build.variant	           4k
+parrot.build.version	           1.3.0
+factory.hcam_serial	           PI020739AA8E010826
+factory.serial	                   PI040416AA8F016243
+boot.uuid	                   66E0126119348E4594C082BA8194C5EE
+smartbattery.gfw_version	   26100020001900038502
+smartbattery.usb_version	   0.10
+smartbattery.version	           1.0.5.0
+smartbattery.serial	           C8G098628
+smartbattery.design_cap	           2700
+esc.fw_version	                   1.18.R.4
+date	                           20181206T204438+0100
+
+}
+procedure TForm1.ShowFDRlog(fn: string);           {Show meta data from FDR}
+var buf: array [0..1023] of byte;
+    FDRfile: file;
+    i: integer;
+    str, str1, str2: string;
+
+const pID='ro.';
+
+  procedure TestResult;
+  begin
+    if length(str)>1 then begin                    {Values are more than one character}
+      if (pos(pID, str)=1) or
+         (str=datUTC) then begin                   {Is it 'ro.'... or 'date'?}
+        str1:=StringReplace(str, pID, '', []);     {Parameter ID}
+        str2:='';                                  {Delete old value}
+      end else begin
+        if str2='' then
+          str2:=str;                               {String value}
+      end;
+    end;
+    if (str1<>'') and (str2<>'') then begin        {Parameter ID and Value available}
+      if str1=datUTC then
+        lblDetails.Caption:=rsMetaDataF+tab1+ExtractFileName(fn)+
+                            tab2+FDRtimeToStr(str2);
+      dtlGrid.RowCount:=dtlGrid.RowCount+1;        {New dataset - new line in table}
+      dtlGrid.Cells[0, dtlGrid.RowCount-1]:=str1;  {Fill table Parameter ID}
+      dtlGrid.Cells[1, dtlGrid.RowCount-1]:=str2;  {and value}
+      str1:='';                                    {Empty all data}
+      str2:='';
+    end;
+    str:='';                                       {Collect new string}
+  end;
+
+begin
+  MetaGridInit(1);
+  lblDetails.Caption:=rsMetaDataF+tab1+ExtractFileName(fn);
+  StatusBar1.Panels[4].Text:=fn;
+  AssignFile(FDRfile, fn);
+  Reset(FDRfile, 1);
+  try
+    BlockRead(FDRfile, buf, SizeOf(buf));          {Read first part of the file}
+    str1:='';
+    str2:='';
+    str:='';
+    dtlGrid.BeginUpdate;
+    for i:=33 to SizeOf(buf)-1 do begin             {Find meta data}
+      case buf[i] of
+        0: TestResult;
+        32, 34..127: str:=str+Chr(buf[i]);
+      end;
+    end;
+    dtlGrid.EndUpdate;
+  finally
+    CloseFile(FDRfile);
+  end;
+  dtlGridResize;
+  PageControl1.ActivePageIndex:=4;                 {Go to details page}
 end;
 
 procedure TForm1.mmnHomepageClick(Sender: TObject); {Menu Homepage}
@@ -1568,6 +1696,7 @@ begin
       if DirectoryExists(dir) then
         LogDir.Text:=dir;                          {Use this one}
     end;
+    FDRDialog.InitialDir:=LogDir.Directory;        {Default wie JSON}
     BuildList;                                     {search JSON files}
   end;
 end;
@@ -2138,13 +2267,23 @@ end;
 
 procedure TForm1.dtlGridDblClick(Sender: TObject); {Show in GoogleMaps}
 begin
-  OpenURL(URLGMap(dtlGrid.Cells[1, 14], dtlGrid.Cells[1, 15]));
+  if dtlGrid.Tag=0 then
+    OpenURL(URLGMap(dtlGrid.Cells[1, 14], dtlGrid.Cells[1, 15]));
 end;
 
 procedure TForm1.dtlGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
   var HintText: String);
 begin
-  HintText:=dtlGrid.Cells[1, aRow];
+  HintText:=dtlGrid.Cells[0, aRow]+'='+dtlGrid.Cells[1, aRow];
+  if dtlGrid.Cells[0, aRow]='product.model.id' then
+    HintText:=dtlGrid.Cells[0, aRow]+'='+
+              ProdIDtoLabel('$'+dtlGrid.Cells[1, aRow]);
+  if pos(datUUID, dtlGrid.Cells[0, aRow])>0 then
+    HintText:=dtlGrid.Cells[0, aRow]+'='+
+              FormatUUID(dtlGrid.Cells[1, aRow]);
+  if dtlGrid.Cells[0, aRow]=datUTC then
+    HintText:=rsDateTime+'='+
+              FDRtimeToStr(dtlGrid.Cells[1, aRow]);
 end;
 
 procedure TForm1.dtlGridKeyUp(Sender: TObject;     {Ctrl+c copy}
@@ -2285,24 +2424,23 @@ var inf: TFileStream;
     i, k, ttasmax, taltmax, tp, batt, battmin, tbattmin, tdistmax: integer;
     tme, trt: TDateTime;
 
-    function GetMString(const kw: string): string; {Skip destroyed data in file}
-    begin
-      try
-        result:=j0.FindPath(kw).AsString;
-      except
-        result:=errWrongValue;
-      end;
+  function GetMString(const kw: string): string; {Skip destroyed data in file}
+  begin
+    try
+      result:=j0.FindPath(kw).AsString;
+    except
+      result:=errWrongValue;
     end;
+  end;
 
-    function GetMFloat(const kw: string): double; {Skip destroyed data in file}
-    begin
-      try
-        result:=j0.FindPath(kw).AsFloat;
-      except
-        result:=0;
-      end;
+  function GetMFloat(const kw: string): double; {Skip destroyed data in file}
+  begin
+    try
+      result:=j0.FindPath(kw).AsFloat;
+    except
+      result:=0;
     end;
-
+  end;
 
   procedure WriteDtlGrid;                          {Fill Details table}
   var sn: string;
@@ -2388,6 +2526,7 @@ begin
   tasmax:=0;
   altmax:=-9999;
   distmax:=0;
+  MetagridInit(0);                                 {Set standard labels for JSON}
   ProgressFile.Position:=0;
   if ovGrid.Cells[0, idx]<>'' then begin
     fn:=IncludeTrailingPathDelimiter(LogDir.Text)+ovGrid.Cells[0, idx]+jext;
@@ -2403,7 +2542,7 @@ begin
           try
             csvGrid.Tag:=idx;                      {identify index of current file}
             j0:=GetJson(inf);               {load whole JSON file, level 0, Metadata}
-            tme:=datUTCtoDT(j0.FindPath(datUTC).AsString); {Date/Time from meta data}
+            tme:=datISOtoDT(j0.FindPath(datUTC).AsString, ymd); {Date/Time from meta data}
 
 {Read and write Header, (re)create columns in data table}
             j1:=j0.FindPath(jsonHeader);           {load header}

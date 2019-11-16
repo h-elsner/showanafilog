@@ -52,8 +52,10 @@ resourcestring                                     {english}
   staHd1='Min/max values';
   staHd2='Occurred first time';
 
-  dtlCol0='Details';
-  dtlCol1='Value';
+  dtlJCol0='Details';
+  dtlJCol1='Value';
+  dtlFCol0='Parameter';
+  dtlFCol1='Value';
 
   altCount='Number of values';
   altDescription='Description';
@@ -92,7 +94,8 @@ resourcestring                                     {english}
   rsScreen='Screen';
   rsUnKnown='Unknown';
   rsSaved='successful created and saved';
-  rsMetaData='Meta data';
+  rsMetaDataJ='Meta data JSON';
+  rsMetaDataF='Meta data FDR';
   rsStatistics='Statistics';
   errWrongData='Not an Anafi flight log or wrong data format in file ';
   errMissingFiles='No JSON files in directory';
@@ -131,6 +134,7 @@ resourcestring                                     {english}
   mniTas='Recompute air speed';
   mniLogBook='Create Pilot log book';
   mniRename='Rename JSON files with date/time stamp';
+  mniFDRlog='Show meta data from FDR log';
 
   mniHelp='&Help';
   mniHomepage='Homepage';

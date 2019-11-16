@@ -11,6 +11,7 @@
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <XPManifest>
+        <DpiAware Value="True"/>
         <TextName Value="ShowAnafiLog"/>
         <TextDesc Value="Display and convert Anafi JSON log files."/>
       </XPManifest>
