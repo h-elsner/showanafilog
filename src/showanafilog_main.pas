@@ -1431,7 +1431,7 @@ const pID='ro.';
 
   procedure TestResult;
   begin
-    if length(str)>1 then begin                    {Values are more than one character}
+    if str<>'' then begin
       if (pos(pID, str)=1) or
          (str=datUTC) then begin                   {Is it 'ro.'... or 'date'?}
         str1:=StringReplace(str, pID, '', []);     {Parameter ID}
