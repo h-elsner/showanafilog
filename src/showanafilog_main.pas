@@ -413,7 +413,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.6 11/2019';                       {Major version}
-  appBuildno='2019-11-16';                         {Build per day}
+  appBuildno='2019-11-17';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -1426,6 +1426,7 @@ var buf: array [0..1023] of byte;
     FDRfile: file;
     i: integer;
     str, str1, str2: string;
+    b: byte;
 
 const pID='ro.';
 
@@ -1436,10 +1437,12 @@ const pID='ro.';
          (str=datUTC) then begin                   {Is it 'ro.'... or 'date'?}
         str1:=StringReplace(str, pID, '', []);     {Parameter ID}
         str2:='';                                  {Delete old value}
+        buf[i+1]:=0;                               {delete next lenght indicator}
       end else begin
         if str2='' then
           str2:=str;                               {String value}
       end;
+      b:=0;
     end;
     if (str1<>'') and (str2<>'') then begin        {Parameter ID and Value available}
       if str1=datUTC then
@@ -1450,8 +1453,18 @@ const pID='ro.';
       dtlGrid.Cells[1, dtlGrid.RowCount-1]:=str2;  {and value}
       str1:='';                                    {Empty all data}
       str2:='';
+      b:=0;
     end;
-    str:='';                                       {Collect new string}
+    if (str1<>'') and
+       (str2='') and
+       (b<>0) then begin                           {Parameter ID and Hex Valuee}
+      dtlGrid.RowCount:=dtlGrid.RowCount+1;        {New dataset - new line in table}
+      dtlGrid.Cells[0, dtlGrid.RowCount-1]:=str1;  {Fill table Parameter ID}
+      dtlGrid.Cells[1, dtlGrid.RowCount-1]:=IntToStr(b);     {and hex value}
+      str1:='';                                    {Empty all data}
+      b:=0;
+    end;                                           {Collect new string}
+    str:='';
   end;
 
 begin
@@ -1465,10 +1478,12 @@ begin
     str1:='';
     str2:='';
     str:='';
+    b:=0;                                          {Save one byte for Hex values}
     dtlGrid.BeginUpdate;
-    for i:=33 to SizeOf(buf)-1 do begin             {Find meta data}
+    for i:=33 to SizeOf(buf)-1 do begin            {Find meta data}
       case buf[i] of
         0: TestResult;
+        1..29: b:=buf[i];
         32, 34..127: str:=str+Chr(buf[i]);
       end;
     end;
