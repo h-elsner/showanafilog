@@ -131,6 +131,7 @@ History:
      2019-07-12 Updated "flying_state".
 1.6  2019-11-06 Resolve Product_ID
      2019-11-16 Read meta data from FDR log files
+     2019-11-18 More Smart battery info added
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -413,7 +414,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.6 11/2019';                       {Major version}
-  appBuildno='2019-11-17';                         {Build per day}
+  appBuildno='2019-11-18';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -1422,7 +1423,7 @@ date	                           20181206T204438+0100
 
 }
 procedure TForm1.ShowFDRlog(fn: string);           {Show meta data from FDR}
-var buf: array [0..1023] of byte;
+var buf: array [0..2047] of byte;
     FDRfile: file;
     i: integer;
     str, str1, str2: string;
@@ -1433,8 +1434,10 @@ const pID='ro.';
   procedure TestResult;
   begin
     if str<>'' then begin
-      if (pos(pID, str)=1) or
-         (str=datUTC) then begin                   {Is it 'ro.'... or 'date'?}
+      if (pos(pID, str)=1) or                      {Is it 'ro.'... or 'date'?}
+         (pos('_info', str)>0) or
+         (str='index') or
+         (str=datUTC) then begin
         str1:=StringReplace(str, pID, '', []);     {Parameter ID}
         str2:='';                                  {Delete old value}
         buf[i+1]:=0;                               {delete next lenght indicator}
@@ -2299,6 +2302,8 @@ begin
   if dtlGrid.Cells[0, aRow]=datUTC then
     HintText:=rsDateTime+'='+
               FDRtimeToStr(dtlGrid.Cells[1, aRow]);
+  if dtlGrid.Cells[0, aRow]='smartbattery.soh' then
+    HintText:='Smart battery state of health='+dtlGrid.Cells[1, aRow]+'%';
 end;
 
 procedure TForm1.dtlGridKeyUp(Sender: TObject;     {Ctrl+c copy}
