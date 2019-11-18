@@ -47,3 +47,5 @@ History:
      2019-08-16 Manual link updated
 1.6  2019-11-06 Resolve product_id
      2019-11-16 Read meta data from FDR log files
+     2019-11-18 More Smart battery info added
+
