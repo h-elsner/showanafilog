@@ -131,7 +131,8 @@ History:
      2019-07-12 Updated "flying_state".
 1.6  2019-11-06 Resolve Product_ID
      2019-11-16 Read meta data from FDR log files
-     2019-11-18 More Smart battery info added
+     2019-11-19 Bugfix: Skip empty parameter in FDR meta data
+
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -414,7 +415,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.6 11/2019';                       {Major version}
-  appBuildno='2019-11-18';                         {Build per day}
+  appBuildno='2019-11-19';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -1427,7 +1428,6 @@ var buf: array [0..2047] of byte;
     FDRfile: file;
     i: integer;
     str, str1, str2: string;
-    b: byte;
 
 const pID='ro.';
 
@@ -1445,57 +1445,45 @@ const pID='ro.';
         if str2='' then
           str2:=str;                               {String value}
       end;
-      b:=0;
     end;
     if (str1<>'') and (str2<>'') then begin        {Parameter ID and Value available}
       if str1=datUTC then
-        lblDetails.Caption:=rsMetaDataF+tab1+ExtractFileName(fn)+
-                            tab2+FDRtimeToStr(str2);
+        lblDetails.Caption:=rsMetaDataF+tab1+ovFrom+tab1+FDRtimeToStr(str2);
       dtlGrid.RowCount:=dtlGrid.RowCount+1;        {New dataset - new line in table}
       dtlGrid.Cells[0, dtlGrid.RowCount-1]:=str1;  {Fill table Parameter ID}
       dtlGrid.Cells[1, dtlGrid.RowCount-1]:=str2;  {and value}
       str1:='';                                    {Empty all data}
       str2:='';
-      b:=0;
     end;
-    if (str1<>'') and
-       (str2='') and
-       (b<>0) then begin                           {Parameter ID and Hex Valuee}
-      dtlGrid.RowCount:=dtlGrid.RowCount+1;        {New dataset - new line in table}
-      dtlGrid.Cells[0, dtlGrid.RowCount-1]:=str1;  {Fill table Parameter ID}
-      dtlGrid.Cells[1, dtlGrid.RowCount-1]:=IntToStr(b);     {and hex value}
-      str1:='';                                    {Empty all data}
-      b:=0;
-    end;                                           {Collect new string}
     str:='';
   end;
 
 begin
-  MetaGridInit(1);
-  lblDetails.Caption:=rsMetaDataF+tab1+ExtractFileName(fn);
-  StatusBar1.Panels[4].Text:=fn;
-  AssignFile(FDRfile, fn);
-  Reset(FDRfile, 1);
-  try
-    BlockRead(FDRfile, buf, SizeOf(buf));          {Read first part of the file}
-    str1:='';
-    str2:='';
-    str:='';
-    b:=0;                                          {Save one byte for Hex values}
-    dtlGrid.BeginUpdate;
-    for i:=33 to SizeOf(buf)-1 do begin            {Find meta data}
-      case buf[i] of
-        0: TestResult;
-        1..29: b:=buf[i];
-        32, 34..127: str:=str+Chr(buf[i]);
+  if FileSize(fn)>SizeOf(buf) then begin           {File must be larger than buffer}
+    MetaGridInit(1);
+    lblDetails.Caption:=rsMetaDataF+tab1+ExtractFileName(fn);
+    StatusBar1.Panels[4].Text:=fn;
+    AssignFile(FDRfile, fn);
+    Reset(FDRfile, 1);
+    try
+      BlockRead(FDRfile, buf, SizeOf(buf));        {Read first part of the file}
+      str1:='';
+      str2:='';
+      str:='';
+      dtlGrid.BeginUpdate;
+      for i:=33 to SizeOf(buf)-1 do begin          {Find meta data}
+        case buf[i] of
+          0: TestResult;
+          32, 34..127: str:=str+Chr(buf[i]);
+        end;
       end;
+      dtlGrid.EndUpdate;
+    finally
+      CloseFile(FDRfile);
     end;
-    dtlGrid.EndUpdate;
-  finally
-    CloseFile(FDRfile);
+    dtlGridResize;
+    PageControl1.ActivePageIndex:=4;               {Go to details page}
   end;
-  dtlGridResize;
-  PageControl1.ActivePageIndex:=4;                 {Go to details page}
 end;
 
 procedure TForm1.mmnHomepageClick(Sender: TObject); {Menu Homepage}
@@ -1706,16 +1694,20 @@ end;
 procedure TForm1.FormActivate(Sender: TObject);    {Start running with settings from XML}
 var dir: string;
 begin
-  StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
-  if Tag=0 then begin                              {first start}
-    if (ParamCount>0) and                          {FileName as 1st parameter}
-       (Length(ParamStr(1))>3) then begin          {Something like a file name?}
-      dir:=FindDirName(ParamStr(1));
-      if DirectoryExists(dir) then
-        LogDir.Text:=dir;                          {Use this one}
+  try
+    StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
+    if Tag=0 then begin                            {first start}
+      if (ParamCount>0) and                        {FileName as 1st parameter}
+         (Length(ParamStr(1))>3) then begin        {Something like a file name?}
+        dir:=FindDirName(ParamStr(1));
+        if DirectoryExists(dir) then
+          LogDir.Text:=dir;                        {Use this one}
+      end;
+      FDRDialog.InitialDir:=LogDir.Directory;      {Default wie JSON}
+      BuildList;                                   {search JSON files}
     end;
-    FDRDialog.InitialDir:=LogDir.Directory;        {Default wie JSON}
-    BuildList;                                     {search JSON files}
+  except
+    StatusBar1.Panels[4].Text:='Error during start procedure';
   end;
 end;
 
