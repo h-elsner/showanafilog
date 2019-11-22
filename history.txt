@@ -48,4 +48,6 @@ History:
 1.6  2019-11-06 Resolve product_id
      2019-11-16 Read meta data from FDR log files
      2019-11-18 More Smart battery info added
-     2019-11-19 Bugfix: Skip empty parameter in FDR meta data
+     2019-11-21 Search for UUID as reference added
+     2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
+
