@@ -1,11 +1,11 @@
 object Form1: TForm1
-  Left = 1052
-  Height = 532
-  Top = 119
-  Width = 846
+  Left = 974
+  Height = 561
+  Top = 113
+  Width = 923
   AllowDropFiles = True
-  ClientHeight = 512
-  ClientWidth = 846
+  ClientHeight = 541
+  ClientWidth = 923
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
   KeyPreview = True
@@ -16,15 +16,15 @@ object Form1: TForm1
   OnDropFiles = FormDropFiles
   OnKeyUp = FormKeyUp
   Position = poDefaultPosOnly
-  SessionProperties = 'cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Width;btColor.Color'
+  SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;LogDir.Directory;Height;Width'
   ShowHint = True
   ShowInTaskBar = stNever
   LCLVersion = '2.0.4.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 489
-    Width = 846
+    Top = 518
+    Width = 923
     Panels = <    
       item
         Width = 80
@@ -47,7 +47,7 @@ object Form1: TForm1
     Left = 120
     Height = 23
     Top = 8
-    Width = 391
+    Width = 468
     ShowHidden = False
     ButtonWidth = 23
     Glyph.Data = {
@@ -88,13 +88,13 @@ object Form1: TForm1
   end
   object PageControl1: TPageControl
     Left = 6
-    Height = 432
+    Height = 461
     Top = 64
-    Width = 833
-    ActivePage = TabSheet5
+    Width = 910
+    ActivePage = TabSheet4
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 5
+    TabIndex = 4
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -131,14 +131,14 @@ object Form1: TForm1
     end
     object TabSheet2: TTabSheet
       Caption = 'dat'
-      ClientHeight = 404
-      ClientWidth = 825
+      ClientHeight = 433
+      ClientWidth = 902
       ImageIndex = 1
       object csvGrid: TStringGrid
         Left = 0
-        Height = 404
+        Height = 433
         Top = 0
-        Width = 825
+        Width = 902
         Align = alClient
         Color = clCream
         ColCount = 23
@@ -325,12 +325,12 @@ object Form1: TForm1
     end
     object TabSheet4: TTabSheet
       Caption = 'dtl'
-      ClientHeight = 404
-      ClientWidth = 825
+      ClientHeight = 433
+      ClientWidth = 902
       ImageIndex = 3
       object dtlGrid: TStringGrid
         Left = 8
-        Height = 360
+        Height = 389
         Top = 32
         Width = 416
         Anchors = [akTop, akLeft, akBottom]
@@ -364,6 +364,7 @@ object Form1: TForm1
         TabOrder = 1
         OnGetCellHint = staGridGetCellHint
         OnKeyUp = staGridKeyUp
+        OnResize = staGridResize
       end
       object lblDetails: TLabel
         Left = 8
@@ -385,11 +386,98 @@ object Form1: TForm1
         ParentColor = False
         ParentFont = False
       end
+      object edUUID: TEdit
+        Left = 432
+        Height = 23
+        Top = 224
+        Width = 344
+        Color = clCream
+        TabOrder = 3
+      end
+      object FDRdir: TDirectoryEdit
+        Left = 432
+        Height = 23
+        Top = 192
+        Width = 344
+        ShowHidden = False
+        ButtonWidth = 23
+        NumGlyphs = 1
+        Color = clCream
+        MaxLength = 0
+        TabOrder = 2
+        OnDblClick = FDRdirDblClick
+        TextHint = 'FDR log directory'
+      end
+      object btSearchFDR: TBitBtn
+        Left = 432
+        Height = 32
+        Top = 256
+        Width = 97
+        Caption = 'btSearchFDR'
+        Glyph.Data = {
+          36040000424D3604000000000000360000002800000010000000100000000100
+          2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00145D9503105A921AFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF0022669E061B629AAD22679DFF115B9387FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF003272
+          AA062B6DA5AD558DBCFF89B5DDFF185F97FFFFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00447FB7063C79
+          B1AD6497C5FF9DC1E4FF6699C7FF1F659DEBFFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00DDB28F02D9AE8A97D6A985E3D3A57FFDD0A07BFDCD9C76E4A2938ADE75A2
+          CCFFABCBE8FF76A4CEFF3070A8EB286BA327FFFFFF00FFFFFF00FFFFFF00E4BD
+          9B02E1B896C0E8C9AEFFF5E1CDFFF7E5D3FFF7E5D1FFF3DDC8FFDFBA9CFFC7A8
+          91FF86AED5FF417DB5EB3977AF27FFFFFF00FFFFFF00FFFFFF00FFFFFF00E8C3
+          A297EDD0B7FFF8E8D9FFF5DEC8FFF3D8BDFFF3D6BBFFF4DBC2FFF7E4D2FFDFBB
+          9DFF9D9492F74B84BC27FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00ECC8
+          A8E3F7E7D7FFF6E1CCFFF4DBC2FFF4DAC0FFF3D8BDFFF3D7BBFFF4DBC2FFF3DE
+          C9FFCD9F7BE7FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00F0CE
+          AEFDF9ECDFFFF5DFC8FFF5DDC6FFF4DCC3FFF4DAC1FFF3D9BEFFF3D7BDFFF8E6
+          D3FFD3A57FFDFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00F4D3
+          B4FDF9EDE1FFF6E1CCFFF5DFC9FFF5DEC7FFF4DCC4FFF4DBC2FFF4DAC0FFF8E7
+          D6FFD7AA86FDFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00F7D7
+          B9E3F9EBDEFFF7E7D6FFF6E1CCFFF5E0CAFFF5DEC8FFF5DDC5FFF6E1CBFFF5E2
+          D0FFDBB08CE3FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FADB
+          BD97F8E2CCFFFAEEE3FFF7E7D6FFF6E2CEFFF6E1CBFFF6E3D0FFF9EADDFFECCF
+          B5FFDFB69397FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FCDE
+          C002FADBBEC0F9E2CDFFFAECDEFFF9EEE2FFF9EDE2FFF8E9DAFFF0D5BDFFE7C0
+          9FC0E3BC9A02FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FCDEC102FADCBF97F9D9BBE3F6D6B8FDF4D3B4FDF1CFAFE3EECBAB97EBC6
+          A602FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
+        }
+        OnClick = btSearchFDRClick
+        TabOrder = 4
+      end
+      object ListBox1: TListBox
+        Left = 432
+        Height = 125
+        Top = 296
+        Width = 466
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        Color = clMoneyGreen
+        ItemHeight = 0
+        OnClick = ListBox1Click
+        ParentShowHint = False
+        TabOrder = 5
+      end
+      object lblFDRresult: TLabel
+        Left = 552
+        Height = 15
+        Top = 273
+        Width = 63
+        Caption = 'lblFDRresult'
+        ParentColor = False
+      end
     end
     object TabSheet5: TTabSheet
       Caption = 'set'
-      ClientHeight = 404
-      ClientWidth = 825
+      ClientHeight = 420
+      ClientWidth = 803
       ImageIndex = 4
       object grpUnit: TRadioGroup
         Left = 240
@@ -579,7 +667,7 @@ object Form1: TForm1
           TabOrder = 0
         end
         object btLogBook: TBitBtn
-          Left = 6
+          Left = 8
           Height = 32
           Top = 104
           Width = 97
@@ -658,7 +746,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object btClose: TBitBtn
-    Left = 742
+    Left = 819
     Height = 32
     Top = 8
     Width = 97
@@ -711,7 +799,7 @@ object Form1: TForm1
     TabOrder = 4
   end
   object btScrShot: TBitBtn
-    Left = 630
+    Left = 707
     Height = 32
     Top = 8
     Width = 97
@@ -749,7 +837,7 @@ object Form1: TForm1
     TabOrder = 3
   end
   object btConv: TBitBtn
-    Left = 521
+    Left = 598
     Height = 32
     Top = 8
     Width = 97
@@ -787,7 +875,7 @@ object Form1: TForm1
     TabOrder = 2
   end
   object ProgressFile: TProgressBar
-    Left = 630
+    Left = 707
     Height = 10
     Top = 48
     Width = 209
@@ -806,11 +894,6 @@ object Form1: TForm1
   object SaveDialog1: TSaveDialog
     left = 448
     top = 288
-  end
-  object XMLPropStorage1: TXMLPropStorage
-    StoredValues = <>
-    left = 448
-    top = 112
   end
   object TabImages: TImageList
     left = 448
@@ -1662,7 +1745,7 @@ object Form1: TForm1
   object PopupMenu2: TPopupMenu
     Images = TabImages
     left = 736
-    top = 384
+    top = 368
     object cmnSaveAs2: TMenuItem
       Caption = 'Save'
       ImageIndex = 14
@@ -1743,5 +1826,10 @@ object Form1: TForm1
     Filter = 'FDR log files|*.bin'
     left = 448
     top = 424
+  end
+  object XMLPropStorage1: TXMLPropStorage
+    StoredValues = <>
+    left = 448
+    top = 120
   end
 end

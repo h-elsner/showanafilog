@@ -131,8 +131,10 @@ History:
      2019-07-12 Updated "flying_state".
 1.6  2019-11-06 Resolve Product_ID
      2019-11-16 Read meta data from FDR log files
+     2019-11-18 More Smart battery info added
      2019-11-19 Bugfix: Skip empty parameter in FDR meta data
-
+     2019-11-21 Search for UUID as reference added
+     2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -175,7 +177,8 @@ uses
   Classes, SysUtils, FileUtil, TAGraph, TATransformations, TAIntervalSources,
   TASeries, TATools, TAChartListbox, Forms, Controls, Graphics, fpjson,
   jsonparser, Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage, EditBtn, math,
-  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, anzwerte;
+  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, FileCtrl,
+  IniPropStorage, anzwerte;
 
 {$I anafi_en.inc}                                  {Include a language file}
 {.$I anafi_dt.inc}
@@ -185,6 +188,7 @@ type
   { TForm1 }
 
   TForm1 = class(TForm)
+    btSearchFDR: TBitBtn;
     btLogBook: TBitBtn;
     btScrShot: TBitBtn;
     btClose: TBitBtn;
@@ -230,13 +234,17 @@ type
     boxLogBook: TGroupBox;
     DateTimeIntervalChartSource2: TDateTimeIntervalChartSource;
     boxTable: TGroupBox;
+    FDRdir: TDirectoryEdit;
+    edUUID: TEdit;
     grpConv: TRadioGroup;
+    lblFDRresult: TLabel;
     lblProduct: TLabel;
     lblDetails: TLabel;
     lblStat: TLabel;
     grpDia: TRadioGroup;
     lblManual: TLabel;
     lblDownload: TLabel;
+    ListBox1: TListBox;
     MainMenu1: TMainMenu;
     cmnSaveAs: TMenuItem;
     cmnClipbrd: TMenuItem;
@@ -293,6 +301,7 @@ type
     procedure btLogBookClick(Sender: TObject);
     procedure btScrShotClick(Sender: TObject);
     procedure btCloseClick(Sender: TObject);
+    procedure btSearchFDRClick(Sender: TObject);
     procedure cbDegreeChange(Sender: TObject);
     procedure cbHeaderChange(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -318,6 +327,7 @@ type
     procedure dtlGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
       var HintText: String);
     procedure dtlGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FDRdirDblClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDblClick(Sender: TObject);
@@ -331,6 +341,7 @@ type
     procedure lblManualClick(Sender: TObject);
     procedure lblManualMouseEnter(Sender: TObject);
     procedure lblManualMouseLeave(Sender: TObject);
+    procedure ListBox1Click(Sender: TObject);
     procedure LogDirChange(Sender: TObject);
     procedure LogDirDblClick(Sender: TObject);
     procedure mmnFDRlogClick(Sender: TObject);
@@ -359,6 +370,7 @@ type
     procedure staGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
       var HintText: String);
     procedure staGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure staGridResize(Sender: TObject);
 
   private
     procedure BuildList;                           {Search and count JSON files}
@@ -377,8 +389,9 @@ type
     procedure RestoreTAS;                          {Compute tas from vx, vy, vz}
     procedure CreateLogBook;                       {Create Pilot log book}
     procedure MetaGridInit(mode: integer);         {Set Details labels}
-    procedure ShowFDRlog(fn: string);              {Show meta data from FDR}
+    procedure SearchFDRfiles(dir, mask, vstr: string);  {Find UUID}
 
+    function ShowFDRlog(fn: string; mode: integer=0): string; {Show meta data from FDR}
     function GetCellInfo(aCol, aRow: longint): string; {Cell info in data table}
     function ColorToKMLColor(const AColor: TColor; {Google Farbcodierung}
                         sat: integer=255): string; {Saturation=255}
@@ -415,7 +428,7 @@ type
 const
   appName='ShowAnafiLogs';
   appVersion='V1.6 11/2019';                       {Major version}
-  appBuildno='2019-11-19';                         {Build per day}
+  appBuildno='2019-11-22';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -486,6 +499,7 @@ const
   jext='.json';
   cext='.csv';
   pext='.png';
+  fext='.bin';
   wldcd='*';
   jsonMinLines=20;
   isep=';';
@@ -713,7 +727,7 @@ begin
     2316: result:='Bebop 2';                       {90c'h}
     2318: result:='Disco';                         {90e'h}
     2319: result:='Skycontroller 2';               {90f'h}
-    2324: result:='Anafi 4K-HDR';                  {914'h}
+    2324: result:='Anafi 4K';                      {914'h}
     2329: result:='Anafi Thermal';                 {919'h}
   end;
 end;
@@ -814,28 +828,6 @@ begin
     result:=OpenDocument(GetExePath+manual);
 end;
 
-function SuchFile(path: string;                    {Create a list of files in the path}
-                  Mask: string;
-                  list: TStringList): integer;
-var sr: TSearchRec;                                {Scan directory for valid files}
-    pn: string;
-    f: integer;
-begin
-  result:=0;
-  list.Clear;
-  pn:=IncludeTrailingPathDelimiter(path);
-  f:=FindFirst(pn+Mask, faAnyFile, sr);
-  try
-    while f=0 do begin                             {as long as files available}
-      list.Add(pn+sr.Name);
-      f:=FindNext(sr);
-    end;
-  finally
-    result:=list.Count;                            {Result: Number of matching files}
-    FindClose(sr);
-  end;
-end;
-
 {Distance between coordinaten in m according
  Haversine formula, Radius: 6,371km depending on latitude
  https://rechneronline.de/erdradius/
@@ -894,7 +886,7 @@ procedure TMyThread.GetSettings;                   {Metric / Imperial / Settings
 begin
   metr:=Form1.grpUnit.ItemIndex;
   numfiles:=Form1.ovGrid.RowCount-1;
-  dirname:=Form1.LogDir.Text;
+  dirname:=Form1.LogDir.Directory;
 end;
 
 procedure TMyThread.GetFileName;                   {Get current file number}
@@ -1004,9 +996,9 @@ begin
     if FileExists(fn) then begin
       if terminated then break;
       inf:=TFileStream.Create(fn, fmOpenRead or fmShareDenyWrite);
-      try
-        if inf.Size>512 then begin                 {0.5kB minimal}
-          j0:=GetJson(inf);                        {load whole JSON file, level 0}
+      if inf.Size>512 then begin                   {0.5kB minimal}
+        j0:=GetJson(inf);                          {load whole JSON file, level 0}
+        try
           tme:=datISOtoDT(j0.FindPath(datUTC).AsString, ymd);
           res[1]:=FormatDateTime(ymd, tme);        {Date/Time from meta data}
           res[4]:=FormatDateTime(hns,              {Duration}
@@ -1017,64 +1009,69 @@ begin
                                FormatFloat(frmCoord,
                                j0.FindPath(datGPSlon).AsFloat))+'"';
           j1:=j0.FindPath(jsonData);               {Datasets, Level 1}
-
-          j2:=j1.Items[0];                         {First dataset: Begin time}
-          res[2]:=FormatDateTime(hns, SekToDT(j2.Items[0].AsString, 1)+tme);
-          res[9]:=IntToStr(j2.Items[1].AsInteger)+ {Battery level max}
-                  UnitToStr(2, true);
-
-          j2:=j1.Items[j1.Count-1];                {Last dataset: End time}
-          res[3]:=FormatDateTime(hns, SekToDT(j2.Items[0].AsString, 1)+tme);
-
-          for k:=0 to j1.Count-1 do begin          {Read all datasets}
-            j2:=j1.Items[k];                       {read data, level 2}
-            fmode:=j2.Items[4].AsInteger;          {Flying state}
-            if (fmode=1) and
-                j2.Items[7].AsBoolean then
-              gpsfix:=true;
-            batt:=j2.Items[1].AsInteger;           {Battery charge level}
-            if batt<battmin then
-              battmin:=batt;
-            latc:=j2.Items[2].AsFloat;             {Read coordinates}
-            lonc:=j2.Items[3].AsFloat;
-            lonp:=j2.Items[8].AsFloat;
-            latp:=j2.Items[9].AsFloat;
-            if ((lat1<>0) or (lon1<>0)) and
-               ((latp<>0) or (lonp<>0)) then begin {Lenght route}
-              w:=DeltaKoord(latp, lonp, lat1, lon1);
-              if not IsNan(w) then route:=route+w;
+          if j1<>nil then begin
+            j2:=j1.Items[0];                       {First dataset: Begin time}
+            if j2<>nil then begin
+              res[2]:=FormatDateTime(hns, SekToDT(j2.Items[0].AsString, 1)+tme);
+              res[9]:=IntToStr(j2.Items[1].AsInteger)+ {Battery level max}
+                      UnitToStr(2, true);
             end;
-            lat1:=latp;
-            lon1:=lonp;
-            w:=j2.Items[18].AsFloat;               {Altitude}
-            if w>altmax then
-              altmax:=w;
-            w:=j2.Items[20].AsFloat;               {TAS}
-            if w>tasmax then
-              tasmax:=w;
-            w:=DeltaKoord(latc, lonc, latp, lonp); {Distance to RC}
-            if (not IsNan(w)) and (w>distmax) then
-              distmax:=w;
+            j2:=j1.Items[j1.Count-1];              {Last dataset: End time}
+            if j2<>nil then
+              res[3]:=FormatDateTime(hns, SekToDT(j2.Items[0].AsString, 1)+tme);
+            for k:=0 to j1.Count-1 do begin        {Read all datasets}
+              j2:=j1.Items[k];                     {read data, level 2}
+              if j2<>nil then begin
+                fmode:=j2.Items[4].AsInteger;      {Flying state}
+                if (fmode=1) and
+                    j2.Items[7].AsBoolean then
+                  gpsfix:=true;
+                batt:=j2.Items[1].AsInteger;       {Battery charge level}
+                if batt<battmin then
+                  battmin:=batt;
+                latc:=j2.Items[2].AsFloat;         {Read coordinates}
+                lonc:=j2.Items[3].AsFloat;
+                lonp:=j2.Items[8].AsFloat;
+                latp:=j2.Items[9].AsFloat;
+                if ((lat1<>0) or (lon1<>0)) and
+                   ((latp<>0) or (lonp<>0)) then begin {Lenght route}
+                  w:=DeltaKoord(latp, lonp, lat1, lon1);
+                  if not IsNan(w) then route:=route+w;
+                end;
+                lat1:=latp;
+                lon1:=lonp;
+                w:=j2.Items[18].AsFloat;           {Altitude}
+                if w>altmax then
+                  altmax:=w;
+                w:=j2.Items[20].AsFloat;           {TAS}
+                if w>tasmax then
+                  tasmax:=w;
+                w:=DeltaKoord(latc, lonc, latp, lonp); {Distance to RC}
+                if (not IsNan(w)) and (w>distmax) then
+                  distmax:=w;
+              end;
+              res[5]:=FormatFloat(frmOut1, ConvUnit(19, altmax))+
+                                           UnitToStr(19, true);
+              res[6]:=FormatFloat(frmOut1, ConvUnit(22, distmax, useau))+
+                                           UnitToStr(22, true, useau);
+              res[7]:=FormatFloat(frmOut1, ConvUnit(22, route, useau))+
+                                           UnitToStr(22, true, useau);
+              res[8]:=FormatFloat(frmOut2, ConvUnit(21, tasmax, true))+
+                                           UnitToStr(21, true, true);
+              res[10]:=IntToStr(battmin)+          {min Battery level}
+                                UnitToStr(2, true);
+              if gpsfix then
+                res[12]:=rsYes
+              else
+                res[12]:=rsNo;
+            end;
           end;
+          if terminated then break;                {Jump out before write}
+          Synchronize(@WriteResults);
+        finally
+          inf.Free;
+          j0.Free;
         end;
-        res[5]:=FormatFloat(frmOut1, ConvUnit(19, altmax))+
-                                     UnitToStr(19, true);
-        res[6]:=FormatFloat(frmOut1, ConvUnit(22, distmax, useau))+
-                                     UnitToStr(22, true, useau);
-        res[7]:=FormatFloat(frmOut1, ConvUnit(22, route, useau))+
-                                     UnitToStr(22, true, useau);
-        res[8]:=FormatFloat(frmOut2, ConvUnit(21, tasmax, true))+
-                                     UnitToStr(21, true, true);
-        res[10]:=IntToStr(battmin)+                 {min Battery level}
-                          UnitToStr(2, true);
-        if gpsfix then
-          res[12]:=rsYes
-        else
-          res[12]:=rsNo;
-        if terminated then break;                  {Jump out before write}
-        Synchronize(@WriteResults);
-      finally
-        inf.Free;
       end;
     end;                                           {End if File exists}
   end;                                             {End for each file}
@@ -1098,7 +1095,7 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);      {Initialize the application}
 var i: integer;
 begin
-  Tag:=0;                                          {Application before first start}
+  Form1.Tag:=1;                                    {First start}
   DefaultFormatSettings.DecimalSeparator:='.';
   for i:=0 to High(hdrList) do
     hdrList[i]:='';
@@ -1112,8 +1109,14 @@ begin
   lblSelDir.Caption:=capLogDir;
   lblSelDir.Hint:=hntLogDir;
   lblStat.Caption:=rsStatistics;
+  lblFDRresult.Caption:=capFDRresult;
   Chart1.Hint:=hntChart1;
   Chart2.Hint:=hntChart2;
+  FDRdir.Hint:=hntFDRdir;
+  edUUID.Hint:=hntedUUID;
+  edUUID.TextHint:=hntedUUID;
+  btSearchFDR.Caption:=capbtSearch;
+  btSearchFDR.Hint:=hntbtSearch;
 
   lblManual.Caption:=rsManual;
   lblManual.Hint:=GetExePath+manual;               {default}
@@ -1289,7 +1292,7 @@ var dir: string;
 begin
   dir:=FindDirName(FileNames[0]);
   if DirectoryExists(dir) then begin
-    LogDir.Text:=dir;
+    LogDir.Directory:=dir;
     BuildList;
   end;
 end;
@@ -1297,7 +1300,7 @@ end;
 procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; {Reload by F5}
                            Shift: TShiftState);
 begin
-  if (key=vk_F5) then
+  if (key=vk_F5) and (Form1.Tag=1) then
     BuildList;
 end;
 
@@ -1383,47 +1386,67 @@ begin
   lblManual.Font.Style:=lblDownload.Font.Style-[fsBold];
 end;
 
+procedure TForm1.ListBox1Click(Sender: TObject);   {Show FDR meta data from file}
+begin
+  if ListBox1.ItemIndex>=0 then begin
+    ShowFDRlog(ListBox1.Items[ListBox1.ItemIndex], 0);
+  end;
+end;
+
 procedure TForm1.LogDirChange(Sender: TObject);    {Select dir by dialog}
 begin
-  if Tag=1 then                                    {FileList already buildt}
-    BuildList;                                     {search JSON files}
+  BuildList;                                       {search JSON files}
 end;
 
 procedure TForm1.LogDirDblClick(Sender: TObject);  {Call file explorer}
 begin
-  OpenDocument(IncludeTrailingPathDelimiter(LogDir.Text));
+  OpenDocument(LogDir.Directory);
 end;
 
 procedure TForm1.mmnFDRlogClick(Sender: TObject);  {Menu Show meta data from FDR}
 begin
-  if FDRdialog.Execute then
+  if FDRdialog.Execute then begin
     ShowFDRlog(FDRdialog.FileName);
+    if FDRdir.Text='' then
+      FDRdir.Directory:=FDRdialog.InitialDir;
+  end;
 end;
 
 {
-Parameter	                   Value
-hardware	                   anafi4k
-product.model.id	           0914
-build.date	                   Thu Nov 22 18:58:32 UTC 2018
-parrot.build.group	           drones
-parrot.build.product	           anafi
-parrot.build.project	           anafi
-parrot.build.uid	           anafi-4k-1.3.0
-parrot.build.variant	           4k
-parrot.build.version	           1.3.0
-factory.hcam_serial	           PI020739AA8E010826
-factory.serial	                   PI040416AA8F016243
-boot.uuid	                   66E0126119348E4594C082BA8194C5EE
-smartbattery.gfw_version	   26100020001900038502
-smartbattery.usb_version	   0.10
-smartbattery.version	           1.0.5.0
-smartbattery.serial	           C8G098628
-smartbattery.design_cap	           2700
-esc.fw_version	                   1.18.R.4
-date	                           20181206T204438+0100
-
+hardware			anafi4k
+product.model.id		0914
+product.board_id		0
+product.usb.pid			0x6001
+build.date			Thu Oct  3 16:38:39 UTC 2019
+parrot.build.group		drones
+parrot.build.product		anafi
+parrot.build.project		anafi
+parrot.build.region		20
+parrot.build.uid		anafi-4k-1.6.1
+parrot.build.variant		4k
+parrot.build.version		1.6.1
+revision			3
+serialno			23
+factory.hcam_serial		PI020739AA8F021162
+factory.serial			PI040416AA8G033000
+factory.product.pro		13
+boot.uuid			384CBC80CA7FBC9AA791FEA6D55ED016
+smartbattery.gfw_version	26100020001900038502
+smartbattery.usb_version	0.10
+smartbattery.version		1.0.9.0
+smartbattery.serial		B8I226166
+smartbattery.hw_version		4
+smartbattery.design_cap		2700
+smartbattery.device_info	Naxos
+esc.fw_version			1.19.R.4
+esc.hw_version			2
+ddr_info.sync			7:9:7:7
+smartbattery.cycle_count	28
+smartbattery.soh		100
+index				1
+date				20191115T141035+0000
 }
-procedure TForm1.ShowFDRlog(fn: string);           {Show meta data from FDR}
+function TForm1.ShowFDRlog(fn: string; mode: integer=0): string; {Show meta data from FDR}
 var buf: array [0..2047] of byte;
     FDRfile: file;
     i: integer;
@@ -1446,9 +1469,18 @@ const pID='ro.';
           str2:=str;                               {String value}
       end;
     end;
-    if (str1<>'') and (str2<>'') then begin        {Parameter ID and Value available}
-      if str1=datUTC then
+    if (mode=1) and (str1='boot.uuid') and (str2<>'') then begin
+      result:=str2;
+      exit;                                        {go out when UUID found}
+    end;
+    if (mode=0) and
+       (str1<>'') and (str2<>'') then begin        {Parameter ID and Value available}
+      if str1=datUTC then                          {Set date/time in header}
         lblDetails.Caption:=rsMetaDataF+tab1+ovFrom+tab1+FDRtimeToStr(str2);
+      if str1='boot.uuid' then begin               {Save UUID}
+        edUUID.Text:=str2;
+        str2:=FormatUUID(str2);
+      end;
       dtlGrid.RowCount:=dtlGrid.RowCount+1;        {New dataset - new line in table}
       dtlGrid.Cells[0, dtlGrid.RowCount-1]:=str1;  {Fill table Parameter ID}
       dtlGrid.Cells[1, dtlGrid.RowCount-1]:=str2;  {and value}
@@ -1459,10 +1491,13 @@ const pID='ro.';
   end;
 
 begin
-  if FileSize(fn)>SizeOf(buf) then begin           {File must be larger than buffer}
-    MetaGridInit(1);
-    lblDetails.Caption:=rsMetaDataF+tab1+ExtractFileName(fn);
-    StatusBar1.Panels[4].Text:=fn;
+  result:='';
+  if FileSize(fn)>SizeOf(buf) then begin
+    if mode=0 then begin
+      MetaGridInit(1);
+      lblDetails.Caption:=rsMetaDataF+tab1+ExtractFileName(fn);
+      StatusBar1.Panels[4].Text:=fn;
+    end;
     AssignFile(FDRfile, fn);
     Reset(FDRfile, 1);
     try
@@ -1470,20 +1505,21 @@ begin
       str1:='';
       str2:='';
       str:='';
-      dtlGrid.BeginUpdate;
       for i:=33 to SizeOf(buf)-1 do begin          {Find meta data}
         case buf[i] of
           0: TestResult;
           32, 34..127: str:=str+Chr(buf[i]);
         end;
+        if result<>'' then
+          exit;                                    {UUID found for mode 1}
       end;
-      dtlGrid.EndUpdate;
     finally
       CloseFile(FDRfile);
     end;
     dtlGridResize;
     PageControl1.ActivePageIndex:=4;               {Go to details page}
-  end;
+  end else
+    StatusBar1.Panels[4].Text:=errLessData;
 end;
 
 procedure TForm1.mmnHomepageClick(Sender: TObject); {Menu Homepage}
@@ -1515,7 +1551,7 @@ end;
 
 procedure TForm1.mmnJumpClick(Sender: TObject);    {Menu Open file manager}
 begin
-  OpenDocument(IncludeTrailingPathDelimiter(LogDir.Text));
+  OpenDocument(IncludeTrailingPathDelimiter(LogDir.Directory));
 end;
 
 procedure TForm1.mmnKMLexClick(Sender: TObject);   {Menu export KML}
@@ -1536,10 +1572,10 @@ end;
 
 procedure TForm1.mmnOpenClick(Sender: TObject);    {Menu open JSON dir}
 begin
-  if LogDir.Text<>'' then
-    LogDirDialog.InitialDir:=LogDir.Text;
+  if LogDir.Directory<>'' then
+    LogDirDialog.InitialDir:=LogDir.Directory;
   if LogDirDialog.Execute then
-    LogDir.Text:=LogDirDialog.FileName;
+    LogDir.Directory:=LogDirDialog.FileName;
 end;
 
 procedure TForm1.mmnRenameClick(Sender: TObject);  {Menu Rename files with date/time}
@@ -1552,11 +1588,12 @@ var filelist: TStringList;
 begin                                              {New feature in V1.5}
   ProgressFile.Position:=0;
   zhl:=0;                                          {File counter}
-  if (LogDir.Text<>'') and
-      DirectoryExists(LogDir.Text) then begin      {Only when Directory valid}
+  if (LogDir.Directory<>'') and
+      DirectoryExists(LogDir.Directory) then begin  {Only when Directory valid}
     filelist:=TStringList.Create;
     try
-      if SuchFile(LogDir.Text, wldcd+jext, filelist)>0 then begin
+      FindAllFiles(filelist, LogDir.Directory, wldcd+jext, false);
+      if filelist.Count>0 then begin
         StatusBar1.Panels[0].Text:=rsFiles+dpkt+IntToStr(filelist.Count);
         StatusBar1.Panels[4].Text:='';             {Empty file name field}
         ProgressFile.Max:=filelist.Count;
@@ -1586,7 +1623,7 @@ begin                                              {New feature in V1.5}
           StatusBar1.Panels[4].Text:=errRename+tab2+fn;
         end;
         StatusBar1.Panels[4].Text:=IntToStr(zhl)+tab1+rsFilesRenamed;
-        if zhl>0 then
+        if (zhl>0) and (Form1.Tag=1) then
           BuildList;                               {Reload file list}
       end;                                         {No JSON files available}
     finally
@@ -1612,7 +1649,8 @@ end;
 
 procedure TForm1.ovGridClick(Sender: TObject);     {Process a file}
 begin
-  if ovGrid.Tag<>csvgrid.Tag then begin            {A new file selected}
+  if (Form1.Tag=1) and
+     (ovGrid.Tag<>csvgrid.Tag) then begin          {A new file selected}
     LoadOneFile(ovGrid.Tag);
     MakeHDia;
     MakeAtti;
@@ -1691,20 +1729,29 @@ begin
     staGrid.CopyToClipboard(false);                {Ctrl+C copy to Clipboard}
 end;
 
+procedure TForm1.staGridResize(Sender: TObject);   {Beautify}
+begin
+  edUUID.Width:=staGrid.Width;
+  FDRdir.Width:=staGrid.Width;
+end;
+
 procedure TForm1.FormActivate(Sender: TObject);    {Start running with settings from XML}
 var dir: string;
 begin
   try
     StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
-    if Tag=0 then begin                            {first start}
+    if Form1.Tag=0 then begin                      {first start}
       if (ParamCount>0) and                        {FileName as 1st parameter}
          (Length(ParamStr(1))>3) then begin        {Something like a file name?}
         dir:=FindDirName(ParamStr(1));
         if DirectoryExists(dir) then
-          LogDir.Text:=dir;                        {Use this one}
+          LogDir.Directory:=dir;                   {Use this one}
       end;
       FDRDialog.InitialDir:=LogDir.Directory;      {Default wie JSON}
-      BuildList;                                   {search JSON files}
+      if LogDir.Directory='' then
+        PageControl1.ActivePageIndex:=5            {Go to settings page}
+      else
+        BuildList;                                 {search JSON files}
     end;
   except
     StatusBar1.Panels[4].Text:='Error during start procedure';
@@ -1714,6 +1761,44 @@ end;
 procedure TForm1.btCloseClick(Sender: TObject);    {Button Close}
 begin
   Close;
+end;
+
+procedure TForm1.SearchFDRfiles(dir, mask, vstr: string);  {Find UUID}
+var flist: TStringList;
+    i: integer;
+begin
+  if DirectoryExists(dir) and (mask<>'') then begin
+    ListBox1.Items.Clear;
+    ProgressFile.Position:=0;
+    fList:=FindAllFiles(IncludeTrailingPathDelimiter(dir), mask, true);
+    StatusBar1.Panels[0].Text:=IntToStr(flist.Count);
+    try
+      if flist.Count>0 then begin
+        ProgressFile.Max:=flist.Count;
+        for i:=0 to flist.Count-1 do begin         {List all files matching mask}
+          if vstr='' then begin
+            ListBox1.Items.Add(flist[i]);
+          end else begin                           {List files with UUID}
+            if ShowFDRlog(flist[i], 1)=edUUID.Text then
+              ListBox1.Items.Add(flist[i]);
+          end;
+          ProgressFile.Position:=i+1;
+        end;
+      end;
+      StatusBar1.Panels[1].Text:=IntToStr(ListBox1.Items.Count);
+      if ListBox1.Items.Count=0 then
+        StatusBar1.Panels[4].Text:=rsNothingFound
+      else
+        StatusBar1.Panels[4].Text:=rsUUIDfound;
+    finally
+      flist.Free;
+    end;
+  end;
+end;
+
+procedure TForm1.btSearchFDRClick(Sender: TObject); {Search for UUID in FDR dir}
+begin
+  SearchFDRfiles(FDRdir.Directory, wldcd+fext, edUUID.Text);
 end;
 
 procedure TForm1.cbDegreeChange(Sender: TObject);  {Setting changed}
@@ -1936,9 +2021,9 @@ function TForm1.GetCellInfo(aCol, aRow: longint): string;
     end;
   end;
 
-begin                                             {Get additional info per cell}
+begin                                              {Get additional info per cell}
   if aRow=0 then begin
-    result:=AltHeaderToStr(aCol);                 {More explained header}
+    result:=AltHeaderToStr(aCol);                  {More explained header}
   end else begin
     result:=DefaultHnt;
     case aCol of
@@ -2288,9 +2373,6 @@ begin
   if dtlGrid.Cells[0, aRow]='product.model.id' then
     HintText:=dtlGrid.Cells[0, aRow]+'='+
               ProdIDtoLabel('$'+dtlGrid.Cells[1, aRow]);
-  if pos(datUUID, dtlGrid.Cells[0, aRow])>0 then
-    HintText:=dtlGrid.Cells[0, aRow]+'='+
-              FormatUUID(dtlGrid.Cells[1, aRow]);
   if dtlGrid.Cells[0, aRow]=datUTC then
     HintText:=rsDateTime+'='+
               FDRtimeToStr(dtlGrid.Cells[1, aRow]);
@@ -2305,6 +2387,11 @@ begin
   if (key=vk_c) and
      (ssCtrl in Shift) then
     dtlGrid.CopyToClipboard(false);
+end;
+
+procedure TForm1.FDRdirDblClick(Sender: TObject);
+begin
+  OpenDocument(FDRdir.Directory);
 end;
 
 procedure TForm1.ScreenToBild(fn: string);         {Screenshot}
@@ -2375,8 +2462,8 @@ var filelist: TStringList;
     i: integer;
     fn: string;
 begin
-  if (LogDir.Text<>'') and
-     DirectoryExists(LogDir.Text) then begin       {only when Directory valid}
+  if (LogDir.Directory<>'') and
+     DirectoryExists(LogDir.Directory) then begin  {only when Directory valid}
     if Form2<>nil
       then Form2.Close;                            {Close 2nd window}
     btConv.Enabled:=false;
@@ -2384,8 +2471,8 @@ begin
     ovGrid.RowCount:=1;                            {Delete file list}
     PageControl1.Tag:=0;
     try
-                                                   {only if >=1 JSON file was found}
-      if SuchFile(LogDir.Text, wldcd+jext, filelist)>0 then begin
+      FindAllFiles(filelist, LogDir.Directory, wldcd+jext, false);
+      if filelist.Count>0 then begin               {only if >=1 JSON file was found}
         StatusBar1.Panels[0].Text:=rsFiles+dpkt+IntToStr(filelist.Count);
         StatusBar1.Panels[4].Text:='';             {Empty file name field}
 
@@ -2418,13 +2505,13 @@ begin
         for i:=1 to 10 do
           ovGrid.AutoSizeColumn(i);
       end else
-        StatusBar1.Panels[4].Text:=errMissingFiles+tab1+LogDir.Text;
+        StatusBar1.Panels[4].Text:=errMissingFiles+tab1+LogDir.Directory;
     finally
       Application.ProcessMessages;
       FileList.Free;
     end;
   end;
-  Tag:=1;                                          {First run done}
+  Form1.Tag:=1;                                    {First run done}
 end;
 
 procedure TForm1.LoadOneFile(idx: integer);        {Start working one file}
@@ -2436,7 +2523,7 @@ var inf: TFileStream;
     i, k, ttasmax, taltmax, tp, batt, battmin, tbattmin, tdistmax: integer;
     tme, trt: TDateTime;
 
-  function GetMString(const kw: string): string; {Skip destroyed data in file}
+  function GetMString(const kw: string): string;   {Skip destroyed data in file}
   begin
     try
       result:=j0.FindPath(kw).AsString;
@@ -2445,7 +2532,7 @@ var inf: TFileStream;
     end;
   end;
 
-  function GetMFloat(const kw: string): double; {Skip destroyed data in file}
+  function GetMFloat(const kw: string): double;    {Skip destroyed data in file}
   begin
     try
       result:=j0.FindPath(kw).AsFloat;
@@ -2502,7 +2589,8 @@ var inf: TFileStream;
       dtlGrid.Cells[1, 11]:=GetMString(keyw);
       keyw:=datUUID;
       dtlGrid.Cells[0, 12]:=UpCase(keyw);
-      dtlGrid.Cells[1, 12]:=FormatUUID(GetMString(keyw));
+      edUUID.Text:=GetMString(keyw);
+      dtlGrid.Cells[1, 12]:=FormatUUID(edUUID.Text);
       keyw:=datGPSavail;
       dtlGrid.Cells[0, 13]:=prepKeyw(keyw);
       dtlGrid.Cells[1, 13]:=GetMString(keyw);
@@ -2517,19 +2605,19 @@ var inf: TFileStream;
 
   procedure WriteStaGrid;                          {Fill statistics table}
   begin
-   staGrid.BeginUpdate;
-     staGrid.Cells[1, 1]:=FormatFloat(frmFloat, ConvUnit(19, altmax))+
-                          UnitToStr(19, true);
-     staGrid.Cells[2, 1]:=FormatDateTime(hnsz, taltmax/(secpd*1000)+tme);
-     staGrid.Cells[1, 2]:=FormatFloat(frmFloat, ConvUnit(22, distmax, useau))+
-                          UnitToStr(22, true, useau);
-     staGrid.Cells[2, 2]:=FormatDateTime(hnsz, tdistmax/(secpd*1000)+tme);
-     staGrid.Cells[1, 3]:=FormatFloat(frmFloat, ConvUnit(21, tasmax, useau))+
-                          UnitToStr(21, true, useau);
-     staGrid.Cells[2, 3]:=FormatDateTime(hnsz, ttasmax/(secpd*1000)+tme);
-     staGrid.Cells[1, 5]:=IntToStr(battmin)+UnitToStr(2, true);
-     staGrid.Cells[2, 5]:=FormatDateTime(hnsz, tbattmin/(secpd*1000)+tme);
-   staGrid.EndUpdate;
+    staGrid.BeginUpdate;
+      staGrid.Cells[1, 1]:=FormatFloat(frmFloat, ConvUnit(19, altmax))+
+                           UnitToStr(19, true);
+      staGrid.Cells[2, 1]:=FormatDateTime(hnsz, taltmax/(secpd*1000)+tme);
+      staGrid.Cells[1, 2]:=FormatFloat(frmFloat, ConvUnit(22, distmax, useau))+
+                           UnitToStr(22, true, useau);
+      staGrid.Cells[2, 2]:=FormatDateTime(hnsz, tdistmax/(secpd*1000)+tme);
+      staGrid.Cells[1, 3]:=FormatFloat(frmFloat, ConvUnit(21, tasmax, useau))+
+                           UnitToStr(21, true, useau);
+      staGrid.Cells[2, 3]:=FormatDateTime(hnsz, ttasmax/(secpd*1000)+tme);
+      staGrid.Cells[1, 5]:=IntToStr(battmin)+UnitToStr(2, true);
+      staGrid.Cells[2, 5]:=FormatDateTime(hnsz, tbattmin/(secpd*1000)+tme);
+    staGrid.EndUpdate;
   end;
 
 begin
@@ -2541,7 +2629,7 @@ begin
   MetagridInit(0);                                 {Set standard labels for JSON}
   ProgressFile.Position:=0;
   if ovGrid.Cells[0, idx]<>'' then begin
-    fn:=IncludeTrailingPathDelimiter(LogDir.Text)+ovGrid.Cells[0, idx]+jext;
+    fn:=IncludeTrailingPathDelimiter(LogDir.Directory)+ovGrid.Cells[0, idx]+jext;
     if FileExists(fn) then begin
       inf:=TFileStream.Create(fn, fmOpenRead or fmShareDenyWrite);
       Screen.Cursor:=crHourGlass;
@@ -2558,92 +2646,95 @@ begin
 
 {Read and write Header, (re)create columns in data table}
             j1:=j0.FindPath(jsonHeader);           {load header}
-            csvGrid.BeginUpdate;
-            for i:=0 to j1.Count-1 do begin
-              hdrList[i]:=j1.Items[i].AsString;    {fill original header array}
+            if j1<>nil then begin
+              for i:=0 to j1.Count-1 do begin
+                hdrList[i]:=j1.Items[i].AsString;  {fill original header array}
+              end;
+              ChangeHeader;                        {use alternative headers or not}
             end;
-            ChangeHeader;                          {use alternative headers or not}
-            csvGrid.EndUpdate;
-
 {Read and write data, (re)create rows in data table}
             j1:=j0.FindPath(jsonData);             {Datasets, Level 1}
-            StatusBar1.Panels[1].Text:=IntToStr(j1.Count);
-            j2:=j1.Items[0];                       {First dataset: Begin time}
+            if j1<>nil then begin
+              StatusBar1.Panels[1].Text:=IntToStr(j1.Count);
+              j2:=j1.Items[0];                     {First dataset: Begin time}
                                                    {Battery level max + time}
-            staGrid.Cells[1, 4]:=IntToStr(j2.Items[1].AsInteger)+
-                                 Form1.UnitToStr(2, true);
-            staGrid.Cells[2, 4]:=FormatDateTime(hnsz,
-                                 SekToDT(j2.Items[0].AsString, 1)+tme);
-            ProgressFile.Max:=j1.Count-1;
-
-            csvGrid.BeginUpdate;
-              csvGrid.RowCount:=j1.Count+1;
-              for i:=0 to j1.Count-1 do begin      {Read datasets}
-                j2:=j1.Items[i];                   {read data, level 2}
-                if (i=10) and
-                   (Tag=0) then
-                  csvGrid.AutoSizeColumns;         {Only once in line 10}
-                for k:=0 to J2.Count-1 do begin    {Fill one Row}
-                  case k of                        {distribute values}
-                    0: tp:=j2.Items[k].AsInteger;
-                    1: batt:=j2.Items[k].AsInteger;
-                    2: latc:=j2.Items[k].AsFloat;
-                    3: lonc:=j2.Items[k].AsFloat;
-                    8: lonp:=j2.Items[k].AsFloat;
-                    9: latp:=j2.Items[k].AsFloat;
-                    12..14: csvGrid.Cells[k+1, i+1]:=
-                              FormatFloat(frmFloat, j2.Items[k].AsFloat);
-                    15..17: csvGrid.Cells[k+1, i+1]:=
-                              FormatFloat(frmFloat,
-                              ConvUnit(k+1, j2.Items[k].AsFloat, cbDegree.Checked));
-                    18: alt:=j2.Items[k].AsFloat;
-                    20: tas:=j2.Items[k].AsFloat;
-                  else
-                    csvGrid.Cells[k+1, i+1]:=j2.Items[k].AsString;
+              if j2<>nil then begin
+                staGrid.Cells[1, 4]:=IntToStr(j2.Items[1].AsInteger)+
+                                     Form1.UnitToStr(2, true);
+                staGrid.Cells[2, 4]:=FormatDateTime(hnsz,
+                                     SekToDT(j2.Items[0].AsString, 1)+tme);
+              end;
+              ProgressFile.Max:=j1.Count-1;
+              csvGrid.BeginUpdate;
+                csvGrid.RowCount:=j1.Count+1;
+                for i:=0 to j1.Count-1 do begin    {Read datasets}
+                  j2:=j1.Items[i];                 {read data, level 2}
+                  if j2<>nil then begin
+                    if (i=10) and
+                       (Form1.Tag=0) then
+                      csvGrid.AutoSizeColumns;     {Only once in line 10}
+                    for k:=0 to J2.Count-1 do begin     {Fill one Row}
+                      case k of                    {distribute values}
+                        0: tp:=j2.Items[k].AsInteger;
+                        1: batt:=j2.Items[k].AsInteger;
+                        2: latc:=j2.Items[k].AsFloat;
+                        3: lonc:=j2.Items[k].AsFloat;
+                        8: lonp:=j2.Items[k].AsFloat;
+                        9: latp:=j2.Items[k].AsFloat;
+                        12..14: csvGrid.Cells[k+1, i+1]:=
+                                  FormatFloat(frmFloat, j2.Items[k].AsFloat);
+                        15..17: csvGrid.Cells[k+1, i+1]:=
+                                  FormatFloat(frmFloat,
+                                  ConvUnit(k+1, j2.Items[k].AsFloat, cbDegree.Checked));
+                        18: alt:=j2.Items[k].AsFloat;
+                        20: tas:=j2.Items[k].AsFloat;
+                      else
+                        csvGrid.Cells[k+1, i+1]:=j2.Items[k].AsString;
+                      end;
+                    end;
+                                                   {fill fix columns}
+                    csvGrid.Cells[0, i+1]:=
+                      FormatDateTime(ymd+tab1+hnsz, tp/(secpd*1000)+tme);
+                    csvGrid.Cells[1, i+1]:=IntToStr(tp);
+                    csvGrid.Cells[2, i+1]:=IntToStr(batt);
+                    if batt<battmin then begin
+                      battmin:=batt;               {lowest batt level}
+                      tbattmin:=tp;                {time of lowest batt level}
+                    end;
+                    csvGrid.Cells[3, i+1]:=FormatFloat(frmCoord, latc);
+                    csvGrid.Cells[4, i+1]:=FormatFloat(frmCoord, lonc);
+                    csvGrid.Cells[9, i+1]:=FormatFloat(frmCoord, lonp);
+                    csvGrid.Cells[10, i+1]:=FormatFloat(frmCoord, latp);
+                    csvGrid.Cells[19, i+1]:=FormatFloat(frmFloat, alt);
+                    if alt>altmax then begin
+                      altmax:=alt;                 {highest altitude}
+                      taltmax:=tp;                 {time of highest altitude}
+                    end;
+                    csvGrid.Cells[21, i+1]:=FormatFloat(frmFloat, tas);
+                    if tas>tasmax then begin
+                      tasmax:=tas;                 {highest speed}
+                      ttasmax:=tp;                 {time of max speed}
+                    end;
+                    w:=DeltaKoord(latc, lonc, latp, lonp);   {Distance RC - A/C}
+                    csvGrid.Cells[22, i+1]:=FormatFloat(frmOut1, w);
+                    if w>distmax then begin
+                      distmax:=w;                  {highest distance}
+                      tdistmax:=tp;                {time of max distance}
+                    end;
+                    ProgressFile.Position:=i;
+                    Application.ProcessMessages;
+                    StatusBar1.Panels[4].Text:=fn; {Show file name}
+                    WriteDtlGrid;                  {Write statistics}
+                    WriteStaGrid;                  {Fill statistics table}
                   end;
                 end;
-                                                   {fill fix columns}
-                csvGrid.Cells[0, i+1]:=
-                  FormatDateTime(ymd+tab1+hnsz, tp/(secpd*1000)+tme);
-                csvGrid.Cells[1, i+1]:=IntToStr(tp);
-                csvGrid.Cells[2, i+1]:=IntToStr(batt);
-                if batt<battmin then begin
-                  battmin:=batt;                   {lowest batt level}
-                  tbattmin:=tp;                    {time of lowest batt level}
-                end;
-                csvGrid.Cells[3, i+1]:=FormatFloat(frmCoord, latc);
-                csvGrid.Cells[4, i+1]:=FormatFloat(frmCoord, lonc);
-                csvGrid.Cells[9, i+1]:=FormatFloat(frmCoord, lonp);
-                csvGrid.Cells[10, i+1]:=FormatFloat(frmCoord, latp);
-                csvGrid.Cells[19, i+1]:=FormatFloat(frmFloat, alt);
-                if alt>altmax then begin
-                  altmax:=alt;                     {highest altitude}
-                  taltmax:=tp;                     {time of highest altitude}
-                end;
-                csvGrid.Cells[21, i+1]:=FormatFloat(frmFloat, tas);
-                if tas>tasmax then begin
-                  tasmax:=tas;                     {highest speed}
-                  ttasmax:=tp;                     {time of max speed}
-                end;
-                w:=DeltaKoord(latc, lonc, latp, lonp);   {Distance RC - A/C}
-                csvGrid.Cells[22, i+1]:=FormatFloat(frmOut1, w);
-                if w>distmax then begin
-                  distmax:=w;                      {highest distance}
-                  tdistmax:=tp;                    {time of max distance}
-                end;
-                ProgressFile.Position:=i;
-                Application.ProcessMessages;
-              end;
-            csvGrid.EndUpdate(false);
-
-            StatusBar1.Panels[4].Text:=fn;         {Show file name}
-            WriteDtlGrid;                          {Write statistics}
-            WriteStaGrid;                          {Fill statistics table}
+              csvGrid.EndUpdate(false);
+            end;
           except
             StatusBar1.Panels[4].Text:=errWrongData+ExtractFileName(fn);
           end;
-      end else                                     {Not enough data}
-        StatusBar1.Panels[4].Text:=errLessData+ExtractFileName(fn);
+        end else                                   {Not enough data}
+          StatusBar1.Panels[4].Text:=errLessData+ExtractFileName(fn);
       finally
         inf.Free;
         Screen.Cursor:=crDefault;
@@ -2740,7 +2831,7 @@ end;
 procedure TForm1.MakeCSV;                          {Create CSV file from csvGrid}
 var fn: string;
 begin
-  fn:=IncludeTrailingPathDelimiter(LogDir.Text)+
+  fn:=IncludeTrailingPathDelimiter(LogDir.Directory)+
       ovGrid.Cells[0, csvGrid.Tag]+grpConv.Items[2];
   csvGrid.SaveToCSVFile(fn, GetCSVsep, true);
   StatusBar1.Panels[4].Text:=ExtractFileName(fn)+tab1+rsSaved;
@@ -2871,7 +2962,7 @@ begin
         kmllist.Add('</'+pmtag);
         kmllist.Add('</'+doctag);
         kmllist.Add('</kml>');
-        fn:=IncludeTrailingPathDelimiter(LogDir.Text)+
+        fn:=IncludeTrailingPathDelimiter(LogDir.Directory)+
                            ovGrid.Cells[0, csvGrid.Tag]+
                            grpConv.Items[0];
         kmllist.SaveToFile(fn);                    {Save KML file}
@@ -2956,7 +3047,7 @@ begin
         outlist.Add(GPXet1);
         outlist.Add('</gpx>');
       end;
-      fn:=IncludeTrailingPathDelimiter(LogDir.Text)+
+      fn:=IncludeTrailingPathDelimiter(LogDir.Directory)+
                                ovGrid.Cells[0, csvGrid.Tag]+
                                grpConv.Items[1];
       outlist.SaveToFile(fn);                      {Save GPX file}
