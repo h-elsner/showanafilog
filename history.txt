@@ -50,4 +50,5 @@ History:
      2019-11-18 More Smart battery info added
      2019-11-21 Search for UUID as reference added
      2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
+     2020-03-26 Load last file instead of first, column width in LogData updated
 
