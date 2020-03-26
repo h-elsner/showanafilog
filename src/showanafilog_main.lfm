@@ -19,7 +19,7 @@ object Form1: TForm1
   SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;LogDir.Directory;Height;Width'
   ShowHint = True
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.4.0'
+  LCLVersion = '2.0.6.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
@@ -91,22 +91,22 @@ object Form1: TForm1
     Height = 461
     Top = 64
     Width = 910
-    ActivePage = TabSheet4
+    ActivePage = TabSheet2
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 4
+    TabIndex = 1
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
       Caption = 'ov'
-      ClientHeight = 404
-      ClientWidth = 825
+      ClientHeight = 433
+      ClientWidth = 902
       ImageIndex = 0
       object ovGrid: TStringGrid
         Left = 0
-        Height = 404
+        Height = 433
         Top = 0
-        Width = 825
+        Width = 902
         Align = alClient
         Color = clCream
         ColumnClickSorts = True

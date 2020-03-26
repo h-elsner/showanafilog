@@ -135,6 +135,7 @@ History:
      2019-11-19 Bugfix: Skip empty parameter in FDR meta data
      2019-11-21 Search for UUID as reference added
      2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
+     2020-03-26 Load last file instead of first, column width in LogData updated
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -427,8 +428,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.6 11/2019';                       {Major version}
-  appBuildno='2019-11-22';                         {Build per day}
+  appVersion='V1.6 03/2020';                       {Major version}
+  appBuildno='2020-03-26';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -2484,6 +2485,7 @@ begin
             ovGrid.Cells[0, i+1]:=ChangeFileExt(fn, '');
           end;
           ovGrid.AutoSizeColumn(0);
+          ovGrid.Row:=ovGrid.RowCount-1;           {Last item selected}
         ovGrid.EndUpdate;
 
         PageControl1.ActivePageIndex:=0;           {Go to overwiev first}
@@ -2496,7 +2498,7 @@ begin
         mmnLogBook.Enabled:=false;
         ovThread:=TMyThread.Create(false);         {Start overview immediatley}
 
-        LoadOneFile(1);                            {Load first file}
+        LoadOneFile(ovGrid.RowCount-1);            {Load last item}
         ovGrid.Tag:=1;                             {First file in table}
         csvGrid.Tag:=1;
         btConv.Enabled:=true;                      {Allow converting}
@@ -2651,6 +2653,7 @@ begin
                 hdrList[i]:=j1.Items[i].AsString;  {fill original header array}
               end;
               ChangeHeader;                        {use alternative headers or not}
+              csvGrid.AutoSizeColumns;
             end;
 {Read and write data, (re)create rows in data table}
             j1:=j0.FindPath(jsonData);             {Datasets, Level 1}
@@ -2728,6 +2731,7 @@ begin
                     WriteStaGrid;                  {Fill statistics table}
                   end;
                 end;
+                csvGrid.AutoSizeColumn(0);
               csvGrid.EndUpdate(false);
             end;
           except
