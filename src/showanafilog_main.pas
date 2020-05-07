@@ -428,8 +428,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.6 03/2020';                       {Major version}
-  appBuildno='2020-03-26';                         {Build per day}
+  appVersion='V1.6 05/2020';                       {Major version}
+  appBuildno='2020-05-07';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -533,7 +533,8 @@ implementation
 
 ///////////// Some standard routines to handle data structures ////////////////
 
-function SekToDT(numsek: string; mode: integer): TDateTime;  {Timestring to DT}
+function SekToDT(numsek: string; mode: integer): TDateTime; inline;
+                                {Timestring to DT}
                                 {mode 0: Number seconds to TDatetime
                                  mode 1: Number milliseconds to TDatetime
                                  mode 2: Number microseconds to TDatetime
@@ -555,7 +556,7 @@ end;
         "date": "2018-11-10T094343-0500",
  FDR time stamp: 20181206T204438+0100}
 
-function datISOtoDT(tst: string; form: string=ymd): TDateTime;
+function datISOtoDT(tst: string; form: string=ymd): TDateTime; inline;
 var dt, zt, zone: string;
     direction: char;                               {Time zone + or -}
 begin
@@ -578,7 +579,7 @@ begin
   end;
 end;
 
-function FDRtimeToStr(s: string): string;          {FDR date conversion to string}
+function FDRtimeToStr(s: string): string; inline;  {FDR date conversion to string}
 var tme: TDateTime;
 begin
   result:='';
@@ -590,7 +591,7 @@ end;
 { 2018-11-17 12:12:56.979  into
   2018-11-17T12:12:56.979Z for KML or
   2018-11-17T12:12:56Z for GPX}
-function GoogleTime(tp: string; gx: boolean=false): string;
+function GoogleTime(tp: string; gx: boolean=false): string; inline;
 begin                                              {Default: KML}
   result:='';
   if length(tp)=23 then begin
@@ -601,7 +602,7 @@ begin                                              {Default: KML}
   end;
 end;
 
-function prepKeyw(k: string): string;              {Column header from keyword}
+function prepKeyw(k: string): string; inline;      {Column header from keyword}
 begin
   result:='';
   if k<>'' then result:=trim(k);
@@ -833,7 +834,7 @@ end;
  Haversine formula, Radius: 6,371km depending on latitude
  https://rechneronline.de/erdradius/
  6365.692 optimized for 50° latitude and 60m altitude}
-function DeltaKoord(lat1, lon1, lat2, lon2: double): double;
+function DeltaKoord(lat1, lon1, lat2, lon2: double): double; inline;
 begin
   result:=0;
   try
@@ -858,7 +859,7 @@ begin
   OpenManual;
 end;
 
-function CleanNum(const s: string): string;        {Filter digits from String}
+function CleanNum(const s: string): string; inline; {Filter digits from String}
 var i: integer;
 begin
   result:='';
@@ -2005,12 +2006,12 @@ end;
 
 function TForm1.GetCellInfo(aCol, aRow: longint): string;
                                                    {Cell info in data table}
-  function DefaultHnt: string;                     {Default hint: Header=Value}
+  function DefaultHnt: string; inline;             {Default hint: Header=Value}
   begin
     result:=AltHeaderToStr(aCol)+'='+csvGrid.Cells[aCol, aRow];
   end;
 
-  function FrmValue: string;                       {Format float for better reading}
+  function FrmValue: string; inline;               {Format float for better reading}
   begin
     try
       result:=AltHeaderToStr(aCol)+'='+
@@ -2498,9 +2499,9 @@ begin
         mmnLogBook.Enabled:=false;
         ovThread:=TMyThread.Create(false);         {Start overview immediatley}
 
-        LoadOneFile(ovGrid.RowCount-1);            {Load last item}
         ovGrid.Tag:=1;                             {First file in table}
-        csvGrid.Tag:=1;
+        csvGrid.Tag:=ovGrid.RowCount-1;            {Set to last item}
+        LoadOneFile(csvGrid.Tag);                  {Load last item}
         btConv.Enabled:=true;                      {Allow converting}
         if filelist.Count=1 then
           PageControl1.ActivePageIndex:=1;         {Only one -> go to data}
@@ -2525,7 +2526,8 @@ var inf: TFileStream;
     i, k, ttasmax, taltmax, tp, batt, battmin, tbattmin, tdistmax: integer;
     tme, trt: TDateTime;
 
-  function GetMString(const kw: string): string;   {Skip destroyed data in file}
+  function GetMString(const kw: string): string; inline;
+                                                   {Skip destroyed data in file}
   begin
     try
       result:=j0.FindPath(kw).AsString;
@@ -2534,7 +2536,8 @@ var inf: TFileStream;
     end;
   end;
 
-  function GetMFloat(const kw: string): double;    {Skip destroyed data in file}
+  function GetMFloat(const kw: string): double; inline;
+                                                   {Skip destroyed data in file}
   begin
     try
       result:=j0.FindPath(kw).AsFloat;
@@ -2673,9 +2676,6 @@ begin
                 for i:=0 to j1.Count-1 do begin    {Read datasets}
                   j2:=j1.Items[i];                 {read data, level 2}
                   if j2<>nil then begin
-                    if (i=10) and
-                       (Form1.Tag=0) then
-                      csvGrid.AutoSizeColumns;     {Only once in line 10}
                     for k:=0 to J2.Count-1 do begin     {Fill one Row}
                       case k of                    {distribute values}
                         0: tp:=j2.Items[k].AsInteger;
@@ -2841,6 +2841,17 @@ begin
   StatusBar1.Panels[4].Text:=ExtractFileName(fn)+tab1+rsSaved;
 end;
 
+function ValidModeCoord(fm, lat, lon: string): boolean;
+begin
+  result:=StrToIntDef(fm, 0) in rfm;               {state in real flight modes}
+  try
+    result:=result and
+            (StrToFloat(lat)<100) and              {GPS data valid}
+            (StrToFloat(lon)<200);
+  except
+  end;
+end;
+
 procedure TForm1.KMLheader(klist: TStringList);    {KML header and styles}
 begin
   klist.Add(xmlvers);
@@ -2899,9 +2910,10 @@ begin
       p:=0;
       repeat                                       {looking for first start coord}
         inc(p);
-        state:=StrToIntDef(csvGrid.Cells[5, p], 0);
-      until (state in rfm) or                      {state in real flight modes}
-            (p>csvGrid.RowCount-3);
+      until ValidModeCoord(csvGrid.Cells[5, p],    {state in real flight modes}
+                           csvGrid.Cells[10, p],   {coordinates lat, lon}
+                           csvGrid.Cells[9, p]) or
+            (p>csvGrid.RowCount-3);                {table at the end}
       if csvGrid.RowCount>(p+5) then begin         {some lines should be in}
         kmllist.Add('<'+pmtag);                    {Placemark Start}
         kmllist.Add('<TimeStamp><when>'+
@@ -3002,11 +3014,12 @@ begin
     Screen.Cursor:=crHourGlass;
     try
       p:=0;
-      repeat                                       {looking for first start coord}
+      repeat                                       {looking for first valid start coord}
         inc(p);
-        state:=StrToIntDef(csvGrid.Cells[5, p], 0);
-      until (state in rfm) or                      {State in real flight modes}
-            (p>csvGrid.RowCount-3);
+      until ValidModeCoord(csvGrid.Cells[5, p],    {state in real flight modes}
+                           csvGrid.Cells[10, p],   {coordinates lat, lon valid?}
+                           csvGrid.Cells[9, p]) or
+            (p>csvGrid.RowCount-3);                {table at the end}
       if csvGrid.RowCount>(p+5) then begin         {some lines should be in}
         outlist.Add(xmlvers);                      {Write header}
         outlist.Add(gpxvers+' creator="'+Caption+'">');
