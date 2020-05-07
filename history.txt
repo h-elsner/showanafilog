@@ -1,4 +1,4 @@
-ShowAnafiLogs V1.5 06/2019
+ShowAnafiLogs V1.6 05/2020
 
 Contact:
 helmut.elsner@live.com
@@ -51,4 +51,6 @@ History:
      2019-11-21 Search for UUID as reference added
      2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
      2020-03-26 Load last file instead of first, column width in LogData updated
+     2020-05-07 Additional check if valid coordinates at the beginning of conversion to KML/GPX files
+
 
