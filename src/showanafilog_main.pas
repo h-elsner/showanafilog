@@ -218,7 +218,7 @@ type
     ChartAxisTransformations3AutoScaleAxisTransform1: TAutoScaleAxisTransform;
     ChartAxisTransformations4: TChartAxisTransformations;
     ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform;
-    ChartListbox1: TChartListbox;
+    lbLegende: TChartListbox;
     ChartToolset1: TChartToolset;
     ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
     ChartToolset1PanDragTool1: TPanDragTool;
@@ -281,6 +281,7 @@ type
     LogDirDialog: TSelectDirectoryDialog;
     ProgressFile: TProgressBar;
     grpLogBook: TRadioGroup;
+    Splitter1: TSplitter;
     staGrid: TStringGrid;
     TabImages: TImageList;
     lblSelDir: TLabel;
@@ -309,7 +310,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure Chart2MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure ChartListbox1DblClick(Sender: TObject);
+    procedure lbLegendeDblClick(Sender: TObject);
     procedure cmnClipbrd2Click(Sender: TObject);
     procedure cmnClipbrdClick(Sender: TObject);
     procedure cmnSaveAs2Click(Sender: TObject);
@@ -1217,7 +1218,9 @@ begin
   Chart2.AxisList[2].Title.LabelFont.Color:=Chart2ConstantLine2.SeriesColor;
   Chart2.AxisList[0].Title.Caption:=dtSpeed+tab1+UnitToStr(15, false);
   Chart2.AxisList[2].Title.Caption:=dtAngle;
-  ChartListBox1.Hint:=hntChartListBox;
+  lbLegende.Hint:=hntChartListBox;
+  for i:=0 to lbLegende.SeriesCount-1 do           {Set all as default}
+    lbLegende.Checked[i]:=true;
 
   csvGrid.ColCount:=23;                            {Data columns, fix number of cols}
   csvGrid.RowCount:=6;
@@ -1243,14 +1246,6 @@ begin
   staGrid.Cells[0, 4]:=ovBattMax;
   staGrid.Cells[0, 5]:=ovBattMin;
   staGrid.Width:=staGrid.ColWidths[0]+staGrid.ColWidths[1]+staGrid.ColWidths[2];
-
-{$IFDEF LINUX}                                     {Tuning for LINUX GUI}
-//  ChartListBox1.Height:=26;
-  ChartListBox1.Align:=alRight;
-  ChartListBox1.Width:=130;
-  staGrid.Height:=152;
-{$ENDIF}
-
 end;
 
 procedure TForm1.MetaGridInit(mode: integer);      {Set Details labels}
@@ -1829,46 +1824,47 @@ begin
     Chart2.ZoomFull;
 end;
 
-procedure TForm1.ChartListbox1DblClick(Sender: TObject); {Toggle Attitude Charts}
+procedure TForm1.lbLegendeDblClick(Sender: TObject); {Toggle Attitude Charts}
 var i: integer;
 
   procedure SetSpeed;
   begin
-    ChartListBox1.Checked[3]:=false;               {Angles}
-    ChartListBox1.Checked[4]:=false;
-    ChartListBox1.Checked[5]:=false;               {Heading}
-    ChartListBox1.Checked[7]:=false;
-    ChartListBox1.Tag:=1;
+    lbLegende.Checked[3]:=false;               {Angles}
+    lbLegende.Checked[4]:=false;
+    lbLegende.Checked[5]:=false;               {Heading}
+    lbLegende.Checked[7]:=false;
+    lbLegende.Tag:=1;
   end;
 
   procedure SetAngle;
   begin
-    ChartListBox1.Checked[0]:=false;               {Speed}
-    ChartListBox1.Checked[1]:=false;
-    ChartListBox1.Checked[2]:=false;
-    ChartListBox1.Checked[6]:=false;               {Zero axis lines}
-    ChartListBox1.Tag:=2;
+    lbLegende.Checked[0]:=false;               {Speed}
+    lbLegende.Checked[1]:=false;
+    lbLegende.Checked[2]:=false;
+    lbLegende.Checked[6]:=false;               {Zero axis lines}
+    lbLegende.Tag:=2;
   end;
 
   procedure SetNickRoll;
   begin
-    ChartListBox1.Checked[0]:=false;               {Speed}
-    ChartListBox1.Checked[1]:=false;
-    ChartListBox1.Checked[2]:=false;
-    ChartListBox1.Checked[5]:=false;               {Heading}
-    ChartListBox1.Checked[6]:=false;               {Zero axis lines}
-    ChartListBox1.Tag:=3;
+    lbLegende.Checked[0]:=false;               {Speed}
+    lbLegende.Checked[1]:=false;
+    lbLegende.Checked[2]:=false;
+    lbLegende.Checked[5]:=false;               {Heading}
+    lbLegende.Checked[6]:=false;               {Zero axis lines}
+    lbLegende.Tag:=3;
   end;
 
 begin
-  for i:=0 to ChartListBox1.SeriesCount-1 do
-    ChartListBox1.Checked[i]:=true;
-  case ChartListBox1.Tag of
+  for i:=0 to lbLegende.SeriesCount-1 do       {Set all as default}
+    lbLegende.Checked[i]:=true;
+
+  case lbLegende.Tag of
     0: SetSpeed;
     1: SetAngle;
     2: SetNickRoll;
   else
-    ChartLIstBox1.Tag:=0;
+    lbLegende.Tag:=0;
   end;
 end;
 
@@ -2841,7 +2837,7 @@ begin
   StatusBar1.Panels[4].Text:=ExtractFileName(fn)+tab1+rsSaved;
 end;
 
-function ValidModeCoord(fm, lat, lon: string): boolean;
+function ValidModeCoord(fm, lat, lon: string): boolean;        {Validity check}
 begin
   result:=StrToIntDef(fm, 0) in rfm;               {state in real flight modes}
   try

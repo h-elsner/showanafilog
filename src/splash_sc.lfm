@@ -1,7 +1,7 @@
 object Form4: TForm4
-  Left = 1432
+  Left = 1420
   Height = 302
-  Top = 785
+  Top = 815
   Width = 468
   BorderStyle = bsNone
   Caption = 'Log'
@@ -10,7 +10,7 @@ object Form4: TForm4
   FormStyle = fsSplash
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.4.0'
+  LCLVersion = '2.0.8.0'
   object Image1: TImage
     Left = 0
     Height = 304
@@ -1224,7 +1224,7 @@ object Form4: TForm4
     Top = 8
     Width = 385
     Alignment = taCenter
-    Caption = 'ShowAnafiLogs  V1.6 11/2019'
+    Caption = 'ShowAnafiLogs  V1.6 05/2020'
     Color = clSkyBlue
     Font.Color = clCream
     Font.Height = -21
