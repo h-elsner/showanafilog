@@ -36,8 +36,8 @@ resourcestring                                     {english}
 
 {Other column header}
   ovDate='Date';
-  ovFrom='From';
-  ovTo='To';
+  ovFrom='from';
+  ovTo='to';
   ovDuration='Duration';
   ovAltMax='Ceiling';
   ovTasMax='Top speed';
@@ -78,6 +78,11 @@ resourcestring                                     {english}
   clnRight='Zero line right';
   hntChartListBox='Select/deselect charts for XYZ speed or angle';
   hntChart2='Attitude of the aircraft: Charts for XYZ speed and angle';
+  hntFDRdir='Select directory with FDR log files to search for UUID';
+  hntedUUID='UUID to search for';
+  capbtSearch='Find UUID';
+  hntbtSearch='Start searching for FDR log files with UUID above';
+  capFDRresult='File list with matching UUID';
 
 {Buttons}
   capClose='Close';
@@ -118,6 +123,8 @@ resourcestring                                     {english}
   rsGPSfix='GPS fix at start';
   rsFrom=' from ';
   rsFilesRenamed='files renamed';
+  rsUUIDfound='UUID found';
+  rsNothingFound='Nothing found';
 
 {Menu items}
   mniFile='&File';

@@ -78,6 +78,11 @@ resourcestring                                     {deutsch}
     clnRight='0-Linie rechts';
     hntChartListBox='An-/abwählen der Diagramme für XYZ Geschwindigkeit oder Winkel';
     hntChart2='Fluglage des Kopters: Diagramme für XYZ Geschwindigkeit und Winkel';
+    hntFDRdir='Wähle Verzeichnis mit FDR log zur Suche nach UUID aus';
+    hntedUUID='UUID, nach der gesucht werden soll';
+    capbtSearch='Suche UUID';
+    hntbtSearch='Suche nach UUID in den FDR Metadaten starten';
+    capFDRresult='Dateiliste mit passenden UUID';
 
   {Buttons}
     capClose='Beenden';
@@ -118,6 +123,8 @@ resourcestring                                     {deutsch}
     rsGPSfix='GPS fix beim Start';
     rsFrom=' von ';
     rsFilesRenamed='Dateien umbenannt';
+    rsUUIDfound='UUID gefunden';
+    rsNothingFound='Nichts gefunden';
 
   {Menu items}
     mniFile='&Datei';

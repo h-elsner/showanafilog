@@ -1245,7 +1245,7 @@ begin
   staGrid.Cells[0, 3]:=ovTasMax;
   staGrid.Cells[0, 4]:=ovBattMax;
   staGrid.Cells[0, 5]:=ovBattMin;
-  staGrid.Width:=staGrid.ColWidths[0]+staGrid.ColWidths[1]+staGrid.ColWidths[2];
+  staGrid.Width:=staGrid.ColWidths[0]+staGrid.ColWidths[1]+staGrid.ColWidths[2]+4;
 end;
 
 procedure TForm1.MetaGridInit(mode: integer);      {Set Details labels}
