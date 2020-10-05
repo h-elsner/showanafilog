@@ -178,8 +178,7 @@ uses
   Classes, SysUtils, FileUtil, TAGraph, TATransformations, TAIntervalSources,
   TASeries, TATools, TAChartListbox, Forms, Controls, Graphics, fpjson,
   jsonparser, Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage, EditBtn, math,
-  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, FileCtrl,
-  IniPropStorage, anzwerte;
+  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, anzwerte;
 
 {$I anafi_en.inc}                                  {Include a language file}
 {.$I anafi_dt.inc}
