@@ -125,6 +125,7 @@ resourcestring                                     {english}
   rsFilesRenamed='files renamed';
   rsUUIDfound='UUID found';
   rsNothingFound='Nothing found';
+  rsExtFilter='FDR log files|*.bin|All files|*.*';
 
 {Menu items}
   mniFile='&File';

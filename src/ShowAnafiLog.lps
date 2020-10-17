@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="11"/>
+    <BuildModes Active="Default"/>
+    <Units Count="13">
+      <Unit0>
+        <Filename Value="ShowAnafiLog.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="4"/>
+        <CursorPos X="28" Y="28"/>
+        <UsageCount Value="201"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="showanafilog_main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="1097"/>
+        <CursorPos X="44" Y="1113"/>
+        <UsageCount Value="201"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="anafi_dt.txt"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="13" Y="13"/>
+        <UsageCount Value="201"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="..\BoxControl\testprogramm\unit1.pas"/>
+        <UnitName Value="Unit1"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="146"/>
+        <UsageCount Value="7"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="anafi_en.inc"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="94"/>
+        <CursorPos Y="129"/>
+        <UsageCount Value="100"/>
+        <Loaded Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="anafi_dt.inc"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="113"/>
+        <CursorPos X="46" Y="128"/>
+        <UsageCount Value="100"/>
+        <Loaded Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="C:\lazarus\lcl\grids.pas"/>
+        <UnitName Value="Grids"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="6674"/>
+        <CursorPos X="42" Y="6713"/>
+        <UsageCount Value="6"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="splash_sc.pas"/>
+        <ComponentName Value="Form4"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Splash_sc"/>
+        <EditorIndex Value="3"/>
+        <CursorPos X="43" Y="12"/>
+        <UsageCount Value="101"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="anzwerte.pas"/>
+        <ComponentName Value="Form2"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="147"/>
+        <CursorPos X="3" Y="149"/>
+        <UsageCount Value="101"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="showanafilog_main.lfm"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="1639"/>
+        <CursorPos X="17" Y="1673"/>
+        <UsageCount Value="45"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="C:\lazarus\components\ideintf\objectinspector.pp"/>
+        <UnitName Value="ObjectInspector"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1282"/>
+        <CursorPos X="32" Y="1304"/>
+        <UsageCount Value="5"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="C:\lazarus\components\tachart\tachartlistbox.pas"/>
+        <UnitName Value="TAChartListbox"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="11"/>
+        <CursorPos X="54" Y="26"/>
+        <UsageCount Value="6"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\AnafiPlanToGPX\a_plan_fr.inc"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="12"/>
+      </Unit12>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="347" Column="17" TopLine="313"/>
+      </Position1>
+      <Position2>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="428" Column="19" TopLine="394"/>
+      </Position2>
+      <Position3>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="442" Column="19" TopLine="408"/>
+      </Position3>
+      <Position4>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="471" Column="17" TopLine="437"/>
+      </Position4>
+      <Position5>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="667" Column="21" TopLine="633"/>
+      </Position5>
+      <Position6>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="721" Column="15" TopLine="687"/>
+      </Position6>
+      <Position7>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="733" Column="15" TopLine="699"/>
+      </Position7>
+      <Position8>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="745" Column="15" TopLine="711"/>
+      </Position8>
+      <Position9>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1538" Column="19" TopLine="1504"/>
+      </Position9>
+      <Position10>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1543" Column="19" TopLine="1509"/>
+      </Position10>
+      <Position11>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1551" Column="19" TopLine="1517"/>
+      </Position11>
+      <Position12>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1556" Column="19" TopLine="1522"/>
+      </Position12>
+      <Position13>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1561" Column="19" TopLine="1527"/>
+      </Position13>
+      <Position14>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1569" Column="19" TopLine="1535"/>
+      </Position14>
+      <Position15>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1577" Column="19" TopLine="1543"/>
+      </Position15>
+      <Position16>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1585" Column="19" TopLine="1551"/>
+      </Position16>
+      <Position17>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1590" Column="19" TopLine="1556"/>
+      </Position17>
+      <Position18>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1595" Column="19" TopLine="1561"/>
+      </Position18>
+      <Position19>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1600" Column="19" TopLine="1566"/>
+      </Position19>
+      <Position20>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1608" Column="19" TopLine="1574"/>
+      </Position20>
+      <Position21>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1616" Column="19" TopLine="1582"/>
+      </Position21>
+      <Position22>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1621" Column="19" TopLine="1587"/>
+      </Position22>
+      <Position23>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1629" Column="19" TopLine="1595"/>
+      </Position23>
+      <Position24>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1640" Column="17" TopLine="1606"/>
+      </Position24>
+      <Position25>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1645" Column="17" TopLine="1611"/>
+      </Position25>
+      <Position26>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1655" Column="17" TopLine="1621"/>
+      </Position26>
+      <Position27>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1660" Column="17" TopLine="1626"/>
+      </Position27>
+      <Position28>
+        <Filename Value="showanafilog_main.lfm"/>
+        <Caret Line="1668" Column="17" TopLine="1634"/>
+      </Position28>
+      <Position29>
+        <Filename Value="showanafilog_main.pas"/>
+        <Caret Line="149" Column="35" TopLine="115"/>
+      </Position29>
+      <Position30>
+        <Filename Value="showanafilog_main.pas"/>
+        <Caret Line="170" Column="35" TopLine="809"/>
+      </Position30>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes Count="0" ActiveMode="default"/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>

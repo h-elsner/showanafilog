@@ -1101,6 +1101,7 @@ begin
   DefaultFormatSettings.DecimalSeparator:='.';
   for i:=0 to High(hdrList) do
     hdrList[i]:='';
+  FDRDialog.Filter:=rsExtFilter;
 
   Caption:=appName+tab1+appVersion;
   Hint:=Caption;
