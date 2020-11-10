@@ -668,6 +668,7 @@ begin
   end;
 end;
 
+{https://developer.parrot.com/docs/olympe/arsdkng_ardrone3_piloting.html}
 function AlertStateToStr(s: string): string;       {JSON alert_state (6)}
 var snr: integer;
 begin
@@ -679,7 +680,8 @@ begin
     2: result:='Cut out alert';                    {Something hit/blocked propeller}
     3: result:='Battery level critical';
     4: result:='Battery level low; RTH in < 3min';
-    5: result:='Flight angle exceeded';
+    5: result:='Flight angle too high';
+    6: result:='Almost empty battery alert';
   end;
 end;
 

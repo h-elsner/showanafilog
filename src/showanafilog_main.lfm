@@ -16,10 +16,10 @@ object Form1: TForm1
   OnDropFiles = FormDropFiles
   OnKeyUp = FormKeyUp
   Position = poDefaultPosOnly
-  SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Splitter1.Left;Width;FDRDialog.InitialDir;FDRDialog.FilterIndex;FDRDialog.FileName'
+  SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Splitter1.Left;Width;WindowState'
   ShowHint = True
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.8.0'
+  LCLVersion = '2.0.10.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
@@ -93,22 +93,22 @@ object Form1: TForm1
     Height = 483
     Top = 64
     Width = 894
-    ActivePage = TabSheet4
+    ActivePage = TabSheet5
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 4
+    TabIndex = 5
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
       Caption = 'ov'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 0
       object ovGrid: TStringGrid
         Left = 0
-        Height = 455
+        Height = 445
         Top = 0
-        Width = 886
+        Width = 888
         Align = alClient
         Color = clCream
         ColumnClickSorts = True
@@ -133,14 +133,14 @@ object Form1: TForm1
     end
     object TabSheet2: TTabSheet
       Caption = 'dat'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 1
       object csvGrid: TStringGrid
         Left = 0
-        Height = 455
+        Height = 445
         Top = 0
-        Width = 886
+        Width = 888
         Align = alClient
         Color = clCream
         ColCount = 23
@@ -158,14 +158,14 @@ object Form1: TForm1
     end
     object TabSheet3: TTabSheet
       Caption = 'hdia'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 455
+        Height = 445
         Top = 0
-        Width = 886
+        Width = 888
         AxisList = <        
           item
             Grid.Visible = False
@@ -224,14 +224,14 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'atti'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 12
       object Chart2: TChart
         Left = 0
-        Height = 455
+        Height = 445
         Top = 0
-        Width = 764
+        Width = 766
         AxisList = <        
           item
             Grid.Visible = False
@@ -309,18 +309,16 @@ object Form1: TForm1
           Active = False
           AxisIndex = 0
           Pen.Style = psDash
-          Position = 0
         end
         object Chart2ConstantLine2: TConstantLine
           Active = False
           AxisIndex = 2
           Pen.Style = psDash
-          Position = 0
         end
       end
       object lbLegende: TChartListbox
-        Left = 772
-        Height = 455
+        Left = 774
+        Height = 445
         Top = 0
         Width = 114
         Chart = Chart2
@@ -331,8 +329,8 @@ object Form1: TForm1
         TabOrder = 1
       end
       object Splitter1: TSplitter
-        Left = 764
-        Height = 455
+        Left = 766
+        Height = 445
         Top = 0
         Width = 8
         Align = alRight
@@ -342,12 +340,12 @@ object Form1: TForm1
     end
     object TabSheet4: TTabSheet
       Caption = 'dtl'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 3
       object dtlGrid: TStringGrid
         Left = 8
-        Height = 411
+        Height = 401
         Top = 32
         Width = 416
         Anchors = [akTop, akLeft, akBottom]
@@ -390,9 +388,9 @@ object Form1: TForm1
       end
       object lblDetails: TLabel
         Left = 8
-        Height = 15
+        Height = 17
         Top = 8
-        Width = 51
+        Width = 58
         Caption = 'lblDetails'
         Font.Style = [fsBold]
         ParentColor = False
@@ -400,9 +398,9 @@ object Form1: TForm1
       end
       object lblStat: TLabel
         Left = 432
-        Height = 15
+        Height = 17
         Top = 8
-        Width = 36
+        Width = 40
         Caption = 'lblStat'
         Font.Style = [fsBold]
         ParentColor = False
@@ -410,7 +408,7 @@ object Form1: TForm1
       end
       object edUUID: TEdit
         Left = 432
-        Height = 23
+        Height = 27
         Top = 224
         Width = 384
         Color = clCream
@@ -418,7 +416,7 @@ object Form1: TForm1
       end
       object FDRdir: TDirectoryEdit
         Left = 432
-        Height = 23
+        Height = 27
         Top = 192
         Width = 384
         ShowHidden = False
@@ -445,21 +443,22 @@ object Form1: TForm1
       end
       object ListBox1: TListBox
         Left = 432
-        Height = 147
+        Height = 137
         Top = 296
-        Width = 450
+        Width = 452
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clMoneyGreen
         ItemHeight = 0
         OnClick = ListBox1Click
         ParentShowHint = False
+        ScrollWidth = 450
         TabOrder = 5
       end
       object lblFDRresult: TLabel
         Left = 552
-        Height = 15
+        Height = 17
         Top = 273
-        Width = 63
+        Width = 67
         Caption = 'lblFDRresult'
         ParentColor = False
       end
@@ -764,12 +763,12 @@ object Form1: TForm1
     ParentColor = False
   end
   object SaveDialog1: TSaveDialog
-    left = 448
-    top = 288
+    Left = 448
+    Top = 288
   end
   object TabImages: TImageList
-    left = 448
-    top = 168
+    Left = 448
+    Top = 168
     Bitmap = {
       4C69180000001000000010000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFBFBFBFFF7F7F7FFF7F7F7FFFFFFFFFFFFFFFFFFFFFFF
@@ -1543,26 +1542,26 @@ object Form1: TForm1
     }
   end
   object ChartAxisTransformations1: TChartAxisTransformations
-    left = 736
-    top = 128
+    Left = 736
+    Top = 128
     object ChartAxisTransformations1AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
   end
   object ChartAxisTransformations2: TChartAxisTransformations
-    left = 736
-    top = 184
+    Left = 736
+    Top = 184
     object ChartAxisTransformations2AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
   end
   object DateTimeIntervalChartSource1: TDateTimeIntervalChartSource
     Steps = [dtsHour, dtsMinute, dtsSecond]
-    left = 704
-    top = 240
+    Left = 704
+    Top = 240
   end
   object MainMenu1: TMainMenu
     Images = TabImages
-    left = 448
-    top = 368
+    Left = 448
+    Top = 368
     object mmnFile: TMenuItem
       Caption = 'file'
       object mmnOpen: TMenuItem
@@ -1665,8 +1664,8 @@ object Form1: TForm1
   end
   object PopupMenu1: TPopupMenu
     Images = TabImages
-    left = 584
-    top = 368
+    Left = 584
+    Top = 368
     object cmnSaveAs: TMenuItem
       Caption = 'Save'
       ImageIndex = 14
@@ -1680,8 +1679,8 @@ object Form1: TForm1
   end
   object PopupMenu2: TPopupMenu
     Images = TabImages
-    left = 736
-    top = 368
+    Left = 736
+    Top = 368
     object cmnSaveAs2: TMenuItem
       Caption = 'Save'
       ImageIndex = 14
@@ -1707,12 +1706,12 @@ object Form1: TForm1
     end
   end
   object LogDirDialog: TSelectDirectoryDialog
-    left = 448
-    top = 232
+    Left = 448
+    Top = 232
   end
   object ChartToolset1: TChartToolset
-    left = 736
-    top = 296
+    Left = 736
+    Top = 296
     object ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool
       ZoomFactor = 1.1
       ZoomRatio = 0.9090909090909
@@ -1730,12 +1729,12 @@ object Form1: TForm1
     end
   end
   object DateTimeIntervalChartSource2: TDateTimeIntervalChartSource
-    left = 576
-    top = 232
+    Left = 576
+    Top = 232
   end
   object ChartToolset2: TChartToolset
-    left = 576
-    top = 296
+    Left = 576
+    Top = 296
     object ChartToolset2ZoomMouseWheelTool1: TZoomMouseWheelTool
       ZoomFactor = 1.1
       ZoomRatio = 0.9090909090909
@@ -1747,25 +1746,25 @@ object Form1: TForm1
     end
   end
   object ChartAxisTransformations3: TChartAxisTransformations
-    left = 576
-    top = 112
+    Left = 576
+    Top = 112
     object ChartAxisTransformations3AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
   end
   object ChartAxisTransformations4: TChartAxisTransformations
-    left = 576
-    top = 168
+    Left = 576
+    Top = 168
     object ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform
     end
   end
   object FDRDialog: TOpenDialog
     Filter = 'FDR log files|*.bin'
-    left = 448
-    top = 424
+    Left = 448
+    Top = 424
   end
   object XMLPropStorage1: TXMLPropStorage
     StoredValues = <>
-    left = 448
-    top = 112
+    Left = 448
+    Top = 112
   end
 end
