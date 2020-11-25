@@ -45,12 +45,15 @@ History:
 1.5  2019-06-14 Rename JSON files with date/time stamp.
      2019-07-12 Updated "flying_state".
      2019-08-16 Manual link updated
-1.6  2019-11-06 Resolve product_id
+1.6  2019-11-06 Resolve Product_ID
      2019-11-16 Read meta data from FDR log files
      2019-11-18 More Smart battery info added
+     2019-11-19 Bugfix: Skip empty parameter in FDR meta data
      2019-11-21 Search for UUID as reference added
      2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
      2020-03-26 Load last file instead of first, column width in LogData updated
-     2020-05-07 Additional check if valid coordinates at the beginning of conversion to KML/GPX files
+     2020-11-10 Alert state 6 added (Almost empty battery alert)
+     2020-11-25 Alert state 7 and 8 added
+
 
 
