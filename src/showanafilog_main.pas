@@ -136,13 +136,15 @@ History:
      2019-11-21 Search for UUID as reference added
      2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
      2020-03-26 Load last file instead of first, column width in LogData updated
+     2020-11-10 Alert state 6 added (Almost empty battery alert)
+
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
 
 Tester: Agustine, Dietmar K., liger 1956, DIRK_ANAFI, Landbo
 
-See also:
+Regarding false virus alerts see also:
 http://blog.nirsoft.net/2009/05/17/antivirus-companies-cause-a-big-headache-to-small-developers/
 
 -----------------------------
@@ -428,8 +430,8 @@ type
 
 const
   appName='ShowAnafiLogs';
-  appVersion='V1.6 05/2020';                       {Major version}
-  appBuildno='2020-05-07';                         {Build per day}
+  appVersion='V1.6 11/2020';                       {Major version}
+  appBuildno='2020-11-25';                         {Build per day}
 
   homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
@@ -556,7 +558,7 @@ end;
         "date": "2018-11-10T094343-0500",
  FDR time stamp: 20181206T204438+0100}
 
-function datISOtoDT(tst: string; form: string=ymd): TDateTime; inline;
+function datISOtoDT(tst: string; form: string=ymd): TDateTime;
 var dt, zt, zone: string;
     direction: char;                               {Time zone + or -}
 begin
@@ -682,6 +684,8 @@ begin
     4: result:='Battery level low; RTH in < 3min';
     5: result:='Flight angle too high';
     6: result:='Almost empty battery alert';
+    7: result:='';
+    8: result:='Local terrestrial magnetic field is too weak';
   end;
 end;
 
