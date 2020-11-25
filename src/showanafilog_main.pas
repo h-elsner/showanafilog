@@ -684,7 +684,7 @@ begin
     4: result:='Battery level low; RTH in < 3min';
     5: result:='Flight angle too high';
     6: result:='Almost empty battery alert';
-    7: result:='';
+    7: result:='Magnetometer is disturbed by a magnetic element';
     8: result:='Local terrestrial magnetic field is too weak';
   end;
 end;
