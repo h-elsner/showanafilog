@@ -73,7 +73,7 @@ resourcestring                                     {deutsch}
     capLogDir='Wähle Verzeichnis';
     hntChart1='Zoomen mit Mausrad, Verschieben mit gehaltener linken Maustaste';
     dtSpeed='XYZ Geschw.';
-    dtAngle='XYZ Winkel [rad]';
+    dtAngle='XYZ Winkel';
     clnLeft='0-Linie links';
     clnRight='0-Linie rechts';
     hntChartListBox='An-/abwählen der Diagramme für XYZ Geschwindigkeit oder Winkel';

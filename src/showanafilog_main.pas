@@ -874,6 +874,16 @@ begin
       result:=result+s[i];
 end;
 
+function RadToGrad180(const r: double): double;        {Radiant to +/-180°}
+begin
+  result:=r*180/pi;
+end;
+
+function RadToGrad360(const r: double): double;        {Radiant to 0..360°}
+begin
+  result:=(RadToGrad180(r)+360) mod 360;
+end;
+
 
 //////////////////////////// Sub-thread overview //////////////////////////////
 
@@ -901,6 +911,7 @@ procedure TMyThread.GetFileName;                   {Get current file number}
 begin
   filename:=Form1.ovGrid.Cells[0, idx];
 end;
+
 
 procedure TMyThread.Execute;                       {Scan files}
 var i, k, batt, battmin, fmode: integer;
@@ -951,11 +962,9 @@ var i, k, batt, battmin, fmode: integer;
                      (metr=1) then                 {Imperial set}
                        result:=value*mtoft;        {m/s --> ft/s}
       16, 17: if converted then
-                result:=value*180/pi;              {rad to ° +/-180}
-      18:     if converted then begin
-                result:=value*180/pi;              {rad to ° 0..360, 0 is north}
-                if result<0 then result:=result+360;
-              end;
+                result:=RadToGrad180(value);       {rad to ° +/-180}
+      18:     if converted then
+                result:=RadToGrad360(value);       {rad to ° 0..360, 0 is north}
 
   {possibly converted values m --> km}
       21: begin
@@ -1222,8 +1231,6 @@ begin
   Chart2ConstantLine2.SeriesColor:=Chart2LineSeries4.SeriesColor;
   Chart2.AxisList[0].Title.LabelFont.Color:=Chart2ConstantLine1.SeriesColor;
   Chart2.AxisList[2].Title.LabelFont.Color:=Chart2ConstantLine2.SeriesColor;
-  Chart2.AxisList[0].Title.Caption:=dtSpeed+tab1+UnitToStr(15, false);
-  Chart2.AxisList[2].Title.Caption:=dtAngle;
   lbLegende.Hint:=hntChartListBox;
   for i:=0 to lbLegende.SeriesCount-1 do           {Set all as default}
     lbLegende.Checked[i]:=true;
@@ -1743,6 +1750,8 @@ var dir: string;
 begin
   try
     StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
+    Chart2.AxisList[0].Title.Caption:=dtSpeed+tab1+UnitToStr(15, false);
+    Chart2.AxisList[2].Title.Caption:=dtAngle+tab1+UnitToStr(16, false, cbDegree.Checked);
     if Form1.Tag=0 then begin                      {first start}
       if (ParamCount>0) and                        {FileName as 1st parameter}
          (Length(ParamStr(1))>3) then begin        {Something like a file name?}
@@ -2799,6 +2808,8 @@ var i: integer;
     bg: TDateTime;
 begin
   if csvGrid.RowCount>jsonMinLines then begin      {minimum 20 lines}
+    Chart2.AxisList[0].Title.Caption:=dtSpeed+tab1+UnitToStr(15, false);
+    Chart2.AxisList[2].Title.Caption:=dtSpeed+tab1+UnitToStr(16, false, cbDegree.Checked);
     Chart2LineSeries1.Title:=csvGrid.Cells[13, 0]; {Write titles from headers}
     Chart2LineSeries2.Title:=csvGrid.Cells[14, 0];
     Chart2LineSeries3.Title:=csvGrid.Cells[15, 0];

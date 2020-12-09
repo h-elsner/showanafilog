@@ -73,7 +73,7 @@ resourcestring                                     {english}
   capLogDir='Select log dir';
   hntChart1='Zooming with mouse wheel, panning with left mouse button hold';
   dtSpeed='XYZ speed';
-  dtAngle='XYZ angle [rad]';
+  dtAngle='XYZ angle';
   clnLeft='Zero line left';
   clnRight='Zero line right';
   hntChartListBox='Select/deselect charts for XYZ speed or angle';

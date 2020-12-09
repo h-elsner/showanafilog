@@ -93,10 +93,10 @@ object Form1: TForm1
     Height = 483
     Top = 64
     Width = 894
-    ActivePage = TabSheet5
+    ActivePage = TabSheet6
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 5
+    TabIndex = 3
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -224,14 +224,14 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'atti'
-      ClientHeight = 445
-      ClientWidth = 888
+      ClientHeight = 455
+      ClientWidth = 886
       ImageIndex = 12
       object Chart2: TChart
         Left = 0
-        Height = 445
+        Height = 455
         Top = 0
-        Width = 766
+        Width = 764
         AxisList = <        
           item
             Grid.Visible = False
@@ -317,8 +317,8 @@ object Form1: TForm1
         end
       end
       object lbLegende: TChartListbox
-        Left = 774
-        Height = 445
+        Left = 772
+        Height = 455
         Top = 0
         Width = 114
         Chart = Chart2
@@ -329,8 +329,8 @@ object Form1: TForm1
         TabOrder = 1
       end
       object Splitter1: TSplitter
-        Left = 766
-        Height = 445
+        Left = 764
+        Height = 455
         Top = 0
         Width = 8
         Align = alRight
