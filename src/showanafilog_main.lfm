@@ -16,7 +16,7 @@ object Form1: TForm1
   OnDropFiles = FormDropFiles
   OnKeyUp = FormKeyUp
   Position = poDefaultPosOnly
-  SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Splitter1.Left;Width;WindowState'
+  SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Width;WindowState;lbLegende.Width'
   ShowHint = True
   ShowInTaskBar = stNever
   LCLVersion = '2.0.10.0'
