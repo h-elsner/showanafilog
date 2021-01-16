@@ -1,7 +1,7 @@
 object Form2: TForm2
-  Left = 1259
+  Left = 1196
   Height = 268
-  Top = 669
+  Top = 674
   Width = 632
   Caption = 'Form2'
   ClientHeight = 268
@@ -12,7 +12,7 @@ object Form2: TForm2
   OnResize = FormResize
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
-  LCLVersion = '1.8.4.0'
+  LCLVersion = '2.0.10.0'
   object addGrid: TStringGrid
     Left = 8
     Height = 211
@@ -123,7 +123,6 @@ object Form2: TForm2
       Active = False
       LineStyle = lsVertical
       Pen.Color = clRed
-      Position = 0
     end
   end
   object edTime: TEdit
@@ -140,12 +139,12 @@ object Form2: TForm2
     Visible = False
   end
   object DateTimeIntervalChartSource1: TDateTimeIntervalChartSource
-    left = 392
-    top = 40
+    Left = 392
+    Top = 40
   end
   object PopupMenu1: TPopupMenu
-    left = 328
-    top = 114
+    Left = 328
+    Top = 114
     object cmnSaveAs: TMenuItem
       Caption = 'saveas'
       Bitmap.Data = {
@@ -213,12 +212,12 @@ object Form2: TForm2
   end
   object SaveDialog1: TSaveDialog
     Filter = '*.png|*.png|*.csv|*.csv'
-    left = 392
-    top = 114
+    Left = 392
+    Top = 114
   end
   object ChartToolset1: TChartToolset
-    left = 328
-    top = 40
+    Left = 328
+    Top = 40
     object ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool
       ZoomFactor = 1.1
       ZoomRatio = 0.9090909090909

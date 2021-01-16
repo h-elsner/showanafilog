@@ -137,7 +137,7 @@ History:
      2019-11-22 DPI alignment removed, additional checks if JSON nodes exists
      2020-03-26 Load last file instead of first, column width in LogData updated
      2020-11-10 Alert state 6 added (Almost empty battery alert)
-
+     2021-01-16 Query for latest version added, GitHub link
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -178,9 +178,10 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, TAGraph, TATransformations, TAIntervalSources,
-  TASeries, TATools, TAChartListbox, Forms, Controls, Graphics, fpjson,
-  jsonparser, Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage, EditBtn, math,
-  Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls, Menus, anzwerte;
+  TASeries, TATools, TAChartListbox, Ipfilebroker, Forms, Controls, Graphics,
+  fpjson, jsonparser, Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage,
+  EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
+  Menus, anzwerte, Iphttpbroker, IpHtml;
 
 {$I anafi_en.inc}                                  {Include a language file}
 {.$I anafi_dt.inc}
@@ -219,6 +220,8 @@ type
     ChartAxisTransformations3AutoScaleAxisTransform1: TAutoScaleAxisTransform;
     ChartAxisTransformations4: TChartAxisTransformations;
     ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform;
+    ipHTMLin: TIpHttpDataProvider;
+    lblGitHub: TLabel;
     lbLegende: TChartListbox;
     ChartToolset1: TChartToolset;
     ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
@@ -253,6 +256,7 @@ type
     MenuItem1: TMenuItem;
     cmnShowGM: TMenuItem;
     cmnShowOSM: TMenuItem;
+    mmnDownload: TMenuItem;
     mmnFDRlog: TMenuItem;
     N1: TMenuItem;
     mmnRename: TMenuItem;
@@ -341,12 +345,16 @@ type
     procedure lblDownloadClick(Sender: TObject);
     procedure lblDownloadMouseEnter(Sender: TObject);
     procedure lblDownloadMouseLeave(Sender: TObject);
+    procedure lblGitHubClick(Sender: TObject);
+    procedure lblGitHubMouseEnter(Sender: TObject);
+    procedure lblGitHubMouseLeave(Sender: TObject);
     procedure lblManualClick(Sender: TObject);
     procedure lblManualMouseEnter(Sender: TObject);
     procedure lblManualMouseLeave(Sender: TObject);
     procedure ListBox1Click(Sender: TObject);
     procedure LogDirChange(Sender: TObject);
     procedure LogDirDblClick(Sender: TObject);
+    procedure mmnDownloadClick(Sender: TObject);
     procedure mmnFDRlogClick(Sender: TObject);
     procedure mmnHomepageClick(Sender: TObject);
     procedure mmnCloseClick(Sender: TObject);
@@ -374,6 +382,7 @@ type
       var HintText: String);
     procedure staGridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure staGridResize(Sender: TObject);
+    procedure CheckVersion;                        {Call version file and check}
 
   private
     procedure BuildList;                           {Search and count JSON files}
@@ -429,14 +438,13 @@ type
   end;
 
 const
-  appName='ShowAnafiLogs';
-  appVersion='V1.6 11/2020';                       {Major version}
-  appBuildno='2020-11-25';                         {Build per day}
+  appName='ShowAnafiLog';
+  appVersion='V1.6 01/2021';                       {Major version}
+  appBuildno='2021-01-16';                         {Build per day}
+  versfile='/v';
 
-  homepage='http://h-elsner.mooo.com';             {my Homepage}
   hpmydat='/pdf/';
   email='helmut.elsner@live.com';
-  githublink='https://github.com/h-elsner/showanafilog';
 
 {Define if input in JSON data is always metric else
  depends on control device settings (variable)}
@@ -445,6 +453,8 @@ const
   mtoft=3.2808399;                                 {meter to feet}
 
 {Links}
+  githublink='https://github.com/h-elsner/showanafilog';
+  homepage='http://h-elsner.mooo.com';             {my Homepage}
   gmapURL='https://maps.google.com/maps';
   osmURL='https://www.openstreetmap.org/';         {OSM link}
   starticon='http://maps.google.com/mapfiles/dir_0.png';       {blue}
@@ -829,11 +839,13 @@ begin
 end;
 
 function OpenManual: boolean;                      {Open manual local or from WWW}
+var s: string;
 begin
-  if not FileExists(GetExePath+manual) then
-    result:=OpenURL(homepage+hpmydat+manual)
+  s:=GetExePath+manual;
+  if FileExists(s) then
+    result:=OpenDocument(s)
   else
-    result:=OpenDocument(GetExePath+manual);
+    result:=OpenURL(homepage+hpmydat+manual);
 end;
 
 {Distance between coordinaten in m according
@@ -1146,8 +1158,9 @@ begin
   {$ENDIF}
   end;
   lblDownload.Caption:=rsLatest;
-//  lblDownload.Hint:=homepage+downURL;
-  lblDownload.Hint:=githublink;
+  lblDownload.Hint:=homepage+downURL;
+  lblGitHub.Hint:=githublink;
+  lblGitHub.Caption:=capGitHub;
 
   cbExtrude.Caption:=capExtrude;
   cbExtrude.Hint:=hntExtrude;
@@ -1179,6 +1192,7 @@ begin
   mmnHelp.Caption:=mniHelp;
   mmnManual.Caption:=rsManual;
   mmnHomepage.Caption:=mniHomepage;
+  mmnDownload.Caption:=rsLatest;
   mmnInfo.Caption:=mniInfo;
 
   cmnClipbrd.Caption:=mniCopy;
@@ -1312,6 +1326,8 @@ procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; {Reload by F5}
 begin
   if (key=vk_F5) and (Form1.Tag=1) then
     BuildList;
+  if key=VK_ESCAPE then
+    Close;
 end;
 
 function TForm1.GetCSVsep: char;                   {Define CSV data seperator}
@@ -1359,16 +1375,69 @@ begin
   StatusBar1.Panels[3].Text:=grpConv.Items[grpConv.ItemIndex];
 end;
 
-procedure TForm1.grpUnitClick(Sender: TObject);            {Unit setting changed}
+procedure TForm1.grpUnitClick(Sender: TObject);    {Unit setting changed}
 begin
   cbDegree.Tag:=1;
 end;
 
 procedure TForm1.lblDownloadClick(Sender: TObject);        {Click link homepage}
 begin
-  if OpenURL(lblDownload.Hint) then
-    lblDownload.Font.Color:=clPurple;
+  CheckVersion;
 end;
+
+function DoDownload: string;                      {Download new version}
+begin
+  if OpenURL(homepage+DownURL) then
+    result:=rsDownloading
+  else
+    result:=errDownloading;
+end;
+
+procedure TForm1.CheckVersion;                     {Call version file and check}
+var strm: TStream;
+    inlist: TStringList;
+    i: integer;
+    ct: string;
+begin
+  inlist:=TStringList.Create;
+  Screen.Cursor:=crHourGlass;
+  ct:='';
+  strm:=nil;
+  try
+    try
+      ipHTMLin.Reference(AppName);
+      if ipHTMLin.CheckURL(homepage+versfile, ct) then
+        strm:=ipHTMLin.DoGetStream(homepage+versfile);
+    except
+      on e: Exception do begin
+        StatusBar1.Panels[4].Text:=e.Message;
+        exit;
+      end;
+    end;
+    if (strm<>nil) and (strm.Size>0) then
+      inlist.LoadFromStream(strm);
+    if inlist.count>0 then begin
+      lblDownload.Font.Color:=clPurple;
+      for i:=0 to inlist.count-1 do begin
+        if pos(AppName, inlist[i])>0 then begin
+          ct:=inlist[i].Split([','])[1];
+          if ct>=appBuildno then begin
+            MessageDlg(rsLatestVersion+sLineBreak+sLineBreak+
+                       Form1.Caption+sLineBreak+'Build: '+appBuildno,
+                       mtInformation,[mbOK],0);
+          end else
+            StatusBar1.Panels[4].Text:=DoDownload;  {Download new version}
+          break;
+        end;
+      end;
+    end else
+      StatusBar1.Panels[4].Text:=DoDownload;        {Download new version}
+  finally
+    inlist.Free;
+    Screen.Cursor:=crDefault;
+  end;
+end;
+
 
 procedure TForm1.lblDownloadMouseEnter(Sender: TObject);   {Animate link}
 begin
@@ -1378,6 +1447,22 @@ end;
 procedure TForm1.lblDownloadMouseLeave(Sender: TObject);   {Animate link}
 begin
   lblDownload.Font.Style:=lblDownload.Font.Style-[fsBold];
+end;
+
+procedure TForm1.lblGitHubClick(Sender: TObject);          {Click link Git repo}
+begin
+  if OpenURL(lblGitHub.Hint) then
+    lblGitHub.Font.Color:=clPurple;
+end;
+
+procedure TForm1.lblGitHubMouseEnter(Sender: TObject);     {GitHub link animated}
+begin
+  lblGitHub.Font.Style:=lblGitHub.Font.Style+[fsBold];
+end;
+
+procedure TForm1.lblGitHubMouseLeave(Sender: TObject);
+begin
+  lblGitHub.Font.Style:=lblGitHub.Font.Style-[fsBold];
 end;
 
 procedure TForm1.lblManualClick(Sender: TObject);          {Click link manual}
@@ -1411,6 +1496,11 @@ end;
 procedure TForm1.LogDirDblClick(Sender: TObject);  {Call file explorer}
 begin
   OpenDocument(LogDir.Directory);
+end;
+
+procedure TForm1.mmnDownloadClick(Sender: TObject); {Main menu help/downlod}
+begin
+  CheckVersion;
 end;
 
 procedure TForm1.mmnFDRlogClick(Sender: TObject);  {Menu Show meta data from FDR}

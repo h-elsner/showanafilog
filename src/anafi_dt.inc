@@ -113,8 +113,6 @@ resourcestring                                     {deutsch}
     rsGPSavailable='Anafi GPS verfügbar';
     rsGPSnotAvailable='Anafi GPS nicht verfügbar';
     rsContact='Kontakt';
-    rsLatest='Neueste SW Version';
-    rsManual='Benutzerhandbuch';
     rsManufacture='Herstellungsdatum';
     rsLogBook='Pilot Logbuch';
     rsYes='Ja';
@@ -126,6 +124,9 @@ resourcestring                                     {deutsch}
     rsUUIDfound='UUID gefunden';
     rsNothingFound='Nichts gefunden';
     rsExtFilter='FDR log Dateien|*.bin|Alle Dateien|*.*';
+    rsLatestVersion='Du hast bereits die neueste Version.';
+    rsDownloading='Download ZIP Datei...';
+    errDownloading='Repository nicht vorhanden';
 
   {Menu items}
     mniFile='&Datei';
@@ -176,4 +177,7 @@ resourcestring                                     {deutsch}
     hntTable='Alternatives Verhalten der Datentabelle';
     capDegree='Winkel in Grad';
     hntDegree='Überschreibe die originalen Werte in Radiant mit Werten in Grad';
+    rsLatest='Neueste SW Version';
+    rsManual='Benutzerhandbuch';
+    capGitHub='GitHub repository';
 

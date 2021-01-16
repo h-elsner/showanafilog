@@ -22,7 +22,7 @@
       <MinorVersionNr Value="6"/>
       <RevisionNr Value="4"/>
       <CharSet Value="04B0"/>
-      <StringTable CompanyName="Helmut Elsner" FileDescription="ShowAnafiLogs" ProductName="Log file evaluation" ProductVersion="1.1"/>
+      <StringTable CompanyName="Helmut Elsner" FileDescription="ShowAnafiLog" ProductName="Log file evaluation" ProductVersion="1.1"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -39,13 +39,16 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="TurboPowerIPro"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
     </RequiredPackages>
     <Units Count="3">
       <Unit0>

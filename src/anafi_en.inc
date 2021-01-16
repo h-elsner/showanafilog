@@ -113,8 +113,6 @@ resourcestring                                     {english}
   rsGPSavailable='Anafi GPS available';
   rsGPSnotAvailable='Anafi GPS not available';
   rsContact='Contact';
-  rsLatest='Latest SW version';
-  rsManual='User manual';
   rsManufacture='Date of manufacture';
   rsLogBook='Pilot log book';
   rsYes='Yes';
@@ -126,6 +124,9 @@ resourcestring                                     {english}
   rsUUIDfound='UUID found';
   rsNothingFound='Nothing found';
   rsExtFilter='FDR log files|*.bin|All files|*.*';
+  rsLatestVersion='You have already the latest version.';
+  rsDownloading='Downloading ZIP file...';
+  errDownloading='Repository not available';
 
 {Menu items}
   mniFile='&File';
@@ -176,4 +177,7 @@ resourcestring                                     {english}
   hntTable='Some extra behaviour of the data table';
   capDegree='Angle as degree';
   hntDegree='Overwrite original angle values with values in degree';
+  rsLatest='Latest SW version';
+  rsManual='User manual';
+  capGitHub='GitHub repository';
 
