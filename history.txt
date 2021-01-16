@@ -54,6 +54,6 @@ History:
      2020-03-26 Load last file instead of first, column width in LogData updated
      2020-11-10 Alert state 6 added (Almost empty battery alert)
      2020-11-25 Alert state 7 and 8 added
-
+     2021-01-16 Query for latest version added, GitHub link
 
 
