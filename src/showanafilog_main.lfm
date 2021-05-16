@@ -19,7 +19,7 @@ object Form1: TForm1
   SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Width;WindowState;lbLegende.Width'
   ShowHint = True
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.0.12.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
@@ -93,10 +93,10 @@ object Form1: TForm1
     Height = 483
     Top = 64
     Width = 894
-    ActivePage = TabSheet5
+    ActivePage = TabSheet2
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 5
+    TabIndex = 1
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -106,9 +106,9 @@ object Form1: TForm1
       ImageIndex = 0
       object ovGrid: TStringGrid
         Left = 0
-        Height = 445
+        Height = 455
         Top = 0
-        Width = 888
+        Width = 886
         Align = alClient
         Color = clCream
         ColumnClickSorts = True
@@ -138,9 +138,9 @@ object Form1: TForm1
       ImageIndex = 1
       object csvGrid: TStringGrid
         Left = 0
-        Height = 445
+        Height = 455
         Top = 0
-        Width = 888
+        Width = 886
         Align = alClient
         Color = clCream
         ColCount = 23
@@ -158,8 +158,8 @@ object Form1: TForm1
     end
     object TabSheet3: TTabSheet
       Caption = 'hdia'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
@@ -224,8 +224,8 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'atti'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 12
       object Chart2: TChart
         Left = 0
@@ -340,8 +340,8 @@ object Form1: TForm1
     end
     object TabSheet4: TTabSheet
       Caption = 'dtl'
-      ClientHeight = 455
-      ClientWidth = 886
+      ClientHeight = 445
+      ClientWidth = 888
       ImageIndex = 3
       object dtlGrid: TStringGrid
         Left = 8

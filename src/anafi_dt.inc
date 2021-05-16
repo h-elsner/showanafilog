@@ -171,7 +171,7 @@ resourcestring                                     {deutsch}
     hntCSVsep='Semicolon statt Komma als Trenner bei CSV-Dateien';
     capLogBook='Ausgabe Format';
     hntLogBook='Ausgabe Format für das Pilot Logbuch';
-    capCrLogBook='Ablegen';
+    capCrLogBook='Anlegen';
     hntCrLogBook='Legt ein Pilot Logbuch von allen JSON Logdateien im ausgewählten Verzeichn is an';
     capTable='Tabelleneinstellungen';
     hntTable='Alternatives Verhalten der Datentabelle';

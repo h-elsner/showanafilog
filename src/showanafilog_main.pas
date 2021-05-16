@@ -183,8 +183,8 @@ uses
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
   Menus, anzwerte, Iphttpbroker, IpHtml;
 
-{$I anafi_en.inc}                                  {Include a language file}
-{.$I anafi_dt.inc}
+{.$I anafi_en.inc}                                  {Include a language file}
+{$I anafi_dt.inc}
 
 type
 
@@ -440,7 +440,7 @@ type
 const
   appName='ShowAnafiLog';
   appVersion='V1.6 01/2021';                       {Major version}
-  appBuildno='2021-01-16';                         {Build per day}
+  appBuildno='2021-01-18';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -833,15 +833,10 @@ begin
           gzoom+'/'+lati+'/'+long+'&layers=S';
 end;
 
-function GetExePath: string;   {Path to exe-file with path delimiter at the end}
-begin
-  result:=IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
-end;
-
 function OpenManual: boolean;                      {Open manual local or from WWW}
 var s: string;
 begin
-  s:=GetExePath+manual;
+  s:=Application.Location+manual;
   if FileExists(s) then
     result:=OpenDocument(s)
   else
@@ -1149,7 +1144,7 @@ begin
   btSearchFDR.Hint:=hntbtSearch;
 
   lblManual.Caption:=rsManual;
-  lblManual.Hint:=GetExePath+manual;               {default}
+  lblManual.Hint:=Application.Location+manual;     {default}
   if not FileExists(lblManual.Hint) then begin
     lblManual.Hint:=homepage+hpmydat+manual;       {Overwrite with inet link}
   end else begin
@@ -2156,11 +2151,14 @@ end;
 procedure TForm1.csvGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
   aState: TGridDrawState);                         {Cells get colors}
 var w: integer;
+    ts: TTextStyle;
 
 begin
   if (aState=[]) and                               {Only if cell is not selected}
      (aRow>0) then begin                           {not for header}
     if csvGrid.Cells[aCol, aRow]<>'' then begin
+      ts:=csvGrid.Canvas.TextStyle;
+      ts.Alignment:=taCenter;
       case aCol of
         2: begin                                   {Battery level}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 0);
@@ -2181,10 +2179,12 @@ begin
         5: begin                                   {flight state}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 99);
              csvGrid.Canvas.Brush.Color:=Form2.ColorSourceFM(w);
+             csvGrid.Canvas.TextStyle:=ts;
            end;
         6: begin                                   {alert state}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 99);
              csvGrid.Canvas.Brush.Color:=Form2.ColorSourceAS(w);
+             csvGrid.Canvas.TextStyle:=ts;
            end;
         8: if LowerCase(csvGrid.Cells[aCol, aRow])='true' then
              csvGrid.Canvas.Brush.Color:=clMoneygreen;
