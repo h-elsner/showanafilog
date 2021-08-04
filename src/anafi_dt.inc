@@ -33,6 +33,16 @@ resourcestring                                     {deutsch}
     ahdr19='Flip Type';
     ahdr20='Fluggeschwindigkeit';
     ahdr21='Entfernung Anafi zu RC';
+    ahdr22='Spannung';                             {Replaces column 1}
+    ahdr23='Motorfehler';                          {Replaces column 12}
+    ahdr24='RTH Status';
+    ahdr25='Forced landing';
+    ahdr26='Wind';
+    ahdr27='Vibrationslevel';
+    ahdr28='FollowMe Status';
+    ahdr29='Run ID';
+    ahdr30='MPP Taste';
+    ahdr31='Start';
 
   {Other column header}
     ovDate='Datum';
@@ -101,6 +111,7 @@ resourcestring                                     {deutsch}
     rsSaved='erfolgreich angelegt und gespeichert';
     rsMetaDataJ='Metadaten JSON';
     rsMetaDataF='Metadaten FDR';
+    rsMetaDateB='Metadaten Blackbox';
     rsStatistics='Statistiken';
     errWrongData='Kein Anafi JSON log oder falsche Daten in der Datei';
     errMissingFiles='Keine JSON Datei im Verzeichnis';

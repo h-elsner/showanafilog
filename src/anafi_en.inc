@@ -13,15 +13,15 @@ resourcestring                                     {english}
 {Alternative column header data}
   ahdr0 ='Time since boot';
   ahdr1 ='Battery Charge Level';
-  ahdr2 ='Controller Latitude';
-  ahdr3 ='Controller Longitude';
+  ahdr2 ='RC Latitude';
+  ahdr3 ='RC Longitude';
   ahdr4 ='Flying Mode';
   ahdr5 ='Alert state';
   ahdr6 ='WiFi Signal Strength';
-  ahdr7 ='Anafi GPS Lock';
-  ahdr8 ='Anafi Longitude';
-  ahdr9 ='Anafi Latitude';
-  ahdr10='Anafi GPS Error';
+  ahdr7 ='Drone GPS Lock';
+  ahdr8 ='Drone Longitude';
+  ahdr9 ='Drone Latitude';
+  ahdr10='Drone GPS Error';
   ahdr11='Number of Sats';
   ahdr12='Forward Speed';
   ahdr13='Sideways Speed';
@@ -33,6 +33,17 @@ resourcestring                                     {english}
   ahdr19='Flip Type';
   ahdr20='True Air Speed';
   ahdr21='Distance Anafi to RC';
+  ahdr22='Voltage';
+  ahdr23='Motor error';
+  ahdr24='RTH state';
+  ahdr25='Forced landing';
+  ahdr26='Wind';
+  ahdr27='Vibration level';
+  ahdr28='FollowMe state';
+  ahdr29='Run ID';
+  ahdr30='MPP button';
+  ahdr31='Take-off';
+
 
 {Other column header}
   ovDate='Date';
@@ -101,6 +112,7 @@ resourcestring                                     {english}
   rsSaved='successful created and saved';
   rsMetaDataJ='Meta data JSON';
   rsMetaDataF='Meta data FDR';
+  rsMetaDataB='Meta data Blackbox';
   rsStatistics='Statistics';
   errWrongData='Not an Anafi flight log or wrong data format in file ';
   errMissingFiles='No JSON files in directory';

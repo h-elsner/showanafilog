@@ -86,6 +86,7 @@ Values 1..21
 }
 
 Form1.Tag:         Indicates if first run done (1=done}
+dtlGrid.Tag:       Type of file: 0..JSON, 1..FDR, 2..Blackbox
 csvGrid.Tag:       Current used file index (1...n)
 ovGrid.Tag:        Selected file index
 PageControl1.Tag:  Last used tab-page
@@ -138,6 +139,7 @@ History:
      2020-03-26 Load last file instead of first, column width in LogData updated
      2020-11-10 Alert state 6 added (Almost empty battery alert)
      2021-01-16 Query for latest version added, GitHub link
+2.0  2021-08-01 Blackbox files, first try: Header
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -183,8 +185,11 @@ uses
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
   Menus, anzwerte, Iphttpbroker, IpHtml;
 
-{.$I anafi_en.inc}                                  {Include a language file}
-{$I anafi_dt.inc}
+{$I anafi_en.inc}                                  {Include a language file}
+{.$I anafi_dt.inc}
+
+type
+  TDatArr = array[0..20] of string;
 
 type
 
@@ -394,6 +399,7 @@ type
     procedure MakeHDia;                            {Fill H-diagrams}
     procedure MakeAtti;                            {Fill attitude chart}
     procedure ChangeHeader;                        {Change column header}
+    procedure BlackboxHeader;                      {Create column header for Blackbox files}
     procedure KMLheader(klist: TStringList);       {KML header and meta data}
     procedure DoForm2Show(p: integer);             {Show additional chart}
     procedure DoScreenShot;                        {Screenshot}
@@ -402,6 +408,7 @@ type
     procedure CreateLogBook;                       {Create Pilot log book}
     procedure MetaGridInit(mode: integer);         {Set Details labels}
     procedure SearchFDRfiles(dir, mask, vstr: string);  {Find UUID}
+    procedure InsertDataset(da: TDatarr; source: byte; var pos: integer);
 
     function ShowFDRlog(fn: string; mode: integer=0): string; {Show meta data from FDR}
     function GetCellInfo(aCol, aRow: longint): string; {Cell info in data table}
@@ -437,10 +444,11 @@ type
         dirname, filename: string;
   end;
 
+
 const
   appName='ShowAnafiLog';
-  appVersion='V1.6 01/2021';                       {Major version}
-  appBuildno='2021-01-18';                         {Build per day}
+  appVersion='V2.0 08/2021';                       {Major version}
+  appBuildno='2021-08-03';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -462,10 +470,22 @@ const
   aircrafticon='http://earth.google.com/images/kml-icons/track-directional/track-0.png';
 
 {JSON keywords}
-  jsonHeader='details_headers';
+  jsonHeaderJ='details_headers';
   jsonData='details_data';
 
-{meta data keywords}
+  json1Hz='datas_1Hz';
+  json5Hz='datas_5Hz';
+  jsonDatas='datas';
+  jsonHeaderB='header';
+
+  jsonType='type';
+  jsonTimest='timestamp';
+  jsonalt='altitude';
+  jsonlat='latitude';
+  jsonlon='longitude';
+
+
+{Meta data keywords}
   datVersion='version';
   datUTC='date';
   datProdID='product_id';
@@ -485,6 +505,67 @@ const
   datGPSlat='gps_latitude';
   datGPSlon='gps_longitude';
 
+  datProdSerial='product_serial';
+  datProdFWhard='product_fw_hard';
+  datProdMotor='product_motor_version';
+  datProdFWsoft='product_fw_soft';
+  datProdGPS='product_gps_version';
+  datProdBlackbox='blackbox_version';
+  datTimeBase='timestamp_base';
+  datDeviceOS='device_os';
+  datRC='remote_controller';
+  datModel='Model';
+  datDevModel='device_model';
+  datPI='PI';
+  rsRC='RC ';
+
+{Datas types}
+  jtypWIFIband='wifi_band';                        {to Meta data}
+  jtypWIFIchan='wifi_channel';
+  jtypWIFIctry='wifi_country';
+
+  jtypProdBatt='product_battery';                  {Batt in %}
+  jtypProdFState='product_flying_state';
+  jtypProdAlert='product_alert';
+  jtypGPSfix='product_gps_fix';
+  jtypMotErr='product_motor_error';
+  jtypRTH='product_rth_state';
+  jtypHome='product_home';
+  jtypFLand='product_forced_landing';
+  jtypWind='product_wind';
+  jtypVibr='product_vibration_level';
+  jtypFPstate='product_fp_state';
+  jtypFMstate='product_followme_state';
+  jtypRunID='product_run_id';
+  jtypGPSto='product_gps_takingoff';
+  jtypMPPbtn='mpp_button';
+
+{1Hz types}
+  jtypVolt='product_battery_voltage';
+  jtypRSSI='wifi_rssi';
+  jtypRCgps='device_gps';
+  jtypProdGPS='product_gps';
+  jtypMPPcmd='mpp_pcmd';
+  jtypSource='source';
+  jtypVert='gaz';
+
+
+{5Hz types}
+
+  jtypProdAlt='product_alt';
+  jtypProdAngles='product_angles';
+  jtypPitch='pitch';
+  jtypRoll='roll';
+  jtypYaw='yaw';
+  jtypRCcmd='device_pcmd';
+  jtypFlag='flag';
+  jtypHeight='product_height_above_ground';
+  jtypProdSpeed='product_speed';
+  jtypVX='vx';
+  jtypVY='vy';
+  jtypVZ='vz';
+
+
   header: array[1..12] of string=(ovDate, ovFrom, ovTo, ovDuration,
                                   ovAltMax, ovDistMax, ovRoute, ovTasMax,
                                   ovBattMax, ovBattMin, rsLocation, rsGPSfix);
@@ -494,6 +575,7 @@ const
   frmFloat='0.000000';
   frmOut1='0.0';
   frmOut2='0.00';
+  frmOut3='0.000';
   hnsz='hh:nn:ss.zzz';
   hns='hh:nn:ss';
   ymd='yyyy-mm-dd';
@@ -518,6 +600,8 @@ const
   isep=';';
   hc=11;                                           {Hidden column}
   ziff=['0'..'9'];                                 {valid digits}
+  def0='0';                                        {Null string}
+  home='Home';
 
 {Strings fpr KML or GPX}
   xmlvers='<?xml version="1.0" encoding="UTF-8"?>'; {ID XML/GPX header}
@@ -591,6 +675,39 @@ begin
   end;
 end;
 
+{Conversion ISO time stamp to internal time format.
+        "date": "2020-05-09 16:14:23 +0200",
+ FDR time stamp: 20181206T204438+0100}
+
+function datBBtoDT(tst: string): TDateTime;
+var dt, zt, zone: string;
+    direction: char;                               {Time zone + or -}
+begin
+  dt:=tst.Split([' '])[0];
+  zt:=tst.Split([' '])[1];
+  if length(tst)>23 then begin
+    zone:=tst.Split([' '])[2];
+    if length(zone)=5 then begin
+      direction:=zone[1];
+      zone:=copy(zone, 2, 4)
+    end else begin
+      direction:='+';
+      zone:='0000';
+    end;
+  end;
+  try
+    result:=ScanDateTime(ymd, dt)+
+            ScanDateTime(hns, zt);
+    if direction='-' then
+      result:=result-ScanDateTime('hhnn', zone)
+    else
+      if direction='+' then
+        result:=result+ScanDateTime('hhnn', zone);
+  except
+    result:=0;
+  end;
+end;
+
 function FDRtimeToStr(s: string): string; inline;  {FDR date conversion to string}
 var tme: TDateTime;
 begin
@@ -617,7 +734,8 @@ end;
 function prepKeyw(k: string): string; inline;      {Column header from keyword}
 begin
   result:='';
-  if k<>'' then result:=trim(k);
+  if k<>'' then
+    result:=trim(k);
   result:=StringReplace(result, uscr,' ',[rfReplaceAll]);
   result:=StringReplace(result, 'gps','GPS',[rfReplaceAll]);
   result[1]:=UpCase(result[1]);
@@ -746,6 +864,7 @@ begin
     2318: result:='Disco';                         {90e'h}
     2319: result:='Skycontroller 2';               {90f'h}
     2324: result:='Anafi 4K';                      {914'h}
+    2328: result:='Remote controller';             {not to what is is related}
     2329: result:='Anafi Thermal';                 {919'h}
   end;
 end;
@@ -924,11 +1043,15 @@ procedure TMyThread.Execute;                       {Scan files}
 var i, k, batt, battmin, fmode: integer;
     fn: string;
     inf: TFileStream;
-    j0, j1, j2: TJsonData;                         {3 level}
+    j0, j1, j2, j3: TJsonData;                     {4 level}
     w, tasmax, altmax, distmax, route: double;
     latp, lonp, latc, lonc, lat1, lon1: double;
     tme: TDateTime;
     gpsfix: boolean;
+    timebase, timest, vx, vy, vz: double;
+
+    typelist: TStringList;
+    typestr: string;
 
 {Copies of the two functions to make it Thread-save}
   function UnitToStr(idx: integer;                 {Measurement unit string}
@@ -945,6 +1068,7 @@ var i, k, batt, battmin, fmode: integer;
       19: result:='m';
       21: if converted then result:='km/h' else result:='m/s';
       22: if converted then result:='km' else result:='m';
+      23: result:='V';
     end;
     if metr=1 then                                 {Overwrite with imperial}
       case idx of
@@ -1008,7 +1132,7 @@ begin
     tasmax:=0;
     altmax:=-9999;
     distmax:=0;
-    battmin:=999;
+    battmin:=99999;
     tme:=0;
     lat1:=0;
     lon1:=0;
@@ -1018,22 +1142,125 @@ begin
     Synchronize(@GetFileName);
     fn:=IncludeTrailingPathDelimiter(dirname)+filename+jext;
     if FileExists(fn) then begin
-      if terminated then break;
+      if terminated then
+        break;
       inf:=TFileStream.Create(fn, fmOpenRead or fmShareDenyWrite);
       if inf.Size>512 then begin                   {0.5kB minimal}
         j0:=GetJson(inf);                          {load whole JSON file, level 0}
         try
-          tme:=datISOtoDT(j0.FindPath(datUTC).AsString, ymd);
-          res[1]:=FormatDateTime(ymd, tme);        {Date/Time from meta data}
-          res[4]:=FormatDateTime(hns,              {Duration}
-                                SekToDT(j0.FindPath(datRunTime).AsString, 1));
-          res[0]:=j0.FindPath(datSerialNo).AsString;
-          res[11]:='"'+URLGMap(FormatFloat(frmCoord,
-                               j0.FindPath(datGPSlat).AsFloat),      {Homepoint}
-                               FormatFloat(frmCoord,
-                               j0.FindPath(datGPSlon).AsFloat))+'"';
-          j1:=j0.FindPath(jsonData);               {Datasets, Level 1}
+
+ ///////////// Blackbox JSON format ////////////////
+          j1:=j0.FindPath(json1hz);                {Test blackbox file}
+          if j1<>nil then begin                    {1Hz data}
+            j2:=j1.Items[j1.Count-1];              {1Hz Last dataset}
+            if j2<>nil then begin
+              timest:=j2.FindPath(jsonTimest).AsFloat;
+              battmin:=j2.FindPath(jtypVolt).AsInteger;  {Voltage in mV}
+            end;
+            j2:=j1.Items[0];                       {1Hz first dataset}
+            if j2<> nil then begin
+              w:=j2.FindPath(jsonTimest).AsFloat;  {temporäry value}
+              res[9]:=FormatFloat(frmOut2,(j2.FindPath(jtypVolt).AsInteger)/1000)+
+                      UnitToStr(23, true);         {Voltage max}
+            end;
+            for k:=1 to j1.Count-1 do begin
+              j2:=j1.Items[k];                     {Read voltage}
+              if j2<>nil then begin
+                batt:=j2.FindPath(jtypVolt).AsInteger;
+                if batt<battmin then
+                  battmin:=batt;
+              end;
+            end;
+            res[10]:=FormatFloat(frmOut2,battmin/1000)+
+                     UnitToStr(23, true);          {Voltage min}
+
+            j1:=j0.FindPath(jsonHeaderB);          {Header for time base}
+            if j1<>nil then begin
+              tme:=datBBtoDT(j1.FindPath(datUTC).AsString);
+              res[0]:=j1.FindPath(datProdSerial).AsString;
+              res[2]:=FormatDateTime(hns, tme);
+              timebase:=j1.FindPath(datTimeBase).AsFloat;
+              if timebase>w then                   {Compared to 1st dataset 1Hz}
+                timebase:=timebase/1000;           {Correction for Android}
+            end;
+
+            j1:=j0.FindPath(json5hz);              {5Hz data}
+            if j1<>nil then begin
+              j2:=j1.Items[j1.Count-1];            {5Hz Last dataset}
+              if j2<>nil then begin
+                w:=j2.FindPath(jsonTimest).AsFloat;
+                if w>timest then                   {find latest time stamp}
+                  timest:=w;
+              end;
+
+              for k:=0 to j1.Count-1 do begin      {check all datasets}
+                j2:=j1.Items[k];
+                if j2<>nil then begin              {find 5Hz data}
+                  w:=j2.FindPath(jtypProdAlt).AsFloat;
+                  if w>altmax then                 {Product Altitude}
+                    altmax:=w;
+                  j3:=j2.FindPath(jtypProdSpeed);
+                  if j3<>nil then begin            {Speed values}
+                    vx:=j3.FindPath(jtypVX).AsFloat;
+                    vy:=j3.FindPath(jtypVY).AsFloat;
+                    vz:=j3.FindPath(jtypVZ).AsFloat;
+                  end;
+                  w:=sqrt((vx*vx)+(vy*vy)+(vz*vz));
+                  if w>tasmax then                 {w is TAS}
+                    tasmax:=w;
+                end;
+              end;
+            end;
+
+            j1:=j0.FindPath(jsonDatas);            {Datas}
+            if j1<>nil then begin
+              for k:=0 to j1.Count-1 do begin      {check all datasets}
+                j2:=j1.Items[k];
+                if j2<>nil then begin              {Find GPS fix}
+                  if j2.FindPath(jsonType).AsString=jtypGPSfix then
+                    if j2.FindPath(jsonDatas).AsInteger>0 then begin
+                      gpsfix:=true;
+                      break;
+                    end;
+                end;
+              end;
+
+(*
+              typelist:=TStringList.Create;
+              for k:=0 to j1.Count-1 do begin
+                j2:=j1.Items[k];                   {Test only: List of types}
+                if j2<>nil then begin
+ //                 if j2.FindPath(jsonType).AsString=jtypProdFState then begin
+ //                 typestr:=j2.FindPath(jsonDatas).AsString;
+                  typestr:=j2.FindPath(jsonType).AsString;
+                    if typelist.IndexOf(typestr)<0 then
+                      typelist.Add(typestr);
+
+//                  end;
+                end;
+              end;
+              typelist.SaveToFile('D:\temp\types.txt');
+              typelist.Free;            *)
+
+            end;
+            timest:=(timest-timebase)/secpd;       {Duration as TDateTime}
+            res[3]:=FormatDateTime(hns, tme+timest);
+            res[4]:=FormatDateTime(hns, timest);
+          end;                                     {End Blackbox file}
+
+///////////// legacy/easy JSON format ////////////////
+          j1:=j0.FindPath(jsonData);               {Datasets, Level 1, JSON file}
           if j1<>nil then begin
+
+            tme:=datISOtoDT(j0.FindPath(datUTC).AsString, ymd);
+            res[4]:=FormatDateTime(hns,            {Duration}
+                                   SekToDT(j0.FindPath(datRunTime).AsString, 1));
+            res[0]:=j0.FindPath(datSerialNo).AsString;
+            res[11]:='"'+URLGMap(FormatFloat(frmCoord,
+                                 j0.FindPath(datGPSlat).AsFloat),   {Homepoint}
+                                 FormatFloat(frmCoord,
+                                 j0.FindPath(datGPSlon).AsFloat))+'"';
+
             j2:=j1.Items[0];                       {First dataset: Begin time}
             if j2<>nil then begin
               res[2]:=FormatDateTime(hns, SekToDT(j2.Items[0].AsString, 1)+tme);
@@ -1058,7 +1285,7 @@ begin
                 lonp:=j2.Items[8].AsFloat;
                 latp:=j2.Items[9].AsFloat;
                 if ((lat1<>0) or (lon1<>0)) and
-                   ((latp<>0) or (lonp<>0)) then begin {Lenght route}
+                   ((latp<>0) or (lonp<>0)) then begin {Length route}
                   w:=DeltaKoord(latp, lonp, lat1, lon1);
                   if not IsNan(w) then route:=route+w;
                 end;
@@ -1074,23 +1301,26 @@ begin
                 if (not IsNan(w)) and (w>distmax) then
                   distmax:=w;
               end;
-              res[5]:=FormatFloat(frmOut1, ConvUnit(19, altmax))+
-                                           UnitToStr(19, true);
               res[6]:=FormatFloat(frmOut1, ConvUnit(22, distmax, useau))+
                                            UnitToStr(22, true, useau);
               res[7]:=FormatFloat(frmOut1, ConvUnit(22, route, useau))+
                                            UnitToStr(22, true, useau);
-              res[8]:=FormatFloat(frmOut2, ConvUnit(21, tasmax, true))+
-                                           UnitToStr(21, true, true);
               res[10]:=IntToStr(battmin)+          {min Battery level}
                                 UnitToStr(2, true);
-              if gpsfix then
-                res[12]:=rsYes
-              else
-                res[12]:=rsNo;
             end;
-          end;
-          if terminated then break;                {Jump out before write}
+          end;                                     {End JSON file}
+          res[1]:=FormatDateTime(ymd, tme);        {Date/Time from meta data}
+          res[5]:=FormatFloat(frmOut1, ConvUnit(19, altmax))+
+                                       UnitToStr(19, true);
+          res[8]:=FormatFloat(frmOut2, ConvUnit(21, tasmax, true))+
+                                       UnitToStr(21, true, true);
+          if gpsfix then
+            res[12]:=rsYes
+          else
+            res[12]:=rsNo;
+
+          if terminated then
+            break;                                 {Jump out before write}
           Synchronize(@WriteResults);
         finally
           inf.Free;
@@ -1275,13 +1505,19 @@ begin
   dtlGrid.Tag:=mode;
   case mode of
     0: begin
-         lblDetails.Caption:=rsMetaDataJ;
+         lblDetails.Caption:=rsMetaDataJ;          {Meta data JSON}
          dtlGrid.Cells[0, 0]:=dtlJCol0;
          dtlGrid.Cells[1, 0]:=dtlJCol1;
          dtlGrid.RowCount:=16;
        end;
     1: begin
-         lblDetails.Caption:=rsMetaDataF;
+         lblDetails.Caption:=rsMetaDataF;          {Meta data FDR}
+         dtlGrid.Cells[0, 0]:=dtlFCol0;
+         dtlGrid.Cells[1, 0]:=dtlFCol1;
+         dtlGrid.RowCount:=1;
+       end;
+    2: begin
+         lblDetails.Caption:=rsMetaDataB;          {Meta data Blackbox}
          dtlGrid.Cells[0, 0]:=dtlFCol0;
          dtlGrid.Cells[1, 0]:=dtlFCol1;
          dtlGrid.RowCount:=1;
@@ -1350,6 +1586,33 @@ function TForm1.ColorToKMLColor(const AColor: TColor;   {Google Farbcodierung}
                                 sat: integer=255): string;    {Saturation=255}
 begin
   Result:=IntToHex(sat, 2)+IntToHex(ColorToRgb(AColor), 6);
+end;
+
+procedure TForm1.BlackboxHeader;                   {Create column header for Blackbox files}
+var
+  i: integer;
+
+begin
+  for i:=2 to 22 do
+    csvGrid.Cells[i, 0]:=AltHeaderToStr(i);
+  csvGrid.Cells[1, 0]:=ahdr22;                     {Changed columns compared to legacy JSON}
+  csvGrid.Cells[12, 0]:=ahdr23;                    {Motor error}
+  csvGrid.Cells[20, 0]:='FP state';                {Is this flip state?}
+
+  csvGrid.Cells[23, 0]:=ahdr24;                    {New columns}
+  csvGrid.Cells[24, 0]:=ahdr25;
+  csvGrid.Cells[25, 0]:=ahdr26;
+  csvGrid.Cells[26, 0]:=ahdr27;
+  csvGrid.Cells[27, 0]:=ahdr28;
+  csvGrid.Cells[28, 0]:=ahdr29;
+  csvGrid.Cells[29, 0]:=ahdr30;                    {MPP button}
+  csvGrid.Cells[30, 0]:=home+tab1+jsonalt;
+  csvGrid.Cells[31, 0]:=home+tab1+jsonlat;
+  csvGrid.Cells[32, 0]:=home+tab1+jsonlon;
+  csvGrid.Cells[33, 0]:=ahdr31+tab1+jsonalt;
+  csvGrid.Cells[34, 0]:=ahdr31+tab1+jsonlat;
+  csvGrid.Cells[35, 0]:=ahdr31+tab1+jsonlon;
+
 end;
 
 procedure TForm1.ChangeHeader;                     {Change column header}
@@ -1905,7 +2168,8 @@ end;
 
 procedure TForm1.cbHeaderChange(Sender: TObject);  {Use alternative Header}
 begin
-  ChangeHeader;
+  if dtlGrid.Tag=0 then
+    ChangeHeader;
 end;
 
 procedure TForm1.Chart1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -2104,7 +2368,10 @@ function TForm1.GetCellInfo(aCol, aRow: longint): string;
                                                    {Cell info in data table}
   function DefaultHnt: string; inline;             {Default hint: Header=Value}
   begin
-    result:=AltHeaderToStr(aCol)+'='+csvGrid.Cells[aCol, aRow];
+    if dtlGrid.Tag=0 then
+      result:=AltHeaderToStr(aCol)+'='+csvGrid.Cells[aCol, aRow]
+    else
+      result:=csvGrid.Cells[aCol, 0]+'='+csvGrid.Cells[aCol, aRow];
   end;
 
   function FrmValue: string; inline;               {Format float for better reading}
@@ -2120,30 +2387,32 @@ function TForm1.GetCellInfo(aCol, aRow: longint): string;
   end;
 
 begin                                              {Get additional info per cell}
+  result:=csvGrid.Cells[aCol, aRow];
   if aRow=0 then begin
-    result:=AltHeaderToStr(aCol);                  {More explained header}
+    if dtlGrid.Tag=0 then
+      result:=AltHeaderToStr(aCol);                {Better explained header}
   end else begin
-    result:=DefaultHnt;
-    case aCol of
-      1, 2, 7: result:=DefaultHnt+UnitToStr(aCol, true);
-      5: result:=AltHeaderToStr(aCol)+': '+
-                 F_StateToStr(csvGrid.Cells[aCol, aRow]);
-      6: result:=AltHeaderToStr(aCol)+': '+
-                 AlertStateToStr(csvGrid.Cells[aCol, aRow]);
-      8: result:=AltHeaderToStr(aCol)+': '+
-                 GPSavailToStr(csvGrid.Cells[aCol, aRow]);
-      13..15, 19: result:=FrmValue;
-      16..18: result:=AltHeaderToStr(aCol)+'='+
-                      FormatFloat(frmFloat,
-                      ConvUnit(aCol, StrToFloat(csvGrid.Cells[aCol, aRow]),
-                               not cbDegree.Checked))+
-                      UnitToStr(aCol, true, true); {with conversion to °}
-      20: result:=AltHeaderToStr(aCol)+': '+
-                  FlipTypeToStr(csvGrid.Cells[aCol, aRow]);
-      21, 22: result:=AltHeaderToStr(aCol)+'='+
-                      FormatFloat(frmFloat,
-                      ConvUnit(aCol, StrToFloat(csvGrid.Cells[aCol, aRow]), useau))+
-                      UnitToStr(aCol, true, useau); {with alternative units}
+    if csvGrid.Cells[aCol, aRow]<>'' then begin
+      result:=DefaultHnt;
+      case aCol of
+        1, 2, 7: result:=DefaultHnt+UnitToStr(aCol, true);
+        5: result:=AltHeaderToStr(aCol)+': '+
+                   F_StateToStr(csvGrid.Cells[aCol, aRow]);
+        6: result:=AltHeaderToStr(aCol)+': '+
+                   AlertStateToStr(csvGrid.Cells[aCol, aRow]);
+        8: result:=AltHeaderToStr(aCol)+': '+
+                   GPSavailToStr(csvGrid.Cells[aCol, aRow]);
+        13..15, 19: result:=FrmValue;
+        16..18: result:=AltHeaderToStr(aCol)+'='+
+                        FormatFloat(frmFloat,
+                        ConvUnit(aCol, StrToFloat(csvGrid.Cells[aCol, aRow]),
+                                 not cbDegree.Checked))+
+                        UnitToStr(aCol, true, true); {with conversion to °}
+        21, 22: result:=AltHeaderToStr(aCol)+'='+
+                        FormatFloat(frmFloat,
+                        ConvUnit(aCol, StrToFloat(csvGrid.Cells[aCol, aRow]), useau))+
+                        UnitToStr(aCol, true, useau); {with alternative units}
+      end;
     end;
   end;
 end;
@@ -2188,7 +2457,7 @@ begin
            end;
         8: if LowerCase(csvGrid.Cells[aCol, aRow])='true' then
              csvGrid.Canvas.Brush.Color:=clMoneygreen;
-        11: if csvGrid.Cells[aCol, aRow]<>'0' then {GPS error}
+        11: if csvGrid.Cells[aCol, aRow]<>def0 then {GPS error}
               csvGrid.Canvas.Brush.Color:=clRed;
         12: begin                                  {Num sats}
                w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 0);
@@ -2206,7 +2475,7 @@ begin
                   end;
                 end else exit;
              end;
-         20: if csvGrid.Cells[aCol, aRow]<>'0' then
+         20: if csvGrid.Cells[aCol, aRow]<>def0 then
                csvGrid.Canvas.Brush.Color:=clOrange;  {flip type}
       end;
     end;
@@ -2219,7 +2488,7 @@ function TForm1.UnitToStr(idx: integer;            {Measurement unit string}
 begin
   result:='';                                      {No measurement unit}
   case idx of                                      {Set metric}
-    1: result:='ms';
+    1: if dtlGrid.Tag=0 then result:='ms' else result:='V';
     2: result:='%';
     7: result:='dBm';
     13..15: result:='m/s';
@@ -2306,7 +2575,7 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
      DoForm2Show(0);
      Form2.Caption:=rsChart+AltHeaderToStr(idx);
      case idx of
-       16..18: convert:=true;       {Unit string will be converted rad to °}
+       16..18: convert:=true;                      {Unit string will be converted rad to °}
      end;
      Form2.Chart1.AxisList[0].Title.Caption:=AltHeaderToStr(idx)+   {y-axis}
                                              tab1+UnitToStr(idx, false, convert);
@@ -2618,14 +2887,97 @@ begin
   Form1.Tag:=1;                                    {First run done}
 end;
 
+procedure TForm1.InsertDataset(da: TDatarr; source: byte; var pos: integer);
+
+  procedure AddDatas;                              {Add new row, pos not touched}
+  begin
+    csvGrid.RowCount:=csvGrid.RowCount+1;          {Add new row}
+    csvGrid.Cells[0, csvGrid.RowCount-1]:=da[0];   {Time}
+    csvGrid.Cells[2, csvGrid.RowCount-1]:=da[1];   {Batt %}
+    csvGrid.Cells[5, csvGrid.RowCount-1]:=da[2];   {Flying state}
+    csvGrid.Cells[6, csvGrid.RowCount-1]:=da[3];   {Alert state}
+    csvGrid.Cells[8, csvGrid.RowCount-1]:=da[4];   {GPS available}
+    csvGrid.Cells[12, csvGrid.RowCount-1]:=da[5];  {Motor state}
+    csvGrid.Cells[35, csvGrid.RowCount-1]:=da[6];
+    csvGrid.Cells[36, csvGrid.RowCount-1]:=da[7];
+    csvGrid.Cells[38, csvGrid.RowCount-1]:=da[8];
+    csvGrid.Cells[39, csvGrid.RowCount-1]:=da[9];
+    csvGrid.Cells[20, csvGrid.RowCount-1]:=da[10];
+    csvGrid.Cells[37, csvGrid.RowCount-1]:=da[11];
+    csvGrid.Cells[42, csvGrid.RowCount-1]:=da[12];
+    csvGrid.Cells[41, csvGrid.RowCount-1]:=da[13];
+    csvGrid.Cells[43, csvGrid.RowCount-1]:=da[14]; {Home alt/pos}
+    csvGrid.Cells[44, csvGrid.RowCount-1]:=da[15];
+    csvGrid.Cells[45, csvGrid.RowCount-1]:=da[16];
+    csvGrid.Cells[46, csvGrid.RowCount-1]:=da[17]; {Take-off alt/pos}
+    csvGrid.Cells[47, csvGrid.RowCount-1]:=da[18];
+    csvGrid.Cells[48, csvGrid.RowCount-1]:=da[19];
+    csvGrid.Cells[40, csvGrid.RowCount-1]:=da[20];
+  end;
+
+  procedure Insert1Hz;
+  begin
+    csvGrid.RowCount:=csvGrid.RowCount+1;
+    csvGrid.Cells[0, csvGrid.RowCount-1]:=da[0];   {Time}
+    csvGrid.Cells[1, csvGrid.RowCount-1]:=da[1];   {Volt}
+    csvGrid.Cells[23, csvGrid.RowCount-1]:=da[2];  {RC alt}
+    csvGrid.Cells[3, csvGrid.RowCount-1]:=da[3];   {RC lat}
+    csvGrid.Cells[4, csvGrid.RowCount-1]:=da[4];   {RC lon}
+    csvGrid.Cells[11, csvGrid.RowCount-1]:=da[5];  {Drone alt}
+    csvGrid.Cells[10, csvGrid.RowCount-1]:=da[6];  {Drone lat}
+    csvGrid.Cells[9, csvGrid.RowCount-1]:=da[7];   {Drone lon}
+
+    csvGrid.Cells[25, csvGrid.RowCount-1]:=da[8];  {MPP_pcmd}
+    csvGrid.Cells[26, csvGrid.RowCount-1]:=da[9];
+    csvGrid.Cells[27, csvGrid.RowCount-1]:=da[10];
+    csvGrid.Cells[28, csvGrid.RowCount-1]:=da[11];
+    csvGrid.Cells[29, csvGrid.RowCount-1]:=da[12];
+
+    csvGrid.Cells[7, csvGrid.RowCount-1]:=da[13];  {RSSI}
+    csvGrid.Cells[22, csvGrid.RowCount-1]:=da[14]; {dist}
+  end;
+
+  procedure Insert5Hz;
+  begin
+    csvGrid.RowCount:=csvGrid.RowCount+1;          {Add new row}
+    csvGrid.Cells[ 0, csvGrid.RowCount-1]:=da[0];  {Time}
+    csvGrid.Cells[19, csvGrid.RowCount-1]:=da[1];  {Product alt}
+    csvGrid.Cells[17, csvGrid.RowCount-1]:=da[2];  {pitch}
+    csvGrid.Cells[16, csvGrid.RowCount-1]:=da[3];  {roll}
+    csvGrid.Cells[18, csvGrid.RowCount-1]:=da[4];  {yaw}
+    csvGrid.Cells[13, csvGrid.RowCount-1]:=da[5];  {vx}
+    csvGrid.Cells[14, csvGrid.RowCount-1]:=da[6];  {vy}
+    csvGrid.Cells[15, csvGrid.RowCount-1]:=da[7];  {vz}
+
+    csvGrid.Cells[30, csvGrid.RowCount-1]:=da[8];  {device pcmd}
+    csvGrid.Cells[31, csvGrid.RowCount-1]:=da[9];
+    csvGrid.Cells[32, csvGrid.RowCount-1]:=da[10];
+    csvGrid.Cells[33, csvGrid.RowCount-1]:=da[11];
+    csvGrid.Cells[34, csvGrid.RowCount-1]:=da[12];
+
+    csvGrid.Cells[24, csvGrid.RowCount-1]:=da[13]; {height}
+    csvGrid.Cells[21, csvGrid.RowCount-1]:=da[14]; {tas}
+  end;
+
+begin
+  if da[0]<>def0 then begin
+    case source of
+      0: AddDatas;
+      1: Insert1Hz;
+      2: Insert5Hz;
+    end;
+  end;
+end;
+
 procedure TForm1.LoadOneFile(idx: integer);        {Start working one file}
 var inf: TFileStream;
-    j0, j1, j2: TJsonData;                         {3 level}
+    j0, j1, j2, j3: TJsonData;                     {4 level}
     fn, keyw: string;
-    w, tas, tasmax, alt, altmax, distmax: double;
+    w, tas, tasmax, alt, altmax, distmax, timebase, timest: double;
     latp, lonp, latc, lonc: double;
-    i, k, ttasmax, taltmax, tp, batt, battmin, tbattmin, tdistmax: integer;
+    i, k, ttasmax, taltmax, tp, batt, battmin, tbattmin, tdistmax, spos: integer;
     tme, trt: TDateTime;
+    datarray: TDatArr;
 
   function GetMString(const kw: string): string; inline;
                                                    {Skip destroyed data in file}
@@ -2721,18 +3073,367 @@ var inf: TFileStream;
       staGrid.Cells[1, 3]:=FormatFloat(frmFloat, ConvUnit(21, tasmax, useau))+
                            UnitToStr(21, true, useau);
       staGrid.Cells[2, 3]:=FormatDateTime(hnsz, ttasmax/(secpd*1000)+tme);
-      staGrid.Cells[1, 5]:=IntToStr(battmin)+UnitToStr(2, true);
+      if dtlGrid.Tag=0 then
+        staGrid.Cells[1, 5]:=IntToStr(battmin)+UnitToStr(2, true)      {in %}
+      else
+        staGrid.Cells[1, 5]:=FormatFloat(frmOut3, battmin/1000)+UnitToStr(23, true);  {in V}
       staGrid.Cells[2, 5]:=FormatDateTime(hnsz, tbattmin/(secpd*1000)+tme);
     staGrid.EndUpdate;
   end;
 
+  procedure ReadMetaHeader;                        {BlackBox: Read meta data from Header node}
+  var
+    s: string;
+
+  begin
+    j1:=j0.FindPath(jsonHeaderB);                  {Meta data}
+    if j1<>nil then begin
+      tme:=datBBtoDT(j1.FindPath(datUTC).AsString);
+      timebase:=j1.FindPath(datTimeBase).AsFloat;
+      if timebase>w then                           {Compared to 1st dataset 1Hz}
+        timebase:=timebase/1000;                   {Correction for Android}
+
+      dtlGrid.BeginUpdate;                         {Fill Meta data from header level 1/2}
+        keyw:=datProdSerial;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        s:=j1.FindPath(keyw).AsString;
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=s;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=rsManufacture;
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=SerialToManufacture(s);
+        keyw:=datProdID;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        s:=j1.FindPath(keyw).AsString;
+        lblProduct.Caption:=ProdIDtoLabel(s);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=s+': '+lblProduct.Caption;;
+
+        keyw:=datProdFWhard;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j1.FindPath(keyw).AsString;
+        keyw:=datProdMotor;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j1.FindPath(keyw).AsString;
+        keyw:=datBootID;
+        s:=j1.FindPath(keyw).AsString;
+        edUUID.Text:=s;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=FormatUUID(s);
+        keyw:=datProdFWsoft;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j1.FindPath(keyw).AsString;
+        keyw:=datDevModel;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j1.FindPath(keyw).AsString;
+        keyw:=datDeviceOS;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j1.FindPath(keyw).AsString;
+        keyw:=datProdBlackbox;
+        dtlGrid.RowCount:=dtlGrid.RowCount+1;
+        dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(keyw);
+        dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j1.FindPath(keyw).AsString;
+
+        j2:=j1.FindPath(datRC);                    {Remote controller}
+        if j2<>nil then begin
+          if j2<>nil then begin
+            keyw:=datHWvers;
+            dtlGrid.RowCount:=dtlGrid.RowCount+1;
+            dtlGrid.Cells[0, dtlGrid.RowCount-1]:=rsRC+prepKeyw(keyw);
+            dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j2.FindPath(keyw).AsString;
+            keyw:=datSWvers;
+            dtlGrid.RowCount:=dtlGrid.RowCount+1;
+            dtlGrid.Cells[0, dtlGrid.RowCount-1]:=rsRC+prepKeyw(keyw);
+            dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j2.FindPath(keyw).AsString;
+            keyw:=datModel;
+            dtlGrid.RowCount:=dtlGrid.RowCount+1;
+            dtlGrid.Cells[0, dtlGrid.RowCount-1]:=rsRC+prepKeyw(keyw);
+            dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j2.FindPath(keyw).AsString;
+            keyw:=datPI;
+            dtlGrid.RowCount:=dtlGrid.RowCount+1;
+            dtlGrid.Cells[0, dtlGrid.RowCount-1]:=rsRC+prepKeyw(datSerialNo);
+            dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j2.FindPath(keyw).AsString;
+          end;
+        end;
+      dtlGrid.EndUpdate;
+    end;
+  end;
+
+  procedure ReadDatasNode;                         {BlackBox: Read WiFi Metadata + datasets from Datas}
+  var
+    i, k: integer;
+    s: string;
+
+  begin
+    j1:=j0.FindPath(jsonDatas);                    {Datasets datas}
+    if j1<>nil then begin                          {Some metadata from Datas}
+      for i:=0 to high(datarray) do
+        datarray[i]:=def0;
+
+      for k:=0 to j1.Count-1 do begin
+        datarray[12]:='';                          {Columns that shall be empty except valid sets i.e. runID}
+        for i:=14 to 19 do                         {Empty home & Take-off positions (alt/lat/lon)}
+          datarray[i]:='';
+
+        j2:=j1.Items[k];
+        if j2<>nil then begin
+          s:=j2.FindPath(jsonType).AsString;
+
+          if s=jtypWIFIband then begin
+            dtlGrid.RowCount:=dtlGrid.RowCount+1;
+            dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(s);
+            dtlGrid.Cells[1, dtlGrid.RowCount-1]:=IntToStr(j2.FindPath(jsonDatas).AsInteger);
+          end;
+          if s=jtypWIFIctry then begin
+            dtlGrid.RowCount:=dtlGrid.RowCount+1;
+            dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(s);
+            dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j2.FindPath(jsonDatas).AsString;
+          end;
+
+          if s=jtypProdBatt then begin
+            datarray[1]:=j2.FindPath(jsonDatas).AsString;    {Battery in %}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypProdFState then begin
+            datarray[2]:=j2.FindPath(jsonDatas).AsString;    {Flying_state}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypProdAlert then begin
+            datarray[3]:=j2.FindPath(jsonDatas).AsString;    {Alert_state}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypGPSfix then begin
+            datarray[4]:=j2.FindPath(jsonDatas).AsString;    {GPS fix}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypMotErr then begin
+            datarray[5]:=j2.FindPath(jsonDatas).AsString;    {Motor Error}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypRTH then begin
+            datarray[6]:=j2.FindPath(jsonDatas).AsString;    {RTH state}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypFLand then begin
+            datarray[7]:=j2.FindPath(jsonDatas).AsString;    {Forced landing}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypWind then begin
+            datarray[8]:=j2.FindPath(jsonDatas).AsString;    {Wind}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypVibr then begin
+            datarray[9]:=j2.FindPath(jsonDatas).AsString;    {Vibration}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypFPstate then begin
+            datarray[10]:=j2.FindPath(jsonDatas).AsString;   {FP state}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypFMstate then begin
+            datarray[11]:=j2.FindPath(jsonDatas).AsString;   {FollowMe}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypRunID then begin
+            datarray[12]:=j2.FindPath(jsonDatas).AsString;   {RunID}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypMPPbtn then begin
+            datarray[13]:=j2.FindPath(jsonDatas).AsString;   {MPP button}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+          if s=jtypWIFIchan then begin
+            datarray[20]:=j2.FindPath(jsonDatas).AsString;   {Wifi channel}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
+
+          if s=jtypHome then begin                 {Home point}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+            j3:=j2.FindPath(jsonDatas);
+            if j3<>nil then begin
+              w:=j3.FindPath(jsonlat).AsFloat;
+              if w<200 then begin
+                datarray[14]:=FormatFloat(frmOut2, j3.FindPath(jsonalt).AsFloat);
+                datarray[15]:=FormatFloat(frmCoord, w);
+                datarray[16]:=FormatFloat(frmCoord, j3.FindPath(jsonlon).AsFloat);
+              end else
+                datarray[0]:=def0;                 {suppress output if invalid values}
+            end;
+          end;
+          if s=jtypGPSto then begin                {GPS take-off point}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+            j3:=j2.FindPath(jsonDatas);
+            if j3<>nil then begin
+              w:=j3.FindPath(jsonlat).AsFloat;
+              if w<200 then begin
+                datarray[17]:=FormatFloat(frmOut2, j3.FindPath(jsonalt).AsFloat);
+                datarray[18]:=FormatFloat(frmCoord, w);
+                datarray[19]:=FormatFloat(frmCoord,j3.FindPath(jsonlon).AsFloat);
+              end else
+                datarray[0]:=def0;                 {suppress output if invalid values}
+            end;
+          end;
+        end;
+//        InsertDataset(datarray, 0, spos);          {Add row to csvGrid}
+      end;
+    end;
+  end;
+
+  procedure Read1HzNode;                           {BlackBox: Reas data from 1Hz node}
+  var
+    i, k, volt: integer;
+
+  begin
+    j1:=j0.FindPath(json1Hz);                      {Datasets 1Hz datas}
+    if j1<>nil then begin                          {Some metadata from Datas}
+      for i:=0 to high(datarray) do                {Clear result array}
+        datarray[i]:=def0;
+      for k:=0 to j1.Count-1 do begin              {Read all datasets}
+
+        j2:=j1.Items[k];
+        if j2<>nil then begin
+          timest:=j2.FindPath(jsonTimest).AsFloat;
+          datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+
+          volt:=j2.FindPath(jtypVolt).AsInteger;
+          datarray[1]:=FormatFloat(frmOut3, volt/1000);                         {Battery in V}
+          if volt<battmin then begin
+            battmin:=volt;                         {Minimal voltage}
+            tbattmin:=round((timest-timebase)*1000); {time of min V}
+          end;
+          if staGrid.Cells[1, 4]='' then begin     {Max voltage set}
+            staGrid.Cells[1, 4]:=datarray[1];
+            staGrid.Cells[2, 4]:=FormatDateTime(hnsz, (timest-timebase)/secpd+tme);
+          end;
+          datarray[13]:=j2.FindPath(jtypRSSI).AsString;                         {WiFi RSSI}
+
+          j3:=j2.FindPath(jtypRCgps);              {Controller position}
+          if j3<>nil then begin
+            datarray[2]:=FormatFloat(frmOut2, j3.FindPath(jsonalt).AsFloat);    {Alt}
+            latc:=j3.FindPath(jsonlat).AsFloat;
+            datarray[3]:=FormatFloat(frmCoord, latc);                           {Lat}
+            lonc:=j3.FindPath(jsonlon).AsFloat;
+            datarray[4]:=FormatFloat(frmCoord, lonc);                           {Lon}
+          end;
+          j3:=j2.FindPath(jtypProdGPS);            {Drone position}
+          if j3<>nil then begin
+            datarray[5]:=FormatFloat(frmOut2, j3.FindPath(jsonalt).AsFloat);    {Alt}
+            latp:=j3.FindPath(jsonlat).AsFloat;
+            datarray[6]:=FormatFloat(frmCoord, latp);                           {Lat}
+            lonp:=j3.FindPath(jsonlon).AsFloat;
+            datarray[7]:=FormatFloat(frmCoord, lonp);                           {Lon}
+          end;
+          j3:=j2.FindPath(jtypMPPcmd);             {MPP pcmd}
+          if j3<>nil then begin
+            datarray[8]:=j3.FindPath(jtypSource).AsString;
+            datarray[9]:=j3.FindPath(jtypVert).AsString;
+            datarray[10]:=j3.FindPath(jtypPitch).AsString;
+            datarray[11]:=j3.FindPath(jtypRoll).AsString;
+            datarray[12]:=j3.FindPath(jtypYaw).AsString;
+          end;
+          if (latp<200) and (latc<200) then begin            {Compute distance}
+            w:=DeltaKoord(latc, lonc, latp, lonp);   {Distance RC - A/C}
+            datarray[14]:=FormatFloat(frmOut1, w);
+            if w>distmax then begin
+              distmax:=w;                            {highest distance}
+              tdistmax:=round((timest-timebase)*1000); {time of max distance}
+            end;
+          end;
+        end;
+//        InsertDataset(datarray, 1, spos);          {Insert row to csvGrid}
+      end;
+    end;
+  end;
+
+  procedure Read5HzNode;                           {BlackBox: Reas data from 5Hz node}
+  var
+    i, k: integer;
+    vx, vy, vz: double;
+
+  begin
+    j1:=j0.FindPath(json5Hz);                      {Datasets 1Hz datas}
+    if j1<>nil then begin                          {Some metadata from Datas}
+      for i:=0 to high(datarray) do                {Clear result array}
+        datarray[i]:=def0;
+
+      for k:=0 to j1.Count-1 do begin
+        j2:=j1.Items[k];
+        if j2<>nil then begin
+          timest:=j2.FindPath(jsonTimest).AsFloat;
+          datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          alt:=j2.FindPath(jtypProdAlt).AsFloat;
+          datarray[1]:=FormatFloat(frmOut2, alt);  {Altitude}
+          if alt>altmax then begin
+            altmax:=alt;
+            taltmax:=round((timest-timebase)*1000);
+          end;
+          datarray[13]:=FormatFloat(frmOut2, j2.FindPath(jtypHeight).AsFloat);  {Height}
+
+          j3:=j2.FindPath(jtypProdAngles);         {Angles}
+          if j3<>nil then begin
+            datarray[2]:=j3.FindPath(jtypPitch).AsString;
+            datarray[3]:=j3.FindPath(jtypRoll).AsString;
+            datarray[4]:=j3.FindPath(jtypYaw).AsString;
+          end;
+          j3:=j2.FindPath(jtypProdSpeed);          {Speed}
+          if j3<>nil then begin
+            vx:=j3.FindPath(jtypVX).AsFloat;
+            vy:=j3.FindPath(jtypVY).AsFloat;
+            vz:=j3.FindPath(jtypVZ).AsFloat;
+            datarray[5]:=FormatFloat(frmFloat, vx);
+            datarray[6]:=FormatFloat(frmFloat, vy);
+            datarray[7]:=FormatFloat(frmFloat, vz);
+            tas:=sqrt((vx*vx)+(vy*vy)+(vz*vz));    {tas}
+            if tas>tasmax then begin
+              tasmax:=tas;
+              ttasmax:=round((timest-timebase)*1000);
+            end;
+            datarray[14]:=FormatFloat(frmFloat, tas);
+          end;
+          j3:=j2.FindPath(jtypRCcmd);              {pcmd}
+          if j3<>nil then begin
+            datarray[8]:=j3.FindPath(jtypFlag).AsString;
+            datarray[9]:=j3.FindPath(jtypVert).AsString;
+            datarray[10]:=j3.FindPath(jtypPitch).AsString;
+            datarray[11]:=j3.FindPath(jtypRoll).AsString;
+            datarray[12]:=j3.FindPath(jtypYaw).AsString;
+          end;
+        end;
+        InsertDataset(datarray, 2, spos);          {Insert row to csvGrid}
+      end;
+    end;
+  end;
+
 begin
   tme:=0;
-  battmin:=999;
+  spos:=1;                                         {Insert dataset from this position}
+  battmin:=99999;
   tasmax:=0;
   altmax:=-9999;
   distmax:=0;
-  MetagridInit(0);                                 {Set standard labels for JSON}
+  dtlGrid.Tag:=3;                                  {undef}
   ProgressFile.Position:=0;
   if ovGrid.Cells[0, idx]<>'' then begin
     fn:=IncludeTrailingPathDelimiter(LogDir.Directory)+ovGrid.Cells[0, idx]+jext;
@@ -2748,92 +3449,132 @@ begin
           try
             csvGrid.Tag:=idx;                      {identify index of current file}
             j0:=GetJson(inf);               {load whole JSON file, level 0, Metadata}
-            tme:=datISOtoDT(j0.FindPath(datUTC).AsString, ymd); {Date/Time from meta data}
+            try
+{Read and write Header, (re)create columns in data table, check file type}
+              j1:=j0.FindPath(jsonHeaderJ);          {load header}
+              if j1<>nil then begin
+                dtlGrid.Tag:=0;                      {legacy JSON file}
+                MetagridInit(dtlGrid.Tag);           {Set standard labels for JSON}
+                csvGrid.ColCount:=23;
+                for i:=0 to j1.Count-1 do begin
+                  hdrList[i]:=j1.Items[i].AsString;  {fill original header array}
+                end;
+                ChangeHeader;                        {use alternative headers or not}
+              end;
 
-{Read and write Header, (re)create columns in data table}
-            j1:=j0.FindPath(jsonHeader);           {load header}
-            if j1<>nil then begin
-              for i:=0 to j1.Count-1 do begin
-                hdrList[i]:=j1.Items[i].AsString;  {fill original header array}
+              j1:=j0.FindPath(json1Hz);              {Test if Blackbox file}
+              if j1<>nil then begin
+                dtlGrid.Tag:=2;                      {legacy JSON file}
+                MetagridInit(dtlGrid.Tag);           {Set standard labels for JSON}
+                csvGrid.ColCount:=49;
+                BlackboxHeader;                      {Blackbox CSV header}
+                j2:=j1.Items[0];                     {1Hz first dataset}
+                if j2<> nil then                     {w: temporäry value for Android correction}
+                  w:=j2.FindPath(jsonTimest).AsFloat;
               end;
-              ChangeHeader;                        {use alternative headers or not}
-              csvGrid.AutoSizeColumns;
-            end;
-{Read and write data, (re)create rows in data table}
-            j1:=j0.FindPath(jsonData);             {Datasets, Level 1}
-            if j1<>nil then begin
-              StatusBar1.Panels[1].Text:=IntToStr(j1.Count);
-              j2:=j1.Items[0];                     {First dataset: Begin time}
-                                                   {Battery level max + time}
-              if j2<>nil then begin
-                staGrid.Cells[1, 4]:=IntToStr(j2.Items[1].AsInteger)+
-                                     Form1.UnitToStr(2, true);
-                staGrid.Cells[2, 4]:=FormatDateTime(hnsz,
-                                     SekToDT(j2.Items[0].AsString, 1)+tme);
-              end;
-              ProgressFile.Max:=j1.Count-1;
-              csvGrid.BeginUpdate;
-                csvGrid.RowCount:=j1.Count+1;
-                for i:=0 to j1.Count-1 do begin    {Read datasets}
-                  j2:=j1.Items[i];                 {read data, level 2}
+              csvGrid.AutoSizeColumns;               {Align to headers}
+              StatusBar1.Panels[4].Text:=fn;         {Show file name}
+
+///////////// legacy/easy JSON format ////////////////
+              if dtlGrid.Tag=0 then begin
+                tme:=datISOtoDT(j0.FindPath(datUTC).AsString, ymd); {Date/Time from meta data}
+                j1:=j0.FindPath(jsonData);             {Datasets, Level 1}
+                if j1<>nil then begin
+                  StatusBar1.Panels[1].Text:=IntToStr(j1.Count);
+                  j2:=j1.Items[0];                     {First dataset: Begin time}
+                                                       {Battery level max + time}
                   if j2<>nil then begin
-                    for k:=0 to J2.Count-1 do begin     {Fill one Row}
-                      case k of                    {distribute values}
-                        0: tp:=j2.Items[k].AsInteger;
-                        1: batt:=j2.Items[k].AsInteger;
-                        2: latc:=j2.Items[k].AsFloat;
-                        3: lonc:=j2.Items[k].AsFloat;
-                        8: lonp:=j2.Items[k].AsFloat;
-                        9: latp:=j2.Items[k].AsFloat;
-                        12..14: csvGrid.Cells[k+1, i+1]:=
-                                  FormatFloat(frmFloat, j2.Items[k].AsFloat);
-                        15..17: csvGrid.Cells[k+1, i+1]:=
-                                  FormatFloat(frmFloat,
-                                  ConvUnit(k+1, j2.Items[k].AsFloat, cbDegree.Checked));
-                        18: alt:=j2.Items[k].AsFloat;
-                        20: tas:=j2.Items[k].AsFloat;
-                      else
-                        csvGrid.Cells[k+1, i+1]:=j2.Items[k].AsString;
+                    staGrid.Cells[1, 4]:=IntToStr(j2.Items[1].AsInteger)+
+                                         Form1.UnitToStr(2, true);
+                    staGrid.Cells[2, 4]:=FormatDateTime(hnsz,
+                                         SekToDT(j2.Items[0].AsString, 1)+tme);
+                  end;
+                  ProgressFile.Max:=j1.Count-1;
+
+                  csvGrid.BeginUpdate;
+                    csvGrid.RowCount:=j1.Count+1;
+                    for i:=0 to j1.Count-1 do begin    {Read datasets}
+                      j2:=j1.Items[i];                 {read data, level 2}
+                      if j2<>nil then begin
+                        for k:=0 to J2.Count-1 do begin     {Fill one Row}
+                          case k of                    {distribute values}
+                            0: tp:=j2.Items[k].AsInteger;
+                            1: batt:=j2.Items[k].AsInteger;
+                            2: latc:=j2.Items[k].AsFloat;
+                            3: lonc:=j2.Items[k].AsFloat;
+                            8: lonp:=j2.Items[k].AsFloat;
+                            9: latp:=j2.Items[k].AsFloat;
+                            12..14: csvGrid.Cells[k+1, i+1]:=
+                                      FormatFloat(frmFloat, j2.Items[k].AsFloat);
+                            15..17: csvGrid.Cells[k+1, i+1]:=
+                                      FormatFloat(frmFloat,
+                                      ConvUnit(k+1, j2.Items[k].AsFloat, cbDegree.Checked));
+                            18: alt:=j2.Items[k].AsFloat;
+                            20: tas:=j2.Items[k].AsFloat;
+                          else
+                            csvGrid.Cells[k+1, i+1]:=j2.Items[k].AsString;
+                          end;
+                        end;
+                                                       {fill fix columns}
+                        csvGrid.Cells[0, i+1]:=
+                          FormatDateTime(ymd+tab1+hnsz, tp/(secpd*1000)+tme);
+                        csvGrid.Cells[1, i+1]:=IntToStr(tp);
+                        csvGrid.Cells[2, i+1]:=IntToStr(batt);
+                        if batt<battmin then begin
+                          battmin:=batt;               {lowest batt level}
+                          tbattmin:=tp;                {time of lowest batt level}
+                        end;
+                        csvGrid.Cells[3, i+1]:=FormatFloat(frmCoord, latc);
+                        csvGrid.Cells[4, i+1]:=FormatFloat(frmCoord, lonc);
+                        csvGrid.Cells[9, i+1]:=FormatFloat(frmCoord, lonp);
+                        csvGrid.Cells[10, i+1]:=FormatFloat(frmCoord, latp);
+                        csvGrid.Cells[19, i+1]:=FormatFloat(frmFloat, alt);
+                        if alt>altmax then begin
+                          altmax:=alt;                 {highest altitude}
+                          taltmax:=tp;                 {time of highest altitude}
+                        end;
+                        csvGrid.Cells[21, i+1]:=FormatFloat(frmFloat, tas);
+                        if tas>tasmax then begin
+                          tasmax:=tas;                 {highest speed}
+                          ttasmax:=tp;                 {time of max speed}
+                        end;
+                        w:=DeltaKoord(latc, lonc, latp, lonp);   {Distance RC - A/C}
+                        csvGrid.Cells[22, i+1]:=FormatFloat(frmOut1, w);
+                        if w>distmax then begin
+                          distmax:=w;                  {highest distance}
+                          tdistmax:=tp;                {time of max distance}
+                        end;
+                        ProgressFile.Position:=i;
+                        WriteDtlGrid;                  {Write statistics}
+                        WriteStaGrid;                  {Fill statistics table}
                       end;
                     end;
-                                                   {fill fix columns}
-                    csvGrid.Cells[0, i+1]:=
-                      FormatDateTime(ymd+tab1+hnsz, tp/(secpd*1000)+tme);
-                    csvGrid.Cells[1, i+1]:=IntToStr(tp);
-                    csvGrid.Cells[2, i+1]:=IntToStr(batt);
-                    if batt<battmin then begin
-                      battmin:=batt;               {lowest batt level}
-                      tbattmin:=tp;                {time of lowest batt level}
-                    end;
-                    csvGrid.Cells[3, i+1]:=FormatFloat(frmCoord, latc);
-                    csvGrid.Cells[4, i+1]:=FormatFloat(frmCoord, lonc);
-                    csvGrid.Cells[9, i+1]:=FormatFloat(frmCoord, lonp);
-                    csvGrid.Cells[10, i+1]:=FormatFloat(frmCoord, latp);
-                    csvGrid.Cells[19, i+1]:=FormatFloat(frmFloat, alt);
-                    if alt>altmax then begin
-                      altmax:=alt;                 {highest altitude}
-                      taltmax:=tp;                 {time of highest altitude}
-                    end;
-                    csvGrid.Cells[21, i+1]:=FormatFloat(frmFloat, tas);
-                    if tas>tasmax then begin
-                      tasmax:=tas;                 {highest speed}
-                      ttasmax:=tp;                 {time of max speed}
-                    end;
-                    w:=DeltaKoord(latc, lonc, latp, lonp);   {Distance RC - A/C}
-                    csvGrid.Cells[22, i+1]:=FormatFloat(frmOut1, w);
-                    if w>distmax then begin
-                      distmax:=w;                  {highest distance}
-                      tdistmax:=tp;                {time of max distance}
-                    end;
-                    ProgressFile.Position:=i;
-                    Application.ProcessMessages;
-                    StatusBar1.Panels[4].Text:=fn; {Show file name}
-                    WriteDtlGrid;                  {Write statistics}
-                    WriteStaGrid;                  {Fill statistics table}
-                  end;
+                    csvGrid.AutoSizeColumn(0);
+                  csvGrid.EndUpdate(false);
+
                 end;
-                csvGrid.AutoSizeColumn(0);
-              csvGrid.EndUpdate(false);
+              end;
+
+///////////// Blackbox JSON format ////////////////
+              if dtlGrid.Tag=2 then begin
+                ReadMetaHeader;       {Read Meta data from node Header, set tme and timebase}
+                staGrid.Cells[1, 4]:='';
+                staGrid.Cells[2, 4]:='';
+                csvGrid.BeginUpdate;
+                try
+                  ReadDatasNode;     {Set up the table with time line}
+                  Read1HzNode;       {Insert datasets at right position in the timeline}
+                  Read5HzNode;
+                  WriteStaGrid;
+                  csvGrid.AutoSizeColumn(0);
+                finally
+                  csvGrid.EndUpdate;
+                end;
+                StatusBar1.Panels[1].Text:=IntToStr(csvGrid.RowCount-1);
+              end;
+
+            finally
+              j0.Free;
             end;
           except
             StatusBar1.Panels[4].Text:=errWrongData+ExtractFileName(fn);
