@@ -29,20 +29,15 @@ resourcestring                                     {deutsch}
     ahdr15='Roll Winkel';
     ahdr16='Pitch Winkel';
     ahdr17='Kompassrichtung';
-    ahdr18='Höhe relativ zum Start';
+    ahdr18='Realtive Höhe';
     ahdr19='Flip Type';
     ahdr20='Fluggeschwindigkeit';
     ahdr21='Entfernung Anafi zu RC';
     ahdr22='Spannung';                             {Replaces column 1}
     ahdr23='Motorfehler';                          {Replaces column 12}
-    ahdr24='RTH Status';
-    ahdr25='Forced landing';
-    ahdr26='Wind';
-    ahdr27='Vibrationslevel';
-    ahdr28='FollowMe Status';
-    ahdr29='Run ID';
-    ahdr30='MPP Taste';
-    ahdr31='Start';
+    ahdr22='Voltage';
+    ahdr23='Motorfehler';
+    ahdr24='Anafi GPS Höhe';
 
   {Other column header}
     ovDate='Datum';

@@ -93,10 +93,10 @@ object Form1: TForm1
     Height = 483
     Top = 64
     Width = 894
-    ActivePage = TabSheet4
+    ActivePage = TabSheet2
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 4
+    TabIndex = 1
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -110,7 +110,7 @@ object Form1: TForm1
         Top = 0
         Width = 886
         Align = alClient
-        Color = clCream
+        Color = clDefault
         ColumnClickSorts = True
         FixedCols = 0
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goRelaxedRowSelect, goDblClickAutoSize, goSmoothScroll, goCellHints, goCellEllipsis, goRowHighlight]
@@ -142,7 +142,7 @@ object Form1: TForm1
         Top = 0
         Width = 886
         Align = alClient
-        Color = clCream
+        Color = clDefault
         ColCount = 23
         FixedCols = 0
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goColSizing, goDblClickAutoSize, goSmoothScroll, goCellHints, goCellEllipsis]
@@ -198,7 +198,7 @@ object Form1: TForm1
             Title.LabelBrush.Style = bsClear
             Transformations = ChartAxisTransformations2
           end>
-        BackColor = clCream
+        BackColor = clDefault
         Foot.Brush.Color = clBtnFace
         Foot.Font.Color = clBlue
         Title.Brush.Color = clBtnFace
@@ -264,7 +264,7 @@ object Form1: TForm1
             Title.LabelBrush.Style = bsClear
             Transformations = ChartAxisTransformations4
           end>
-        BackColor = clCream
+        BackColor = clDefault
         Foot.Brush.Color = clBtnFace
         Foot.Font.Color = clBlue
         Title.Brush.Color = clBtnFace
@@ -349,7 +349,7 @@ object Form1: TForm1
         Top = 32
         Width = 416
         Anchors = [akTop, akLeft, akBottom]
-        Color = clCream
+        Color = clDefault
         ColCount = 2
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goSmoothScroll, goCellHints, goTruncCellHints, goCellEllipsis]
         ParentShowHint = False
@@ -371,7 +371,7 @@ object Form1: TForm1
         Height = 144
         Top = 32
         Width = 384
-        Color = clCream
+        Color = clDefault
         ColCount = 3
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goSmoothScroll, goCellHints, goCellEllipsis]
         RowCount = 6
@@ -411,7 +411,6 @@ object Form1: TForm1
         Height = 23
         Top = 224
         Width = 384
-        Color = clCream
         TabOrder = 3
       end
       object FDRdir: TDirectoryEdit
@@ -424,7 +423,7 @@ object Form1: TForm1
         NumGlyphs = 1
         Images = TabImages
         ImageIndex = 21
-        Color = clCream
+        Color = clDefault
         MaxLength = 0
         TabOrder = 2
         OnDblClick = FDRdirDblClick

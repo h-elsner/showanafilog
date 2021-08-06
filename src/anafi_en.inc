@@ -29,20 +29,13 @@ resourcestring                                     {english}
   ahdr15='Roll Angle';
   ahdr16='Pitch Angle';
   ahdr17='Compass Heading';
-  ahdr18='Altitude above take off';
+  ahdr18='Altitude relative';
   ahdr19='Flip Type';
   ahdr20='True Air Speed';
-  ahdr21='Distance Anafi to RC';
+  ahdr21='Distance drone to RC';
   ahdr22='Voltage';
   ahdr23='Motor error';
-  ahdr24='RTH state';
-  ahdr25='Forced landing';
-  ahdr26='Wind';
-  ahdr27='Vibration level';
-  ahdr28='FollowMe state';
-  ahdr29='Run ID';
-  ahdr30='MPP button';
-  ahdr31='Take-off';
+  ahdr24='Drone GPS altitude';
 
 
 {Other column header}

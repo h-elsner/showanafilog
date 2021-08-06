@@ -169,7 +169,7 @@ Parrot Cloud speichern willst:
 
 Die sind dann als json File in FlightData Manager importierbar.
 
--
+
 *)
 
 unit showanafilog_main;
@@ -505,6 +505,8 @@ const
   datGPSlat='gps_latitude';
   datGPSlon='gps_longitude';
 
+{Keywords for BlackBox JSON files}
+
   datProdSerial='product_serial';
   datProdFWhard='product_fw_hard';
   datProdMotor='product_motor_version';
@@ -521,9 +523,9 @@ const
 
 {Datas types}
   jtypWIFIband='wifi_band';                        {to Meta data}
-  jtypWIFIchan='wifi_channel';
   jtypWIFIctry='wifi_country';
 
+  jtypWIFIchan='wifi_channel';                     {WiFi channel may change}
   jtypProdBatt='product_battery';                  {Batt in %}
   jtypProdFState='product_flying_state';
   jtypProdAlert='product_alert';
@@ -565,10 +567,24 @@ const
   jtypVY='vy';
   jtypVZ='vz';
 
+  MPP='MPP pcmd ';
+  pcmd='RC pcmd ';
 
-  header: array[1..12] of string=(ovDate, ovFrom, ovTo, ovDuration,
-                                  ovAltMax, ovDistMax, ovRoute, ovTasMax,
-                                  ovBattMax, ovBattMin, rsLocation, rsGPSfix);
+
+  ovheader: array[1..12] of string=(ovDate, ovFrom, ovTo, ovDuration,
+                                    ovAltMax, ovDistMax, ovRoute, ovTasMax,
+                                    ovBattMax, ovBattMin, rsLocation, rsGPSfix);
+  boxheader: array[0..25] of string=('RC GPS alt', 'Height above ground',
+                                     MPP+'source', MPP+'vert', MPP+'pitch',
+                                     MPP+'roll', MPP+'yaw',
+                                     pcmd+'flag', pcmd+'vert', pcmd+'pitch',
+                                     pcmd+'roll', pcmd+'yaw', 'RTH state',
+                                     'Forced landing', 'Follow-me state',
+                                     'Wind', 'Vibration level', 'WiFi channel',
+                                     'MPP button', 'Run ID',
+                                     'Home alt', 'Home lat', 'Home lon',
+                                     'Take-off alt', 'Take-off lat', 'Take-off lon');
+
 
 {Output data formats}
   frmCoord='0.000000000';
@@ -708,6 +724,7 @@ begin
   end;
 end;
 
+{FDR time stamp: 20181206T204438+0100}
 function FDRtimeToStr(s: string): string; inline;  {FDR date conversion to string}
 var tme: TDateTime;
 begin
@@ -864,7 +881,7 @@ begin
     2318: result:='Disco';                         {90e'h}
     2319: result:='Skycontroller 2';               {90f'h}
     2324: result:='Anafi 4K';                      {914'h}
-    2328: result:='Remote controller';             {not to what is is related}
+    2328: result:='Remote controller';             {not known to what is is related}
     2329: result:='Anafi Thermal';                 {919'h}
   end;
 end;
@@ -1230,8 +1247,8 @@ begin
               for k:=0 to j1.Count-1 do begin
                 j2:=j1.Items[k];                   {Test only: List of types}
                 if j2<>nil then begin
- //                 if j2.FindPath(jsonType).AsString=jtypProdFState then begin
- //                 typestr:=j2.FindPath(jsonDatas).AsString;
+//                  if j2.FindPath(jsonType).AsString=jtypProdFState then begin
+//                  typestr:=j2.FindPath(jsonDatas).AsString;
                   typestr:=j2.FindPath(jsonType).AsString;
                     if typelist.IndexOf(typestr)<0 then
                       typelist.Add(typestr);
@@ -1483,7 +1500,7 @@ begin
   ovGrid.ColCount:=hc+1;                           {Last column hidden}
   ovGrid.RowCount:=1;
   for i:=1 to 10 do                                {Write overview header}
-    ovGrid.Cells[i, 0]:=header[i];
+    ovGrid.Cells[i, 0]:=ovheader[i];
   ovGrid.ColWidths[hc]:=0;                         {Hidden column for log book}
 
   MetaGridInit(0);                                 {Standard JSON labels}
@@ -1593,25 +1610,15 @@ var
   i: integer;
 
 begin
-  for i:=2 to 22 do
+  for i:=2 to 22 do                                {Legacy JSON header}
     csvGrid.Cells[i, 0]:=AltHeaderToStr(i);
   csvGrid.Cells[1, 0]:=ahdr22;                     {Changed columns compared to legacy JSON}
+  csvGrid.Cells[11, 0]:=ahdr24;
   csvGrid.Cells[12, 0]:=ahdr23;                    {Motor error}
   csvGrid.Cells[20, 0]:='FP state';                {Is this flip state?}
 
-  csvGrid.Cells[23, 0]:=ahdr24;                    {New columns}
-  csvGrid.Cells[24, 0]:=ahdr25;
-  csvGrid.Cells[25, 0]:=ahdr26;
-  csvGrid.Cells[26, 0]:=ahdr27;
-  csvGrid.Cells[27, 0]:=ahdr28;
-  csvGrid.Cells[28, 0]:=ahdr29;
-  csvGrid.Cells[29, 0]:=ahdr30;                    {MPP button}
-  csvGrid.Cells[30, 0]:=home+tab1+jsonalt;
-  csvGrid.Cells[31, 0]:=home+tab1+jsonlat;
-  csvGrid.Cells[32, 0]:=home+tab1+jsonlon;
-  csvGrid.Cells[33, 0]:=ahdr31+tab1+jsonalt;
-  csvGrid.Cells[34, 0]:=ahdr31+tab1+jsonlat;
-  csvGrid.Cells[35, 0]:=ahdr31+tab1+jsonlon;
+  for i:=0 to high(Boxheader) do                   {New columns}
+    csvGrid.Cells[i+23, 0]:=Boxheader[i];
 
 end;
 
@@ -2584,7 +2591,7 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
      Form2.Chart1LineSeries1.BeginUpdate;
        Form2.MoveVCursor(ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, 1]), 0);
        for i:=1 to csvGrid.RowCount-1 do begin     {Create chart}
-         w:=StrToFloat(csvGrid.Cells[idx, i]);
+         w:=StrToFloatDef(csvGrid.Cells[idx, i], 0);
          case idx of
            13..15: w:=-w;                          {speed_v xyz reverse in chart}
            16..18: w:=ConvUnit(idx, w, not cbDegree.Checked);  {rad to °}
@@ -2699,13 +2706,28 @@ begin
     Form2.Chart1LineSeries1.Clear;
     Form2.Chart1.Visible:=false;
     case index of
-      0, 1: ShowStatistics;                        {Copy of staGrid}
+      0: ShowStatistics;                           {Copy of staGrid}
       2, 7, 12: ShowInteger(index);                {Integer values; Chart}
       3, 4, 9, 10, 22: ShowFloat(22);              {Distance; Chart}
       5, 6: ShowList(index);                       {Data Table with time *
                                                     not yet implemented}
       8, 11, 20: ShowList(index);                  {Data Table with counter}
       13..19, 21: ShowFloat(index);                {Float values; Chart}
+    end;
+    if dtlGrid.Tag=0 then begin                    {Legacy JSON}
+      case index of
+        1: ShowStatistics;
+        11: ShowList(index);
+        12: ShowInteger(index);
+      end;
+    end;
+    if dtlGrid.Tag=2 then begin                    {Blackbox JSON}
+      case index of
+        1, 11: ShowFloat(index);
+        12: ShowList(index);
+        23, 24, 26..29, 31..34, 38, 39: ShowFloat(index);
+        25, 30, 35..37, 40..42: ShowList(index);
+      end;
     end;
   end;
 end;
@@ -3942,7 +3964,7 @@ const
     outlist.Sort;
     s:=dtlGrid.Cells[0, 4];
     for i:=1 to 12 do                              {Create header}
-      s:=s+sep+header[i];
+      s:=s+sep+ovheader[i];
     outlist.Insert(0, s);
   end;
 
@@ -3970,7 +3992,7 @@ const
             outlist.Add('');
           end;
           for k:=1 to 12 do
-            outlist.Add(Format(fotab, [header[k]+dpkt])+splitlist[k]);
+            outlist.Add(Format(fotab, [ovheader[k]+dpkt])+splitlist[k]);
           outlist.Add('');
         end;
       end;
