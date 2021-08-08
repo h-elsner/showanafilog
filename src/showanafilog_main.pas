@@ -185,8 +185,8 @@ uses
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
   Menus, anzwerte, Iphttpbroker, IpHtml;
 
-{$I anafi_en.inc}                                  {Include a language file}
-{.$I anafi_dt.inc}
+{.$I anafi_en.inc}                                  {Include a language file}
+{$I anafi_dt.inc}
 
 type
   TDatArr = array[0..20] of string;
@@ -376,8 +376,6 @@ type
     procedure mmnSettingsClick(Sender: TObject);
     procedure mmnTasClick(Sender: TObject);
     procedure ovGridClick(Sender: TObject);
-    procedure ovGridColRowInserted(Sender: TObject; IsColumn: Boolean; sIndex,
-      tIndex: Integer);
     procedure ovGridCompareCells(Sender: TObject; ACol, ARow, BCol,
       BRow: Integer; var Result: integer);
     procedure ovGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
@@ -1357,8 +1355,11 @@ procedure TMyThread.WriteResults;
 var i: integer;                     {Write results per file into overview table}
     s: string;
 begin
-  for i:=1 to 10 do
+  for i:=1 to 10 do begin
     Form1.ovGrid.Cells[i, idx]:=res[i];
+    Form1.ovGrid.AutoSizeColumn(i);
+  end;
+
   s:='';
   for i:=0 to high(res) do
     s:=s+res[i]+isep;
@@ -2026,12 +2027,6 @@ begin
   end;
   if (PageControl1.Tag>0) then                     {Switch to previous Tab}
     PageControl1.ActivePageIndex:=PageControl1.Tag;
-end;
-
-procedure TForm1.ovGridColRowInserted(Sender: TObject; IsColumn: Boolean;
-  sIndex, tIndex: Integer);
-begin
-  ovGrid.AutoSizeColumns;
 end;
 
 procedure TForm1.ovGridCompareCells(Sender: TObject; ACol, ARow, BCol,
@@ -2908,8 +2903,7 @@ begin
         btConv.Enabled:=true;                      {Allow converting}
         if filelist.Count=1 then
           PageControl1.ActivePageIndex:=1;         {Only one -> go to data}
-        for i:=1 to 10 do
-          ovGrid.AutoSizeColumn(i);
+        ovGrid.AutoSizeColumn(0);
       end else
         StatusBar1.Panels[4].Text:=errMissingFiles+tab1+LogDir.Directory;
     finally

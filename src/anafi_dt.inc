@@ -35,8 +35,6 @@ resourcestring                                     {deutsch}
     ahdr21='Entfernung Anafi zu RC';
     ahdr22='Spannung';                             {Replaces column 1}
     ahdr23='Motorfehler';                          {Replaces column 12}
-    ahdr22='Voltage';
-    ahdr23='Motorfehler';
     ahdr24='Anafi GPS Höhe';
 
   {Other column header}
