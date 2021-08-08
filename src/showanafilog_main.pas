@@ -376,6 +376,8 @@ type
     procedure mmnSettingsClick(Sender: TObject);
     procedure mmnTasClick(Sender: TObject);
     procedure ovGridClick(Sender: TObject);
+    procedure ovGridColRowInserted(Sender: TObject; IsColumn: Boolean; sIndex,
+      tIndex: Integer);
     procedure ovGridCompareCells(Sender: TObject; ACol, ARow, BCol,
       BRow: Integer; var Result: integer);
     procedure ovGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
@@ -408,7 +410,7 @@ type
     procedure CreateLogBook;                       {Create Pilot log book}
     procedure MetaGridInit(mode: integer);         {Set Details labels}
     procedure SearchFDRfiles(dir, mask, vstr: string);  {Find UUID}
-    procedure InsertDataset(da: TDatarr; source: byte; var pos: integer);
+    procedure InsertDataset(da: TDatarr; source: byte; var rpos: integer);
 
     function ShowFDRlog(fn: string; mode: integer=0): string; {Show meta data from FDR}
     function GetCellInfo(aCol, aRow: longint): string; {Cell info in data table}
@@ -448,7 +450,7 @@ type
 const
   appName='ShowAnafiLog';
   appVersion='V2.0 08/2021';                       {Major version}
-  appBuildno='2021-08-03';                         {Build per day}
+  appBuildno='2021-08-08';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -569,6 +571,8 @@ const
 
   MPP='MPP pcmd ';
   pcmd='RC pcmd ';
+  lcbb=48;                                         {Index of last column BlackBox}
+  ncjs=23;                                         {Number columns legacy JSON}
 
 
   ovheader: array[1..12] of string=(ovDate, ovFrom, ovTo, ovDuration,
@@ -701,7 +705,7 @@ var dt, zt, zone: string;
 begin
   dt:=tst.Split([' '])[0];
   zt:=tst.Split([' '])[1];
-  if length(tst)>23 then begin
+  if length(tst)>ncjs then begin
     zone:=tst.Split([' '])[2];
     if length(zone)=5 then begin
       direction:=zone[1];
@@ -740,7 +744,7 @@ end;
 function GoogleTime(tp: string; gx: boolean=false): string; inline;
 begin                                              {Default: KML}
   result:='';
-  if length(tp)=23 then begin
+  if length(tp)=ncjs then begin
     if gx then result:=copy(tp, 1, 19)             {suppress tenth of sec}
           else result:=tp;
     result:=result+'Z';
@@ -1067,8 +1071,8 @@ var i, k, batt, battmin, fmode: integer;
     gpsfix: boolean;
     timebase, timest, vx, vy, vz: double;
 
-    typelist: TStringList;
-    typestr: string;
+//    typelist: TStringList;
+//    typestr: string;
 
 {Copies of the two functions to make it Thread-save}
   function UnitToStr(idx: integer;                 {Measurement unit string}
@@ -1491,7 +1495,7 @@ begin
   for i:=0 to lbLegende.SeriesCount-1 do           {Set all as default}
     lbLegende.Checked[i]:=true;
 
-  csvGrid.ColCount:=23;                            {Data columns, fix number of cols}
+  csvGrid.ColCount:=ncjs;                          {Data columns, fix number of cols (23)}
   csvGrid.RowCount:=6;
   csvGrid.Cells[0, 0]:=rsDateTime;
   ovGrid.Tag:=1;                                   {Start with first file}
@@ -1610,7 +1614,7 @@ var
   i: integer;
 
 begin
-  for i:=2 to 22 do                                {Legacy JSON header}
+  for i:=2 to ncjs-1 do                            {Legacy JSON header}
     csvGrid.Cells[i, 0]:=AltHeaderToStr(i);
   csvGrid.Cells[1, 0]:=ahdr22;                     {Changed columns compared to legacy JSON}
   csvGrid.Cells[11, 0]:=ahdr24;
@@ -1618,7 +1622,7 @@ begin
   csvGrid.Cells[20, 0]:='FP state';                {Is this flip state?}
 
   for i:=0 to high(Boxheader) do                   {New columns}
-    csvGrid.Cells[i+23, 0]:=Boxheader[i];
+    csvGrid.Cells[i+ncjs, 0]:=Boxheader[i];
 
 end;
 
@@ -1626,7 +1630,7 @@ procedure TForm1.ChangeHeader;                     {Change column header}
 var i: integer;
 begin
   if cbHeader.Checked then begin
-    for i:=1 to 22 do
+    for i:=1 to ncjs-1 do
       csvGrid.Cells[i, 0]:=AltHeaderToStr(i);
   end else begin
     for i:=0 to 20 do
@@ -2024,6 +2028,12 @@ begin
     PageControl1.ActivePageIndex:=PageControl1.Tag;
 end;
 
+procedure TForm1.ovGridColRowInserted(Sender: TObject; IsColumn: Boolean;
+  sIndex, tIndex: Integer);
+begin
+  ovGrid.AutoSizeColumns;
+end;
+
 procedure TForm1.ovGridCompareCells(Sender: TObject; ACol, ARow, BCol,
   BRow: Integer; var Result: integer);             {Alternative sorting routines}
 begin
@@ -2336,7 +2346,8 @@ end;
 procedure TForm1.csvGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
   var HintText: String);
 begin
-  HintText:=GetCellInfo(aCol, aRow);
+  if csvGrid.RowCount>1 then
+    HintText:=GetCellInfo(aCol, aRow);
 end;
 
 procedure TForm1.RestoreTAS;                       {Compute tas from vx, vy, vz}
@@ -2463,8 +2474,9 @@ begin
              csvGrid.Canvas.TextStyle:=ts;
            end;
         8: if LowerCase(csvGrid.Cells[aCol, aRow])='true' then
-             csvGrid.Canvas.Brush.Color:=clMoneygreen;
-        11: if csvGrid.Cells[aCol, aRow]<>def0 then {GPS error}
+             csvGrid.Canvas.Brush.Color:=clMoneyGreen;
+        11: if (dtlGrid.Tag=0) and                 {GPS error}
+               (csvGrid.Cells[aCol, aRow]<>def0) then
               csvGrid.Canvas.Brush.Color:=clRed;
         12: begin                                  {Num sats}
                w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 0);
@@ -2699,7 +2711,7 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
    end;
 
 begin
-  if IsColumn then begin
+  if IsColumn and (csvGrid.RowCount>2) then begin
     Form2.addGrid.RowCount:=1;                     {Kill all}
     Form2.addGrid.Visible:=false;
     Form2.edTime.Visible:=false;
@@ -2877,7 +2889,6 @@ begin
             fn:=ExtractFileName(filelist[i]);
             ovGrid.Cells[0, i+1]:=ChangeFileExt(fn, '');
           end;
-          ovGrid.AutoSizeColumn(0);
           ovGrid.Row:=ovGrid.RowCount-1;           {Last item selected}
         ovGrid.EndUpdate;
 
@@ -2909,85 +2920,132 @@ begin
   Form1.Tag:=1;                                    {First run done}
 end;
 
-procedure TForm1.InsertDataset(da: TDatarr; source: byte; var pos: integer);
+procedure TForm1.InsertDataset(da: TDatarr; source: byte; var rpos: integer);
+var
+  dts: array[0..lcbb] of string;
 
-  procedure AddDatas;                              {Add new row, pos not touched}
+  procedure AddDatas;                              {Add new row, rpos not touched}
+  var
+    i: integer;
+
   begin
-    csvGrid.RowCount:=csvGrid.RowCount+1;          {Add new row}
-    csvGrid.Cells[0, csvGrid.RowCount-1]:=da[0];   {Time}
-    csvGrid.Cells[2, csvGrid.RowCount-1]:=da[1];   {Batt %}
-    csvGrid.Cells[5, csvGrid.RowCount-1]:=da[2];   {Flying state}
-    csvGrid.Cells[6, csvGrid.RowCount-1]:=da[3];   {Alert state}
-    csvGrid.Cells[8, csvGrid.RowCount-1]:=da[4];   {GPS available}
-    csvGrid.Cells[12, csvGrid.RowCount-1]:=da[5];  {Motor state}
-    csvGrid.Cells[35, csvGrid.RowCount-1]:=da[6];
-    csvGrid.Cells[36, csvGrid.RowCount-1]:=da[7];
-    csvGrid.Cells[38, csvGrid.RowCount-1]:=da[8];
-    csvGrid.Cells[39, csvGrid.RowCount-1]:=da[9];
-    csvGrid.Cells[20, csvGrid.RowCount-1]:=da[10];
-    csvGrid.Cells[37, csvGrid.RowCount-1]:=da[11];
-    csvGrid.Cells[42, csvGrid.RowCount-1]:=da[12];
-    csvGrid.Cells[41, csvGrid.RowCount-1]:=da[13];
-    csvGrid.Cells[43, csvGrid.RowCount-1]:=da[14]; {Home alt/pos}
-    csvGrid.Cells[44, csvGrid.RowCount-1]:=da[15];
-    csvGrid.Cells[45, csvGrid.RowCount-1]:=da[16];
-    csvGrid.Cells[46, csvGrid.RowCount-1]:=da[17]; {Take-off alt/pos}
-    csvGrid.Cells[47, csvGrid.RowCount-1]:=da[18];
-    csvGrid.Cells[48, csvGrid.RowCount-1]:=da[19];
-    csvGrid.Cells[40, csvGrid.RowCount-1]:=da[20];
+    if csvGrid.RowCount=1 then begin               {Initialize first dataset to write}
+      for i:=0 to High(dts) do
+        dts[i]:='';
+    end else begin
+      for i:=1 to High(dts) do                     {Keep previous data}
+        dts[i]:=csvGrid.Cells[i, rpos];            {rpos points to last added dataset}
+    end;
+    dts[0]:=da[0];   {Time}
+    dts[2]:=da[1];   {Batt %}
+    dts[5]:=da[2];   {Flying state}
+    dts[6]:=da[3];   {Alert state}
+    dts[8]:=da[4];   {GPS available}
+    dts[12]:=da[5];  {Motor state}
+    dts[35]:=da[6];
+    dts[36]:=da[7];
+    dts[38]:=da[8];
+    dts[39]:=da[9];
+    dts[20]:=da[10];
+    dts[37]:=da[11];
+    dts[42]:=da[12];
+    dts[41]:=da[13];
+    dts[43]:=da[14]; {Home alt/pos}
+    dts[44]:=da[15];
+    dts[45]:=da[16];
+    dts[46]:=da[17]; {Take-off alt/pos}
+    dts[47]:=da[18];
+    dts[48]:=da[19];
+    dts[40]:=da[20];
+    csvGrid.InsertRowWithValues(csvGrid.RowCount, dts); {Add dataset at the end}
+    rpos:=csvGrid.RowCount-1;
+  end;
+
+  function FindTime(tme: string): integer;
+  var
+    i: integer;
+
+  begin
+    result:=3;                                     {AddMode: Append}
+    for i:=rpos to csvGrid.RowCount-1 do begin
+      if tme=csvGrid.Cells[0, i] then begin
+        result:=1;                                 {Overwrite}
+        rpos:=i;
+        break;
+      end;
+      if csvGrid.Cells[0, i]>tme then begin
+        result:=2;                                 {Insert}
+        rpos:=i;
+        break;
+      end;
+    end;
   end;
 
   procedure Insert1Hz;
   begin
-    csvGrid.RowCount:=csvGrid.RowCount+1;
-    csvGrid.Cells[0, csvGrid.RowCount-1]:=da[0];   {Time}
-    csvGrid.Cells[1, csvGrid.RowCount-1]:=da[1];   {Volt}
-    csvGrid.Cells[23, csvGrid.RowCount-1]:=da[2];  {RC alt}
-    csvGrid.Cells[3, csvGrid.RowCount-1]:=da[3];   {RC lat}
-    csvGrid.Cells[4, csvGrid.RowCount-1]:=da[4];   {RC lon}
-    csvGrid.Cells[11, csvGrid.RowCount-1]:=da[5];  {Drone alt}
-    csvGrid.Cells[10, csvGrid.RowCount-1]:=da[6];  {Drone lat}
-    csvGrid.Cells[9, csvGrid.RowCount-1]:=da[7];   {Drone lon}
+    dts[0]:=da[0];   {Time}
+    dts[1]:=da[1];   {Volt}
+    dts[23]:=da[2];  {RC alt}
+    dts[3]:=da[3];   {RC lat}
+    dts[4]:=da[4];   {RC lon}
+    dts[11]:=da[5];  {Drone alt}
+    dts[10]:=da[6];  {Drone lat}
+    dts[9]:=da[7];   {Drone lon}
 
-    csvGrid.Cells[25, csvGrid.RowCount-1]:=da[8];  {MPP_pcmd}
-    csvGrid.Cells[26, csvGrid.RowCount-1]:=da[9];
-    csvGrid.Cells[27, csvGrid.RowCount-1]:=da[10];
-    csvGrid.Cells[28, csvGrid.RowCount-1]:=da[11];
-    csvGrid.Cells[29, csvGrid.RowCount-1]:=da[12];
+    dts[25]:=da[8];  {MPP_pcmd}
+    dts[26]:=da[9];
+    dts[27]:=da[10];
+    dts[28]:=da[11];
+    dts[29]:=da[12];
 
-    csvGrid.Cells[7, csvGrid.RowCount-1]:=da[13];  {RSSI}
-    csvGrid.Cells[22, csvGrid.RowCount-1]:=da[14]; {dist}
+    dts[7]:=da[13];  {RSSI}
+    dts[22]:=da[14]; {dist}
   end;
 
   procedure Insert5Hz;
   begin
-    csvGrid.RowCount:=csvGrid.RowCount+1;          {Add new row}
-    csvGrid.Cells[ 0, csvGrid.RowCount-1]:=da[0];  {Time}
-    csvGrid.Cells[19, csvGrid.RowCount-1]:=da[1];  {Product alt}
-    csvGrid.Cells[17, csvGrid.RowCount-1]:=da[2];  {pitch}
-    csvGrid.Cells[16, csvGrid.RowCount-1]:=da[3];  {roll}
-    csvGrid.Cells[18, csvGrid.RowCount-1]:=da[4];  {yaw}
-    csvGrid.Cells[13, csvGrid.RowCount-1]:=da[5];  {vx}
-    csvGrid.Cells[14, csvGrid.RowCount-1]:=da[6];  {vy}
-    csvGrid.Cells[15, csvGrid.RowCount-1]:=da[7];  {vz}
+    dts[0]:=da[0];   {Time}
+    dts[19]:=da[1];  {Product alt}
+    dts[17]:=da[2];  {pitch}
+    dts[16]:=da[3];  {roll}
+    dts[18]:=da[4];  {yaw}
+    dts[13]:=da[5];  {vx}
+    dts[14]:=da[6];  {vy}
+    dts[15]:=da[7];  {vz}
 
-    csvGrid.Cells[30, csvGrid.RowCount-1]:=da[8];  {device pcmd}
-    csvGrid.Cells[31, csvGrid.RowCount-1]:=da[9];
-    csvGrid.Cells[32, csvGrid.RowCount-1]:=da[10];
-    csvGrid.Cells[33, csvGrid.RowCount-1]:=da[11];
-    csvGrid.Cells[34, csvGrid.RowCount-1]:=da[12];
+    dts[30]:=da[8];  {device pcmd}
+    dts[31]:=da[9];
+    dts[32]:=da[10];
+    dts[33]:=da[11];
+    dts[34]:=da[12];
 
-    csvGrid.Cells[24, csvGrid.RowCount-1]:=da[13]; {height}
-    csvGrid.Cells[21, csvGrid.RowCount-1]:=da[14]; {tas}
+    dts[24]:=da[13]; {height}
+    dts[21]:=da[14]; {tas}
+  end;
+
+  procedure InsertData(z: integer);
+  var
+    mode: integer;
+
+  begin
+    mode:=FindTime(da[0]);
+    case z of
+      1: Insert1Hz;
+      2: Insert5Hz
+    end;
+    case mode of
+      1: csvGrid.Rows[rpos].AddStrings(dts);         {overwrite}
+      2: csvGrid.InsertRowWithValues(rpos, dts);     {insert}
+      3: csvGrid.InsertRowWithValues(csvGrid.RowCount, dts); {Add dataset at the end}
+    end;
   end;
 
 begin
-  if da[0]<>def0 then begin
-    case source of
-      0: AddDatas;
-      1: Insert1Hz;
-      2: Insert5Hz;
-    end;
+  if da[0]>def0 then begin
+    if source=0 then
+      AddDatas                                     {Fill table first}
+    else
+      InsertData(source);                          {Insert 1Hz/5Hz datasets}
   end;
 end;
 
@@ -3211,13 +3269,20 @@ var inf: TFileStream;
             dtlGrid.RowCount:=dtlGrid.RowCount+1;
             dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(s);
             dtlGrid.Cells[1, dtlGrid.RowCount-1]:=IntToStr(j2.FindPath(jsonDatas).AsInteger);
+            Continue;
           end;
           if s=jtypWIFIctry then begin
             dtlGrid.RowCount:=dtlGrid.RowCount+1;
             dtlGrid.Cells[0, dtlGrid.RowCount-1]:=prepKeyw(s);
             dtlGrid.Cells[1, dtlGrid.RowCount-1]:=j2.FindPath(jsonDatas).AsString;
+            Continue;
           end;
 
+          if s=jtypWIFIchan then begin
+            datarray[20]:=j2.FindPath(jsonDatas).AsString;   {Wifi channel}
+            timest:=j2.FindPath(jsonTimest).AsFloat;
+            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
+          end;
           if s=jtypProdBatt then begin
             datarray[1]:=j2.FindPath(jsonDatas).AsString;    {Battery in %}
             timest:=j2.FindPath(jsonTimest).AsFloat;
@@ -3283,11 +3348,6 @@ var inf: TFileStream;
             timest:=j2.FindPath(jsonTimest).AsFloat;
             datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
           end;
-          if s=jtypWIFIchan then begin
-            datarray[20]:=j2.FindPath(jsonDatas).AsString;   {Wifi channel}
-            timest:=j2.FindPath(jsonTimest).AsFloat;
-            datarray[0]:=FormatDateTime(ymd+' '+hnsz, (timest-timebase)/secpd+tme);
-          end;
 
           if s=jtypHome then begin                 {Home point}
             timest:=j2.FindPath(jsonTimest).AsFloat;
@@ -3318,7 +3378,7 @@ var inf: TFileStream;
             end;
           end;
         end;
-//        InsertDataset(datarray, 0, spos);          {Add row to csvGrid}
+        InsertDataset(datarray, 0, spos);          {Add row to csvGrid}
       end;
     end;
   end;
@@ -3375,16 +3435,16 @@ var inf: TFileStream;
             datarray[11]:=j3.FindPath(jtypRoll).AsString;
             datarray[12]:=j3.FindPath(jtypYaw).AsString;
           end;
-          if (latp<200) and (latc<200) then begin            {Compute distance}
-            w:=DeltaKoord(latc, lonc, latp, lonp);   {Distance RC - A/C}
+          if (latp<200) and (latc<200) then begin      {Compute distance}
+            w:=DeltaKoord(latc, lonc, latp, lonp);     {Distance RC - A/C}
             datarray[14]:=FormatFloat(frmOut1, w);
             if w>distmax then begin
-              distmax:=w;                            {highest distance}
+              distmax:=w;                              {highest distance}
               tdistmax:=round((timest-timebase)*1000); {time of max distance}
             end;
           end;
         end;
-//        InsertDataset(datarray, 1, spos);          {Insert row to csvGrid}
+        InsertDataset(datarray, 1, spos);          {Insert row to csvGrid}
       end;
     end;
   end;
@@ -3477,7 +3537,7 @@ begin
               if j1<>nil then begin
                 dtlGrid.Tag:=0;                      {legacy JSON file}
                 MetagridInit(dtlGrid.Tag);           {Set standard labels for JSON}
-                csvGrid.ColCount:=23;
+                csvGrid.ColCount:=ncjs;
                 for i:=0 to j1.Count-1 do begin
                   hdrList[i]:=j1.Items[i].AsString;  {fill original header array}
                 end;
@@ -3488,7 +3548,7 @@ begin
               if j1<>nil then begin
                 dtlGrid.Tag:=2;                      {legacy JSON file}
                 MetagridInit(dtlGrid.Tag);           {Set standard labels for JSON}
-                csvGrid.ColCount:=49;
+                csvGrid.ColCount:=lcbb+1;
                 BlackboxHeader;                      {Blackbox CSV header}
                 j2:=j1.Items[0];                     {1Hz first dataset}
                 if j2<> nil then                     {w: temporäry value for Android correction}
@@ -3584,9 +3644,30 @@ begin
                 staGrid.Cells[2, 4]:='';
                 csvGrid.BeginUpdate;
                 try
-                  ReadDatasNode;     {Set up the table with time line}
-                  Read1HzNode;       {Insert datasets at right position in the timeline}
-                  Read5HzNode;
+                  ReadDatasNode;     {Set up the table with time line, must be the first action}
+
+                  spos:=1;           {Start to search at the beginning}
+                  Read5HzNode;       {Insert datasets at right position in the timeline}
+                  spos:=1;
+                  Read1HzNode;
+
+                  if csvGrid.RowCount>3 then begin
+                     for i:=1 to csvGrid.ColCount-1 do begin   {Fill empty fiels in first row}
+                       if csvGrid.Cells[i, 1]='' then begin
+                         case i of
+                           1, 2, 5..8, 11..41: csvGrid.Cells[i, 1]:=def0;
+                           3, 4, 9..10: csvGrid.Cells[i, 1]:='500';
+                         end;
+                       end;
+                     end;
+                     for k:=2 to csvGrid.RowCount-1 do begin
+                       for i:=1 to 41 do begin
+                         if csvGrid.Cells[i, k]='' then
+                           csvGrid.Cells[i, k]:=csvGrid.Cells[i, k-1];
+                       end;
+                     end;
+                  end;
+
                   WriteStaGrid;
                   csvGrid.AutoSizeColumn(0);
                 finally

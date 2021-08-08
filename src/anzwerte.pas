@@ -65,7 +65,7 @@ const
   clDarkOrange=$00008CFF;
   clOrange=$000080FF;
 
-  clLanded=clCream;
+  clLanded=clDefault;
   clArmed6=clSilver;
   clEmerg=clMaroon;
   clArmed7=clSilver;
@@ -74,7 +74,7 @@ const
   clFlying=clAqua;
   clLanding=clGreen;
 
-  clNone=clCream;
+  clNone=clDefault;
   clUser=clFuchsia;
   clCutOut=clMaroon;
   clBattCritical=clRed;
