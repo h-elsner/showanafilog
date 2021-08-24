@@ -82,6 +82,7 @@ const
   clFAngle=clRed;
 
   niceCols=4;
+  NoGPSid=500;
 
 {$I anafi_en.inc}
 
@@ -179,6 +180,7 @@ begin
     3: result:=clBattCritical;                     {Batt level critical}
     4: result:=clBattLow;                          {Batt level low}
     5: result:=clFAngle;                           {Flight angle exeeded}
+    6: result:=clBattCritical;                     {Almost empty}
   end;
 end;
 

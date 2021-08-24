@@ -140,6 +140,7 @@ History:
      2020-11-10 Alert state 6 added (Almost empty battery alert)
      2021-01-16 Query for latest version added, GitHub link
 2.0  2021-08-01 Blackbox files, first try: Header
+     2021-08-24 Column header statistics and colors for blackbock JSON updated.
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -185,8 +186,8 @@ uses
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
   Menus, anzwerte, Iphttpbroker, IpHtml;
 
-{.$I anafi_en.inc}                                  {Include a language file}
-{$I anafi_dt.inc}
+{$I anafi_en.inc}                                  {Include a language file}
+{.$I anafi_dt.inc}
 
 type
   TDatArr = array[0..20] of string;
@@ -448,7 +449,7 @@ type
 const
   appName='ShowAnafiLog';
   appVersion='V2.0 08/2021';                       {Major version}
-  appBuildno='2021-08-08';                         {Build per day}
+  appBuildno='2021-08-24';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -506,7 +507,6 @@ const
   datGPSlon='gps_longitude';
 
 {Keywords for BlackBox JSON files}
-
   datProdSerial='product_serial';
   datProdFWhard='product_fw_hard';
   datProdMotor='product_motor_version';
@@ -553,7 +553,6 @@ const
 
 
 {5Hz types}
-
   jtypProdAlt='product_alt';
   jtypProdAngles='product_angles';
   jtypPitch='pitch';
@@ -667,8 +666,7 @@ begin
 end;
 
 {Conversion ISO time stamp to internal time format.
-        "date": "2018-11-10T094343-0500",
- FDR time stamp: 20181206T204438+0100}
+        "date": "2018-11-10T094343-0500"}
 
 function datISOtoDT(tst: string; form: string=ymd): TDateTime;
 var dt, zt, zone: string;
@@ -693,9 +691,8 @@ begin
   end;
 end;
 
-{Conversion ISO time stamp to internal time format.
-        "date": "2020-05-09 16:14:23 +0200",
- FDR time stamp: 20181206T204438+0100}
+{Conversion balckbox time stamp to internal time format.
+        "date": "2020-05-09 16:14:23 +0200"}
 
 function datBBtoDT(tst: string): TDateTime;
 var dt, zt, zone: string;
@@ -754,10 +751,10 @@ function prepKeyw(k: string): string; inline;      {Column header from keyword}
 begin
   result:='';
   if k<>'' then
-    result:=trim(k);
+    result:=trim(k);                               {Take over keyword if not empty}
   result:=StringReplace(result, uscr,' ',[rfReplaceAll]);
   result:=StringReplace(result, 'gps','GPS',[rfReplaceAll]);
-  result[1]:=UpCase(result[1]);
+  result[1]:=UpCase(result[1]);                    {For output formatted keyword}
 end;
 
 function FormatUUID(uuid: string): string;         {Beautify output UUID}
@@ -1084,15 +1081,14 @@ var i, k, batt, battmin, fmode: integer;
       7: result:='dBm';
       13..15: result:='m/s';
       16..18: if converted then result:='°' else result:='rad';
-      19: result:='m';
+      19, 23, 24: result:='m';
       21: if converted then result:='km/h' else result:='m/s';
       22: if converted then result:='km' else result:='m';
-      23: result:='V';
     end;
     if metr=1 then                                 {Overwrite with imperial}
       case idx of
         13..15: result:='ft/s';
-        19: result:='ft';
+        19, 23, 24: result:='ft';
         21: if converted then result:='mph' else result:='ft/s';
         22: if converted then result:='mi' else result:='ft';
       end;
@@ -1108,9 +1104,9 @@ var i, k, batt, battmin, fmode: integer;
   begin
     result:=value;                                 {metric to metric, ft to ft}
     case idx of
-      13..15, 19: if metric and
-                     (metr=1) then                 {Imperial set}
-                       result:=value*mtoft;        {m/s --> ft/s}
+      13..15, 19, 23, 24: if metric and
+                            (metr=1) then          {Imperial set}
+                            result:=value*mtoft;   {m/s --> ft/s, m --> ft}
       16, 17: if converted then
                 result:=RadToGrad180(value);       {rad to ° +/-180}
       18:     if converted then
@@ -2433,6 +2429,7 @@ end;
 procedure TForm1.csvGridPrepareCanvas(sender: TObject; aCol, aRow: Integer;
   aState: TGridDrawState);                         {Cells get colors}
 var w: integer;
+    v: double;
     ts: TTextStyle;
 
 begin
@@ -2442,21 +2439,37 @@ begin
       ts:=csvGrid.Canvas.TextStyle;
       ts.Alignment:=taCenter;
       case aCol of
+        1: if dtlGrid.Tag=2 then begin             {Voltage}
+             v:=StrToFloatDef(csvGrid.Cells[aCol, aRow], 0);
+             if v>1 then begin
+               if v>7.5 then begin                 {100%..7,5V green}
+                 csvGrid.Canvas.Brush.Color:=clGreen;
+                 exit;
+               end;
+               if v<6.9 then begin                 {red, very low battery}
+                 csvGrid.Canvas.Brush.Color:=clRed;
+                 exit;
+               end else begin                      {orange}
+                 csvGrid.Canvas.Brush.Color:=clDarkOrange;
+                 exit;
+               end;
+             end else exit;
+           end;
         2: begin                                   {Battery level}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 0);
-               if w>0 then begin
-                 if w>50 then begin                {100%..51% green}
-                   csvGrid.Canvas.Brush.Color:=clGreen;
-                   exit;
-                 end;
-                 if w<25 then begin                {0...24 red}
-                   csvGrid.Canvas.Brush.Color:=clRed;
-                   exit;
-                 end else begin                    {25...50 Sats orange}
-                   csvGrid.Canvas.Brush.Color:=clDarkOrange;
-                   exit;
-                 end;
-               end else exit;
+             if w>0 then begin
+               if w>50 then begin                  {100%..51% green}
+                 csvGrid.Canvas.Brush.Color:=clGreen;
+                 exit;
+               end;
+               if w<25 then begin                  {0...24 red}
+                 csvGrid.Canvas.Brush.Color:=clRed;
+                 exit;
+               end else begin                      {25...50 Sats orange}
+                 csvGrid.Canvas.Brush.Color:=clDarkOrange;
+                 exit;
+               end;
+             end else exit;
            end;
         5: begin                                   {flight state}
              w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 99);
@@ -2475,21 +2488,21 @@ begin
               csvGrid.Canvas.Brush.Color:=clRed;
         12: begin                                  {Num sats}
                w:=StrToIntDef(csvGrid.Cells[aCol, aRow], 0);
-                 if w>0 then begin
-                   if w>10 then begin              {11...x Sats green}
-                     csvGrid.Canvas.Brush.Color:=clGreen;
-                     exit;
-                   end;
-                   if w<5 then begin               {1...4 Sats red}
-                     csvGrid.Canvas.Brush.Color:=clRed;
-                     exit;
-                  end else begin                   {5...10 Sats rose}
-                    csvGrid.Canvas.Brush.Color:=clAttention;
-                    exit;
-                  end;
-                end else exit;
-             end;
-         20: if csvGrid.Cells[aCol, aRow]<>def0 then
+               if w>0 then begin
+                 if w>10 then begin              {11...x Sats green}
+                   csvGrid.Canvas.Brush.Color:=clGreen;
+                   exit;
+                 end;
+                 if w<5 then begin               {1...4 Sats red}
+                   csvGrid.Canvas.Brush.Color:=clRed;
+                   exit;
+                end else begin                   {5...10 Sats rose}
+                  csvGrid.Canvas.Brush.Color:=clAttention;
+                  exit;
+                end;
+              end else exit;
+            end;
+        20: if csvGrid.Cells[aCol, aRow]<>def0 then
                csvGrid.Canvas.Brush.Color:=clOrange;  {flip type}
       end;
     end;
@@ -2507,14 +2520,14 @@ begin
     7: result:='dBm';
     13..15: result:='m/s';
     16..18: if converted then result:='°' else result:='rad';
-    19: result:='m';
+    19, 23, 24: result:='m';
     21: if converted then result:='km/h' else result:='m/s';
     22: if converted then result:='km' else result:='m';
   end;
   if Form1.grpUnit.ItemIndex=1 then                {Overwrite with imperial}
     case idx of
       13..15: result:='ft/s';
-      19: result:='ft';
+      19, 23, 24: result:='ft';
       21: if converted then result:='mph' else result:='ft/s';
       22: if converted then result:='mi' else result:='ft';
     end;
@@ -2530,9 +2543,9 @@ function TForm1.ConvUnit(idx: integer;             {Index column}
 begin
   result:=value;                                   {metric to metric, ft to ft}
   case idx of
-    13..15, 19: if metric and
-                   (grpUnit.ItemIndex=1) then      {Imperial set}
-                     result:=value*mtoft;          {m/s --> ft/s}
+    13..15, 19, 23, 24: if metric and
+                          (grpUnit.ItemIndex=1) then    {Imperial set}
+                          result:=value*mtoft;          {m/s --> ft/s}
     16, 17: if converted then
               result:=value*180/pi;                {rad to ° +/-180}
     18:     if converted then begin
@@ -2602,10 +2615,18 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
          case idx of
            13..15: w:=-w;                          {speed_v xyz reverse in chart}
            16..18: w:=ConvUnit(idx, w, not cbDegree.Checked);  {rad to °}
+           11, 23: if w=NoGPSid then w:=0;         {Device GPS altitude}
          end;
          w:=ConvUnit(idx, w);                      {metric or, imperial}
          ts:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, i]);
-         Form2.Chart1LineSeries1.AddXY(ts, w);
+         if dtlGrid.Tag=2 then begin
+           case idx of
+             1: if w>0 then Form2.Chart1LineSeries1.AddXY(ts, w);   {Voltage}
+           else
+             Form2.Chart1LineSeries1.AddXY(ts, w);
+           end;
+         end else
+           Form2.Chart1LineSeries1.AddXY(ts, w);
        end;
      Form2.Chart1LineSeries1.EndUpdate;
    end;
@@ -2718,7 +2739,7 @@ begin
       3, 4, 9, 10, 22: ShowFloat(22);              {Distance; Chart}
       5, 6: ShowList(index);                       {Data Table with time *
                                                     not yet implemented}
-      8, 11, 20: ShowList(index);                  {Data Table with counter}
+      8, 20: ShowList(index);                      {Data Table with counter}
       13..19, 21: ShowFloat(index);                {Float values; Chart}
     end;
     if dtlGrid.Tag=0 then begin                    {Legacy JSON}
@@ -3649,8 +3670,8 @@ begin
                      for i:=1 to csvGrid.ColCount-1 do begin   {Fill empty fiels in first row}
                        if csvGrid.Cells[i, 1]='' then begin
                          case i of
-                           1, 2, 5..8, 11..41: csvGrid.Cells[i, 1]:=def0;
-                           3, 4, 9..10: csvGrid.Cells[i, 1]:='500';
+                           1, 2, 5..8, 12..41: csvGrid.Cells[i, 1]:=def0;
+                           3, 4, 9..11: csvGrid.Cells[i, 1]:=IntToStr(NoGPSid);
                          end;
                        end;
                      end;
@@ -3737,7 +3758,7 @@ var i: integer;
 begin
   if csvGrid.RowCount>jsonMinLines then begin      {minimum 20 lines}
     Chart2.AxisList[0].Title.Caption:=dtSpeed+tab1+UnitToStr(15, false);
-    Chart2.AxisList[2].Title.Caption:=dtSpeed+tab1+UnitToStr(16, false, cbDegree.Checked);
+    Chart2.AxisList[2].Title.Caption:=dtAngle+tab1+UnitToStr(16, false, cbDegree.Checked);
     Chart2LineSeries1.Title:=csvGrid.Cells[13, 0]; {Write titles from headers}
     Chart2LineSeries2.Title:=csvGrid.Cells[14, 0];
     Chart2LineSeries3.Title:=csvGrid.Cells[15, 0];
