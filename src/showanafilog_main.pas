@@ -186,8 +186,8 @@ uses
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
   Menus, anzwerte, Iphttpbroker, IpHtml;
 
-{$I anafi_en.inc}                                  {Include a language file}
-{.$I anafi_dt.inc}
+{.$I anafi_en.inc}                                  {Include a language file}
+{$I anafi_dt.inc}
 
 type
   TDatArr = array[0..20] of string;
@@ -2647,7 +2647,15 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
        for i:=1 to csvGrid.RowCount-1 do begin
          w:=ConvUnit(idx, StrToIntDef(csvGrid.Cells[idx, i], 0));
          ts:=ScanDateTime(ymd+tab1+hnsz, csvGrid.Cells[0, i]);
-         Form2.Chart1LineSeries1.AddXY(ts, w);
+         if dtlGrid.Tag=2 then begin
+           case idx of
+             2: if w>0 then Form2.Chart1LineSeries1.AddXY(ts, w);   {Voltage}
+             7: if w<0 then Form2.Chart1LineSeries1.AddXY(ts, w);   {WiFi}
+           else
+             Form2.Chart1LineSeries1.AddXY(ts, w);
+           end;
+         end else
+           Form2.Chart1LineSeries1.AddXY(ts, w);
        end;
      Form2.Chart1LineSeries1.EndUpdate;
    end;
