@@ -186,8 +186,8 @@ uses
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
   Menus, anzwerte, Iphttpbroker, IpHtml;
 
-{.$I anafi_en.inc}                                  {Include a language file}
-{$I anafi_dt.inc}
+{$I anafi_en.inc}                                  {Include a language file}
+{.$I anafi_dt.inc}
 
 type
   TDatArr = array[0..20] of string;
@@ -1551,12 +1551,8 @@ end;
 function FindDirName(d: string): string;           {Check if JSON file dir}
 begin
   result:=d;
-  if pos(jext, d)>0 then begin                     {File dropped}
+  if not DirectoryExists(d) then                   {is a file name}
     result:=ExtractFileDir(d);
-  end else begin                                   {Directory dropped}
-    if not DirectoryExists(d) then                 {or other file name}
-      result:=ExtractFileDir(d);
-  end;
 end;
 
 procedure TForm1.FormDropFiles(Sender: TObject;    {Drag& Drop to app window}
@@ -2606,6 +2602,8 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
      end;
      Form2.Chart1.AxisList[0].Title.Caption:=AltHeaderToStr(idx)+   {y-axis}
                                              tab1+UnitToStr(idx, false, convert);
+     if (dtlGrid.Tag=2) and (idx=1) then           {Overwrite with voltage for BlackBox files}
+       Form2.Chart1.AxisList[0].Title.Caption:=ahdr22+tab1+'[V]';
      Form2.Chart1.Visible:=true;
      Form2.edTime.Visible:=true;
      Form2.Chart1LineSeries1.BeginUpdate;
