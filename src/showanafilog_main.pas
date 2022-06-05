@@ -4,7 +4,7 @@
 {                                                        }
 {       Copyright (c) 2019         Helmut Elsner         }
 {                                                        }
-{       Compiler: FPC 3.0.4   /    Lazarus 1.8.4         }
+{       Compiler: FPC 3.2.2   /    Lazarus 2.2.0         }
 {                                                        }
 { Pascal programmers tend to plan ahead, they think      }
 { before they type. We type a lot because of Pascal      }
@@ -28,6 +28,9 @@ A copy of the GNU General Public License is available on the World Wide Web
 at <http://www.gnu.org/copyleft/gpl.html>. You can also obtain it by writing
 to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
 Boston, MA 02110-1335, USA.
+
+Flight Data Manager
+https://sites.google.com/site/pud2gpxkmlcsv/
 
 ================================================================================
 
@@ -230,7 +233,6 @@ type
     lblGitHub: TLabel;
     lbLegende: TChartListbox;
     ChartToolset1: TChartToolset;
-    ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
     ChartToolset1PanDragTool1: TPanDragTool;
     ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool;
     ChartToolset2: TChartToolset;
@@ -448,8 +450,8 @@ type
 
 const
   appName='ShowAnafiLog';
-  appVersion='V2.0 08/2021';                       {Major version}
-  appBuildno='2021-08-24';                         {Build per day}
+  appVersion='V2.0 04/2022';                       {Major version}
+  appBuildno='2022-04-15';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -2917,7 +2919,7 @@ begin
         PageControl1.ActivePageIndex:=0;           {Go to overwiev first}
         PageControl1.Tag:=1;
 
-        if ovThread<>nil then                      {Still living}
+        if (ovThread<>nil) and (not ovThread.Terminated) then    {Still living ?}
           ovThread.Terminate;                      {Kill for new list}
         ovGrid.ColumnClickSorts:=false;            {Disable sort when thread runs}
         btLogBook.Enabled:=false;                  {Disable Pilot log book}
