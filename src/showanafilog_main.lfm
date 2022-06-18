@@ -4,7 +4,7 @@ object Form1: TForm1
   Top = 113
   Width = 907
   AllowDropFiles = True
-  ClientHeight = 561
+  ClientHeight = 559
   ClientWidth = 907
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -19,11 +19,11 @@ object Form1: TForm1
   SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Width;WindowState;lbLegende.Width'
   ShowHint = True
   ShowInTaskBar = stNever
-  LCLVersion = '2.2.0.2'
+  LCLVersion = '2.2.0.4'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 23
-    Top = 538
+    Height = 17
+    Top = 542
     Width = 907
     Panels = <    
       item
@@ -45,7 +45,7 @@ object Form1: TForm1
   end
   object LogDir: TDirectoryEdit
     Left = 120
-    Height = 25
+    Height = 27
     Top = 8
     Width = 452
     ShowHidden = False
@@ -90,7 +90,7 @@ object Form1: TForm1
   end
   object PageControl1: TPageControl
     Left = 8
-    Height = 481
+    Height = 479
     Top = 64
     Width = 894
     ActivePage = TabSheet2
@@ -101,14 +101,14 @@ object Form1: TForm1
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
       Caption = 'ov'
-      ClientHeight = 447
-      ClientWidth = 888
+      ClientHeight = 449
+      ClientWidth = 884
       ImageIndex = 0
       object ovGrid: TStringGrid
         Left = 0
-        Height = 447
+        Height = 449
         Top = 0
-        Width = 888
+        Width = 884
         Align = alClient
         Color = clCream
         ColumnClickSorts = True
@@ -133,14 +133,14 @@ object Form1: TForm1
     end
     object TabSheet2: TTabSheet
       Caption = 'dat'
-      ClientHeight = 447
-      ClientWidth = 888
+      ClientHeight = 449
+      ClientWidth = 884
       ImageIndex = 1
       object csvGrid: TStringGrid
         Left = 0
-        Height = 447
+        Height = 449
         Top = 0
-        Width = 888
+        Width = 884
         Align = alClient
         Color = clDefault
         ColCount = 23
@@ -158,14 +158,14 @@ object Form1: TForm1
     end
     object TabSheet3: TTabSheet
       Caption = 'hdia'
-      ClientHeight = 447
-      ClientWidth = 888
+      ClientHeight = 449
+      ClientWidth = 884
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 447
+        Height = 449
         Top = 0
-        Width = 888
+        Width = 884
         AxisList = <        
           item
             Grid.Visible = False
@@ -224,14 +224,14 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'atti'
-      ClientHeight = 447
-      ClientWidth = 888
+      ClientHeight = 449
+      ClientWidth = 884
       ImageIndex = 12
       object Chart2: TChart
         Left = 0
-        Height = 447
+        Height = 449
         Top = 0
-        Width = 766
+        Width = 762
         AxisList = <        
           item
             Grid.Visible = False
@@ -317,8 +317,8 @@ object Form1: TForm1
         end
       end
       object lbLegende: TChartListbox
-        Left = 774
-        Height = 447
+        Left = 770
+        Height = 449
         Top = 0
         Width = 114
         Chart = Chart2
@@ -330,8 +330,8 @@ object Form1: TForm1
         TopIndex = -1
       end
       object Splitter1: TSplitter
-        Left = 766
-        Height = 447
+        Left = 762
+        Height = 449
         Top = 0
         Width = 8
         Align = alRight
@@ -341,12 +341,12 @@ object Form1: TForm1
     end
     object TabSheet4: TTabSheet
       Caption = 'dtl'
-      ClientHeight = 447
-      ClientWidth = 888
+      ClientHeight = 449
+      ClientWidth = 884
       ImageIndex = 3
       object dtlGrid: TStringGrid
         Left = 8
-        Height = 403
+        Height = 405
         Top = 32
         Width = 416
         Anchors = [akTop, akLeft, akBottom]
@@ -407,14 +407,14 @@ object Form1: TForm1
       end
       object edUUID: TEdit
         Left = 432
-        Height = 25
+        Height = 27
         Top = 224
         Width = 384
         TabOrder = 3
       end
       object FDRdir: TDirectoryEdit
         Left = 432
-        Height = 25
+        Height = 27
         Top = 192
         Width = 384
         ShowHidden = False
@@ -441,9 +441,9 @@ object Form1: TForm1
       end
       object ListBox1: TListBox
         Left = 432
-        Height = 139
+        Height = 141
         Top = 296
-        Width = 452
+        Width = 448
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clMoneyGreen
         ItemHeight = 0
@@ -463,8 +463,8 @@ object Form1: TForm1
     end
     object TabSheet5: TTabSheet
       Caption = 'set'
-      ClientHeight = 447
-      ClientWidth = 888
+      ClientHeight = 449
+      ClientWidth = 884
       ImageIndex = 4
       object grpUnit: TRadioGroup
         Left = 240
@@ -535,9 +535,9 @@ object Form1: TForm1
         end
         object cbExtrude: TCheckBox
           Left = 8
-          Height = 22
+          Height = 23
           Top = 128
-          Width = 86
+          Width = 88
           Caption = 'cbExtrude'
           Checked = True
           Color = clDefault
@@ -556,9 +556,9 @@ object Form1: TForm1
         end
         object cbCSVsep: TCheckBox
           Left = 8
-          Height = 22
+          Height = 23
           Top = 216
-          Width = 83
+          Width = 85
           Caption = 'cbCSVsep'
           TabOrder = 2
         end
@@ -685,18 +685,18 @@ object Form1: TForm1
         TabOrder = 4
         object cbHeader: TCheckBox
           Left = 8
-          Height = 22
+          Height = 23
           Top = 8
-          Width = 81
+          Width = 83
           Caption = 'cbHeader'
           OnChange = cbHeaderChange
           TabOrder = 0
         end
         object cbDegree: TCheckBox
           Left = 8
-          Height = 22
+          Height = 23
           Top = 40
-          Width = 82
+          Width = 84
           Caption = 'cbDegree'
           OnChange = cbDegreeChange
           TabOrder = 1
