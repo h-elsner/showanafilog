@@ -24,7 +24,7 @@
       <MinorVersionNr Value="6"/>
       <RevisionNr Value="4"/>
       <CharSet Value="04B0"/>
-      <StringTable CompanyName="Helmut Elsner" FileDescription="ShowAnafiLog" ProductName="Log file evaluation" ProductVersion="1.1"/>
+      <StringTable CompanyName="Helmut Elsner" FileDescription="ShowAnafiLog" ProductName="Log file evaluation" ProductVersion="2.0"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -79,13 +79,14 @@
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
       <Optimizations>
-        <OptimizationLevel Value="3"/>
+        <OptimizationLevel Value="2"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
         <GenerateDebugInfo Value="False"/>
         <DebugInfoType Value="dsDwarf2Set"/>
+        <StripSymbols Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
       <Options>

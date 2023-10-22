@@ -89,10 +89,10 @@ resourcestring                                     {english}
   capFDRresult='File list with matching UUID';
 
 {Buttons}
-  capClose='Close';
+  capClose='&Close';
   hntClose='Close application without saving';
-  capScrShot='Screenshot';
-  hntScrShot='Save screenshot of the application';
+  capScrShot='&Screenshot';
+  hntScrShot='Save a screenshot of the application to file';
   capBtnConv='Convert';
   hntBtnConf='Convert JSON file to selected output format and save to the same directory';
   capColor='KML track';
@@ -140,13 +140,10 @@ resourcestring                                     {english}
   mniCSVex='Export to CS&V file';
   mniKMLex='Export to &KML file';
   mniGPXex='Export to &GPX file';
-  mniClose='&Close';
 
   mniTools='&Tools';
   mniSettings='S&ettings';
-  mniScrShot='&Screenshot';
   mniTas='Recompute air speed';
-  mniLogBook='Create Pilot log book';
   mniRename='Rename JSON files with date/time stamp';
   mniFDRlog='Show meta data from FDR log';
 
@@ -176,7 +173,7 @@ resourcestring                                     {english}
   hntCSVsep='Use semicolon as CSV data seperator instead of comma';
   capLogBook='Output format';
   hntLogBook='Output format for Pilot log book';
-  capCrLogBook='Create';
+  capCrLogBook='&Log book';
   hntCrLogBook='Create Pilot log book from all JSON files in selected directory';
   capTable='Table settings';
   hntTable='Some extra behaviour of the data table';

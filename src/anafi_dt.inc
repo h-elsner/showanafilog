@@ -88,9 +88,9 @@ resourcestring                                     {deutsch}
     capFDRresult='Dateiliste mit passenden UUID';
 
   {Buttons}
-    capClose='Beenden';
+    capClose='&Beenden';
     hntClose='Beenden. Es wird nichts weiter gespeichert.';
-    capScrShot='Screenshot';
+    capScrShot='&Screenshot';
     hntScrShot='Screenshot in eine Datei speichern';
     capBtnConv='Konvertieren';
     hntBtnConf='Konvertiere eine JSON Logdatei entsprechend der Einstellungen. Die Datei wird im selben Verzeichnis wie die Logdaten gespeichert.';
@@ -139,13 +139,10 @@ resourcestring                                     {deutsch}
     mniCSVex='Export als CS&V Datei';
     mniKMLex='Export als &KML Datei';
     mniGPXex='Export als &GPX Datei';
-    mniClose='&Schließen';
 
     mniTools='&Tools';
     mniSettings='&Einstellungen';
-    mniScrShot='&Screenshot';
     mniTas='Air speed berechnen';
-    mniLogBook='Erstelle Pilot Logbuch';
     mniRename='JSON Dateien mit Datum/Zeit umbenennen';
     mniFDRlog='Metadaten aus FDR log anzeigen';
 
@@ -175,7 +172,7 @@ resourcestring                                     {deutsch}
     hntCSVsep='Semicolon statt Komma als Trenner bei CSV-Dateien';
     capLogBook='Ausgabe Format';
     hntLogBook='Ausgabe Format für das Pilot Logbuch';
-    capCrLogBook='Anlegen';
+    capCrLogBook='&Logbuch';
     hntCrLogBook='Legt ein Pilot Logbuch von allen JSON Logdateien im ausgewählten Verzeichn is an';
     capTable='Tabelleneinstellungen';
     hntTable='Alternatives Verhalten der Datentabelle';

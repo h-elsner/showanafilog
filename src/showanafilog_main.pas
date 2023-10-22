@@ -144,6 +144,7 @@ History:
      2021-01-16 Query for latest version added, GitHub link
 2.0  2021-08-01 Blackbox files, first try: Header
      2021-08-24 Column header statistics and colors for blackbock JSON updated.
+     2023-10-21 Action list introduced
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -173,7 +174,6 @@ Parrot Cloud speichern willst:
 
 Die sind dann als json File in FlightData Manager importierbar.
 
-
 *)
 
 unit showanafilog_main;
@@ -187,7 +187,7 @@ uses
   TASeries, TATools, TAChartListbox, Ipfilebroker, Forms, Controls, Graphics,
   fpjson, jsonparser, Dialogs, StdCtrls, Grids, ComCtrls, XMLPropStorage,
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
-  Menus, anzwerte, Iphttpbroker, IpHtml;
+  Menus, ActnList, anzwerte, Iphttpbroker, IpHtml;
 
 {$I anafi_en.inc}                                  {Include a language file}
 {.$I anafi_dt.inc}
@@ -200,6 +200,10 @@ type
   { TForm1 }
 
   TForm1 = class(TForm)
+    actClose: TAction;
+    actLogbook: TAction;
+    actScrShot: TAction;
+    ActionList1: TActionList;
     btSearchFDR: TBitBtn;
     btLogBook: TBitBtn;
     btScrShot: TBitBtn;
@@ -229,6 +233,7 @@ type
     ChartAxisTransformations3AutoScaleAxisTransform1: TAutoScaleAxisTransform;
     ChartAxisTransformations4: TChartAxisTransformations;
     ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform;
+    ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
     ipHTMLin: TIpHttpDataProvider;
     lblGitHub: TLabel;
     lbLegende: TChartListbox;
@@ -312,10 +317,10 @@ type
     TabSheet5: TTabSheet;
     TabSheet6: TTabSheet;
     XMLPropStorage1: TXMLPropStorage;
+    procedure actCloseExecute(Sender: TObject);
+    procedure actLogbookExecute(Sender: TObject);
+    procedure actScrShotExecute(Sender: TObject);
     procedure btConvClick(Sender: TObject);
-    procedure btLogBookClick(Sender: TObject);
-    procedure btScrShotClick(Sender: TObject);
-    procedure btCloseClick(Sender: TObject);
     procedure btSearchFDRClick(Sender: TObject);
     procedure cbDegreeChange(Sender: TObject);
     procedure cbHeaderChange(Sender: TObject);
@@ -365,17 +370,14 @@ type
     procedure mmnDownloadClick(Sender: TObject);
     procedure mmnFDRlogClick(Sender: TObject);
     procedure mmnHomepageClick(Sender: TObject);
-    procedure mmnCloseClick(Sender: TObject);
     procedure mmnCSVexClick(Sender: TObject);
     procedure mmnGPXexClick(Sender: TObject);
     procedure mmnInfoClick(Sender: TObject);
     procedure mmnJumpClick(Sender: TObject);
     procedure mmnKMLexClick(Sender: TObject);
-    procedure mmnLogBookClick(Sender: TObject);
     procedure mmnManualClick(Sender: TObject);
     procedure mmnOpenClick(Sender: TObject);
     procedure mmnRenameClick(Sender: TObject);
-    procedure mmnScrShotClick(Sender: TObject);
     procedure mmnSettingsClick(Sender: TObject);
     procedure mmnTasClick(Sender: TObject);
     procedure ovGridClick(Sender: TObject);
@@ -451,7 +453,7 @@ type
 const
   appName='ShowAnafiLog';
   appVersion='V2.0 04/2022';                       {Major version}
-  appBuildno='2022-04-15';                         {Build per day}
+  appBuildno='2023-104-21';                        {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -1040,8 +1042,7 @@ end;
 procedure TMyThread.EnableSort;                    {Enables sort after finished}
 begin
   Form1.ovGrid.ColumnClickSorts:=true;
-  Form1.btLogBook.Enabled:=true;
-  Form1.mmnLogBook.Enabled:=true;
+  Form1.actLogBook.Enabled:=true;
 end;
 
 procedure TMyThread.GetSettings;                   {Metric / Imperial / Settings}
@@ -1424,13 +1425,10 @@ begin
   mmnCSVex.Caption:=mniCSVex;
   mmnKMLex.Caption:=mniKMLex;
   mmnGPXex.Caption:=mniGPXex;
-  mmnClose.Caption:=mniClose;
 
   mmnTools.Caption:=mniTools;
   mmnSettings.Caption:=mniSettings;
-  mmnScrShot.Caption:=mniScrShot;
   mmnTas.Caption:=mniTas;
-  mmnLogBook.Caption:=mniLogBook;
   mmnRename.Caption:=mniRename;
   mmnFDRlog.Caption:=mniFDRlog;
 
@@ -1449,17 +1447,18 @@ begin
   cmnShowOSM.Caption:=mniShowOSM;
 
  {Buttons}
-  btClose.Caption:=capClose;
-  btClose.Hint:=hntClose;
-  btScrShot.Caption:=capScrShot;
-  btScrShot.Hint:=hntScrShot;
+  actClose.Caption:=capClose;
+  actClose.Hint:=hntClose;
+  actScrShot.Caption:=capScrShot;
+  actScrShot.Hint:=hntScrShot;
   btConv.Caption:=capBtnConv;
   btConv.Hint:=hntBtnConf;
   btConv.Enabled:=false;
   btColor.Caption:=capColor;
   btColor.Hint:=hntColor;
   btColor.ButtonColor:=clDarkOrange;
-  btLogBook.Caption:=capCrLogBook;
+  actLogBook.Caption:=capCrLogBook;
+  actLogBook.Hint:=hntCrLogBook;
 
   grpUnit.Caption:=capUnit;
   grpUnit.Hint:=hntUnit;
@@ -1891,11 +1890,6 @@ begin
   OpenURL(homepage);
 end;
 
-procedure TForm1.mmnCloseClick(Sender: TObject);   {Menu Close application}
-begin
-  Close;
-end;
-
 procedure TForm1.mmnCSVexClick(Sender: TObject);   {Menu export CSV}
 begin
   if ovGrid.RowCount>0 then
@@ -1922,11 +1916,6 @@ procedure TForm1.mmnKMLexClick(Sender: TObject);   {Menu export KML}
 begin
   if ovGrid.RowCount>0 then
     MakeKML;
-end;
-
-procedure TForm1.mmnLogBookClick(Sender: TObject); {Menu Pilot log book}
-begin
-  CreateLogBook;
 end;
 
 procedure TForm1.mmnManualClick(Sender: TObject);  {Menü Info/Manual}
@@ -1994,11 +1983,6 @@ begin                                              {New feature in V1.5}
       FileList.Free;
     end;
   end;                                             {No valid directory}
-end;
-
-procedure TForm1.mmnScrShotClick(Sender: TObject); {Menu Screenshot}
-begin
-  DoScreenShot;
 end;
 
 procedure TForm1.mmnSettingsClick(Sender: TObject); {Go to Settings page}
@@ -2122,11 +2106,6 @@ begin
   except
     StatusBar1.Panels[4].Text:='Error during start procedure';
   end;
-end;
-
-procedure TForm1.btCloseClick(Sender: TObject);    {Button Close}
-begin
-  Close;
 end;
 
 procedure TForm1.SearchFDRfiles(dir, mask, vstr: string);  {Find UUID}
@@ -2850,11 +2829,6 @@ begin
   end;
 end;
 
-procedure TForm1.btScrShotClick(Sender: TObject);  {Screenshot}
-begin
-  DoScreenshot;
-end;
-
 procedure TForm1.btConvClick(Sender: TObject);     {Convert files}
 begin
   if ovGrid.RowCount>0 then begin                  {if JSON files are available}
@@ -2866,9 +2840,19 @@ begin
   end;
 end;
 
-procedure TForm1.btLogBookClick(Sender: TObject);  {Button LogBook}
+procedure TForm1.actCloseExecute(Sender: TObject); {Form close}
+begin
+  Close;
+end;
+
+procedure TForm1.actLogbookExecute(Sender: TObject);
 begin
   CreateLogBook;
+end;
+
+procedure TForm1.actScrShotExecute(Sender: TObject);
+begin
+  DoScreenshot;
 end;
 
 procedure TForm1.dtlGridReSize;                    {Rezeize Details table}
@@ -2922,8 +2906,7 @@ begin
         if (ovThread<>nil) and (not ovThread.Terminated) then    {Still living ?}
           ovThread.Terminate;                      {Kill for new list}
         ovGrid.ColumnClickSorts:=false;            {Disable sort when thread runs}
-        btLogBook.Enabled:=false;                  {Disable Pilot log book}
-        mmnLogBook.Enabled:=false;
+        actLogBook.Enabled:=false;                  {Disable Pilot log book}
         ovThread:=TMyThread.Create(false);         {Start overview immediatley}
 
         ovGrid.Tag:=1;                             {First file in table}

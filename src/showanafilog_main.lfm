@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 986
+  Left = 1707
   Height = 583
-  Top = 113
+  Top = 137
   Width = 907
   AllowDropFiles = True
   ClientHeight = 559
@@ -19,11 +19,11 @@ object Form1: TForm1
   SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;LogDir.Directory;Width;WindowState;lbLegende.Width'
   ShowHint = True
   ShowInTaskBar = stNever
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.6.0'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 17
-    Top = 542
+    Height = 18
+    Top = 541
     Width = 907
     Panels = <    
       item
@@ -45,7 +45,7 @@ object Form1: TForm1
   end
   object LogDir: TDirectoryEdit
     Left = 120
-    Height = 27
+    Height = 28
     Top = 8
     Width = 452
     ShowHidden = False
@@ -93,10 +93,10 @@ object Form1: TForm1
     Height = 479
     Top = 64
     Width = 894
-    ActivePage = TabSheet2
+    ActivePage = TabSheet5
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 1
+    TabIndex = 5
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -327,7 +327,6 @@ object Form1: TForm1
         ItemHeight = 20
         OnDblClick = lbLegendeDblClick
         TabOrder = 1
-        TopIndex = -1
       end
       object Splitter1: TSplitter
         Left = 762
@@ -394,6 +393,7 @@ object Form1: TForm1
         Width = 61
         Caption = 'lblDetails'
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object lblStat: TLabel
@@ -403,18 +403,19 @@ object Form1: TForm1
         Width = 43
         Caption = 'lblStat'
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object edUUID: TEdit
         Left = 432
-        Height = 27
+        Height = 28
         Top = 224
         Width = 384
         TabOrder = 3
       end
       object FDRdir: TDirectoryEdit
         Left = 432
-        Height = 27
+        Height = 28
         Top = 192
         Width = 384
         ShowHidden = False
@@ -459,6 +460,7 @@ object Form1: TForm1
         Top = 273
         Width = 76
         Caption = 'lblFDRresult'
+        ParentColor = False
       end
     end
     object TabSheet5: TTabSheet
@@ -604,6 +606,7 @@ object Form1: TForm1
         Caption = 'lblDownload'
         Font.Color = clNavy
         Font.Style = [fsUnderline]
+        ParentColor = False
         ParentFont = False
         OnClick = lblDownloadClick
         OnMouseEnter = lblDownloadMouseEnter
@@ -618,6 +621,7 @@ object Form1: TForm1
         Caption = 'lblManual'
         Font.Color = clNavy
         Font.Style = [fsUnderline]
+        ParentColor = False
         ParentFont = False
         OnClick = lblManualClick
         OnMouseEnter = lblManualMouseEnter
@@ -663,11 +667,10 @@ object Form1: TForm1
           Height = 32
           Top = 104
           Width = 97
+          Action = actLogbook
           Anchors = [akTop, akRight]
-          Caption = 'btLogBook'
           Images = TabImages
           ImageIndex = 19
-          OnClick = btLogBookClick
           TabOrder = 1
         end
       end
@@ -711,6 +714,7 @@ object Form1: TForm1
         Caption = 'lblGitHub'
         Font.Color = clNavy
         Font.Style = [fsUnderline]
+        ParentColor = False
         ParentFont = False
         OnClick = lblGitHubClick
         OnMouseEnter = lblGitHubMouseEnter
@@ -724,18 +728,18 @@ object Form1: TForm1
     Top = 12
     Width = 12
     Caption = 'ld'
+    ParentColor = False
   end
   object btClose: TBitBtn
     Left = 803
     Height = 32
     Top = 8
     Width = 97
+    Action = actClose
     Anchors = [akTop, akRight]
-    Caption = '&Schließen'
     ModalResult = 11
     Images = TabImages
     ImageIndex = 5
-    OnClick = btCloseClick
     TabOrder = 4
   end
   object btScrShot: TBitBtn
@@ -743,11 +747,10 @@ object Form1: TForm1
     Height = 32
     Top = 8
     Width = 97
+    Action = actScrShot
     Anchors = [akTop, akRight]
-    Caption = 'btScrShot'
     Images = TabImages
     ImageIndex = 7
-    OnClick = btScrShotClick
     TabOrder = 3
   end
   object btConv: TBitBtn
@@ -777,6 +780,7 @@ object Form1: TForm1
     Height = 1
     Top = 40
     Width = 1
+    ParentColor = False
   end
   object SaveDialog1: TSaveDialog
     Left = 448
@@ -1025,7 +1029,7 @@ object Form1: TForm1
   end
   object DateTimeIntervalChartSource1: TDateTimeIntervalChartSource
     Steps = [dtsHour, dtsMinute, dtsSecond]
-    Left = 704
+    Left = 736
     Top = 240
   end
   object MainMenu1: TMainMenu
@@ -1066,9 +1070,7 @@ object Form1: TForm1
         Caption = '-'
       end
       object mmnClose: TMenuItem
-        Caption = 'Close'
-        ImageIndex = 5
-        OnClick = mmnCloseClick
+        Action = actClose
       end
     end
     object mmnTools: TMenuItem
@@ -1082,9 +1084,7 @@ object Form1: TForm1
         Caption = '-'
       end
       object mmnScrShot: TMenuItem
-        Caption = 'scrShot'
-        ImageIndex = 7
-        OnClick = mmnScrShotClick
+        Action = actScrShot
       end
       object mmnTas: TMenuItem
         Caption = 'tas'
@@ -1092,9 +1092,7 @@ object Form1: TForm1
         OnClick = mmnTasClick
       end
       object mmnLogBook: TMenuItem
-        Caption = 'log'
-        ImageIndex = 19
-        OnClick = mmnLogBookClick
+        Action = actLogbook
       end
       object mmnRename: TMenuItem
         Caption = 'ren'
@@ -1245,5 +1243,25 @@ object Form1: TForm1
   object ipHTMLin: TIpHttpDataProvider
     Left = 587
     Top = 432
+  end
+  object ActionList1: TActionList
+    Images = TabImages
+    Left = 743
+    Top = 432
+    object actClose: TAction
+      Caption = 'actClose'
+      ImageIndex = 5
+      OnExecute = actCloseExecute
+    end
+    object actScrShot: TAction
+      Caption = 'actScrShot'
+      ImageIndex = 7
+      OnExecute = actScrShotExecute
+    end
+    object actLogbook: TAction
+      Caption = 'actLogbook'
+      ImageIndex = 19
+      OnExecute = actLogbookExecute
+    end
   end
 end
