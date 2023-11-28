@@ -189,8 +189,8 @@ uses
   EditBtn, math, Buttons, strutils, dateutils, LCLIntf, LCLType, ExtCtrls,
   Menus, ActnList, anzwerte, Iphttpbroker, IpHtml;
 
-{$I anafi_en.inc}                                  {Include a language file}
-{.$I anafi_dt.inc}
+{ $I anafi_en.inc}                                  {Include a language file}
+{$I anafi_dt.inc}
 
 type
   TDatArr = array[0..20] of string;
@@ -453,7 +453,7 @@ type
 const
   appName='ShowAnafiLog';
   appVersion='V2.0 04/2022';                       {Major version}
-  appBuildno='2023-104-21';                        {Build per day}
+  appBuildno='2023-11-27';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
