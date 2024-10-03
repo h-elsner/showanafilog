@@ -56,3 +56,7 @@ History:
      2020-11-25 Alert state 7 and 8 added
      2021-01-16 Query for latest version added, GitHub link
 2.0  2021-08-08 BlackBox JSON format added
+     2021-08-24 Column header statistics and colors for blackbock JSON updated.
+     2023-10-21 Action list introduced (source code internal)
+     2024-04-20 KML: RC track selectable
+
