@@ -164,6 +164,8 @@ resourcestring                                     {deutsch}
     capConvSel='Ausgabeformat';
     capExtrude='Extrude';
     hntExtrude='Extrude zeigt vertikale Linien vom Flugpfad zum Boden in GoogleEarth';
+    capRCtrack='RC track';
+    hntRCtrack='Zeige den Standort/Weg der Fernsteuerung';
     capHeader='Alternative Spaltenbezeichnungen';
     hntHeader='Alternative Spaltenbezeichnungen statt der originalen Bezeichnungen zur besseren Verständlichkeit';
     capDia='Zweites Diagramm';

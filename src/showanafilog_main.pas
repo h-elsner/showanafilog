@@ -2,9 +2,9 @@
 {                                                        }
 {     Auswertung FlightLog Daten der Parrot ANAFI        }
 {                                                        }
-{       Copyright (c) 2019         Helmut Elsner         }
+{       Copyright (c) 2019-2024    Helmut Elsner         }
 {                                                        }
-{       Compiler: FPC 3.2.2   /    Lazarus 2.2.0         }
+{       Compiler: FPC 3.2.3   /    Lazarus 3.3           }
 {                                                        }
 { Pascal programmers tend to plan ahead, they think      }
 { before they type. We type a lot because of Pascal      }
@@ -145,6 +145,7 @@ History:
 2.0  2021-08-01 Blackbox files, first try: Header
      2021-08-24 Column header statistics and colors for blackbock JSON updated.
      2023-10-21 Action list introduced
+     2024-04-20 KML: RC track selectable
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -234,6 +235,7 @@ type
     ChartAxisTransformations4: TChartAxisTransformations;
     ChartAxisTransformations4AutoScaleAxisTransform1: TAutoScaleAxisTransform;
     ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
+    cbRCtrack: TCheckBox;
     ipHTMLin: TIpHttpDataProvider;
     lblGitHub: TLabel;
     lbLegende: TChartListbox;
@@ -452,8 +454,8 @@ type
 
 const
   appName='ShowAnafiLog';
-  appVersion='V2.0 04/2022';                       {Major version}
-  appBuildno='2023-11-27';                         {Build per day}
+  appVersion='V2.0 04/2024';                       {Major version}
+  appBuildno='2024-04-20';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -820,7 +822,9 @@ end;
 
 {https://developer.parrot.com/docs/olympe/arsdkng_ardrone3_piloting.html}
 function AlertStateToStr(s: string): string;       {JSON alert_state (6)}
-var snr: integer;
+var
+  snr: integer;
+
 begin
   result:=rsUnknown+tab1+s;
   snr:=StrToIntDef(trim(s), 99);
@@ -836,6 +840,22 @@ begin
     8: result:='Local terrestrial magnetic field is too weak';
   end;
 end;
+
+(*  currently not used - blackbox value?
+
+function DroneWindStateToStr(s: string): string;   {Drone wind state}
+var
+  snr: integer;
+
+begin
+  result:=rsUnknown+tab1+s;
+  snr:=StrToIntDef(trim(s), 99);
+  case snr of
+    0: result:='OK: The wind strength can be handled properly by the drone';
+    1: result:='WARNING: The wind strength begins to be too strong for the drone to fly correctly';
+    2: result:='CRITICAL: The wind strength is too strong for the drone to fly correctly';
+  end;
+end; *)
 
 {https://parrotpilots.com/threads/anafi-thermal-data-overlay.3074/
 
@@ -1410,6 +1430,8 @@ begin
 
   cbExtrude.Caption:=capExtrude;
   cbExtrude.Hint:=hntExtrude;
+  cbRCtrack.Caption:=capRCtrack;
+  cbRCtrack.Hint:=hntRCtrack;
   cbHeader.Caption:=capHeader;
   cbHeader.Hint:=hntHeader;
   cbCSVsep.Caption:=capCSVsep;
@@ -2060,7 +2082,7 @@ begin
   if (PageControl1.ActivePageIndex>0) and          {not Overview}
      (PageControl1.ActivePageIndex<5) then         {not Settings}
     PageControl1.Tag:=PageControl1.ActivePageIndex;
-  PageControl1.ActivePage.Refresh;                 {Redraw the page}
+  PageControl1.ActivePage.Invalidate;                 {Redraw the page}
 end;
 
 procedure TForm1.staGridGetCellHint(Sender: TObject; ACol, ARow: Integer;
@@ -3917,18 +3939,21 @@ begin
                     '</'+cotag+'</Point>');
         kmllist.Add('</'+pmtag);
 
-        kmllist.Add('<'+pmtag);                    {RC track}
-        kmllist.Add('<name>RC</name>');
-        kmllist.Add('<description>RC</description>');
-        kmllist.Add('<styleUrl>#GrndStn</styleUrl>');
-        kmllist.Add('<LineString>');
-        kmllist.Add(tab2+'<'+amtag+'clampToGround</'+amtag);
-        kmllist.Add(tab4+'<'+cotag);
-        for i:=1 to rclist.Count-1 do
-          kmllist.Add(rclist[i]);                  {RC track coordinates}
-        kmllist.Add(tab4+'</'+cotag);
-        kmllist.Add('</LineString>');
-        kmllist.Add('</'+pmtag);
+        if cbRCtrack. checked then begin
+          kmllist.Add('<'+pmtag);                  {RC track}
+          kmllist.Add('<name>RC</name>');
+          kmllist.Add('<description>RC</description>');
+          kmllist.Add('<styleUrl>#GrndStn</styleUrl>');
+          kmllist.Add('<LineString>');
+          kmllist.Add(tab2+'<'+amtag+'clampToGround</'+amtag);
+          kmllist.Add(tab4+'<'+cotag);
+          for i:=1 to rclist.Count-1 do
+            kmllist.Add(rclist[i]);                {RC track coordinates}
+          kmllist.Add(tab4+'</'+cotag);
+          kmllist.Add('</LineString>');
+          kmllist.Add('</'+pmtag);
+        end;
+
         kmllist.Add('</'+doctag);
         kmllist.Add('</kml>');
         fn:=IncludeTrailingPathDelimiter(LogDir.Directory)+

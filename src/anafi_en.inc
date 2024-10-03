@@ -164,6 +164,8 @@ resourcestring                                     {english}
   hntConv='Select output format for data conversion';
   capConvSel='Output format';
   capExtrude='Extrude';
+  capRCtrack='RC track';
+  hntRCtrack='Show position/track of the remote control';
   hntExtrude='Shows verticale lines from flight path to ground in GoogleEarth';
   capHeader='Use alternative header';
   hntHeader='Use alternative header instead of original column header';
