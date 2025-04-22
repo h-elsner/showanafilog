@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 1707
+  Left = 843
   Height = 583
-  Top = 137
+  Top = 207
   Width = 907
   AllowDropFiles = True
   ClientHeight = 583
@@ -10,16 +10,16 @@ object Form1: TForm1
   Constraints.MinWidth = 640
   KeyPreview = True
   Menu = MainMenu1
+  Position = poDefaultPosOnly
+  SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;lbLegende.Width;LogDir.Directory;Width;WindowState;cbRCtrack.Checked'
+  ShowHint = True
+  ShowInTaskBar = stNever
+  LCLVersion = '4.0.0.3'
   OnActivate = FormActivate
   OnCreate = FormCreate
   OnDblClick = FormDblClick
   OnDropFiles = FormDropFiles
   OnKeyUp = FormKeyUp
-  Position = poDefaultPosOnly
-  SessionProperties = 'btColor.ButtonColor;cbCSVsep.Checked;cbDegree.Checked;cbExtrude.Checked;cbHeader.Checked;FDRDialog.FileName;FDRDialog.FilterIndex;FDRDialog.InitialDir;FDRdir.Directory;grpConv.ItemIndex;grpDia.ItemIndex;grpLogBook.ItemIndex;grpUnit.ItemIndex;Height;lbLegende.Width;LogDir.Directory;Width;WindowState;cbRCtrack.Checked'
-  ShowHint = True
-  ShowInTaskBar = stNever
-  LCLVersion = '3.3.0.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 18
@@ -93,10 +93,10 @@ object Form1: TForm1
     Height = 503
     Top = 64
     Width = 894
-    ActivePage = TabSheet5
+    ActivePage = TabSheet1
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
-    TabIndex = 5
+    TabIndex = 0
     TabOrder = 0
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
@@ -113,7 +113,7 @@ object Form1: TForm1
         Color = clDefault
         ColumnClickSorts = True
         FixedCols = 0
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goRelaxedRowSelect, goDblClickAutoSize, goSmoothScroll, goCellHints, goCellEllipsis, goRowHighlight]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goRelaxedRowSelect, goDblClickAutoSize, goSmoothScroll, goCellHints, goCellEllipsis]
         PopupMenu = PopupMenu1
         TabOrder = 0
         TitleFont.Style = [fsBold]
@@ -149,6 +149,7 @@ object Form1: TForm1
         PopupMenu = PopupMenu2
         TabOrder = 0
         TitleFont.Style = [fsBold]
+        OnDblClick = csvGridDblClick
         OnGetCellHint = csvGridGetCellHint
         OnHeaderClick = csvGridHeaderClick
         OnKeyUp = csvGridKeyUp
@@ -426,8 +427,8 @@ object Form1: TForm1
         Color = clDefault
         MaxLength = 0
         TabOrder = 2
-        OnDblClick = FDRdirDblClick
         TextHint = 'FDR log directory'
+        OnDblClick = FDRdirDblClick
       end
       object btSearchFDR: TBitBtn
         Left = 432
@@ -437,8 +438,8 @@ object Form1: TForm1
         Caption = 'btSearchFDR'
         Images = TabImages
         ImageIndex = 22
-        OnClick = btSearchFDRClick
         TabOrder = 4
+        OnClick = btSearchFDRClick
       end
       object ListBox1: TListBox
         Left = 432
@@ -457,7 +458,7 @@ object Form1: TForm1
         Left = 552
         Height = 16
         Top = 273
-        Width = 76
+        Width = 72
         Caption = 'lblFDRresult'
         ParentColor = False
       end
@@ -488,10 +489,10 @@ object Form1: TForm1
           'Metric'
           'Imperial'
         )
-        OnClick = grpUnitClick
         ParentBackground = False
         ParentColor = False
         TabOrder = 1
+        OnClick = grpUnitClick
       end
       object boxConv: TGroupBox
         Left = 0
@@ -528,9 +529,9 @@ object Form1: TForm1
             '.gpx'
             '.csv'
           )
-          OnClick = grpConvClick
           ParentColor = False
           TabOrder = 0
+          OnClick = grpConvClick
         end
         object cbExtrude: TCheckBox
           Left = 8
@@ -557,7 +558,7 @@ object Form1: TForm1
           Left = 8
           Height = 23
           Top = 224
-          Width = 85
+          Width = 84
           Caption = 'cbCSVsep'
           TabOrder = 2
         end
@@ -608,7 +609,7 @@ object Form1: TForm1
         Left = 8
         Height = 16
         Top = 304
-        Width = 79
+        Width = 75
         Caption = 'lblDownload'
         Font.Color = clNavy
         Font.Style = [fsUnderline]
@@ -623,7 +624,7 @@ object Form1: TForm1
         Left = 440
         Height = 16
         Top = 304
-        Width = 62
+        Width = 59
         Caption = 'lblManual'
         Font.Color = clNavy
         Font.Style = [fsUnderline]
@@ -704,7 +705,7 @@ object Form1: TForm1
           Left = 8
           Height = 23
           Top = 40
-          Width = 84
+          Width = 83
           Caption = 'cbDegree'
           TabOrder = 1
           OnChange = cbDegreeChange
@@ -715,7 +716,7 @@ object Form1: TForm1
         Left = 240
         Height = 16
         Top = 304
-        Width = 58
+        Width = 56
         Caption = 'lblGitHub'
         Font.Color = clNavy
         Font.Style = [fsUnderline]
@@ -731,7 +732,7 @@ object Form1: TForm1
     Left = 16
     Height = 16
     Top = 12
-    Width = 12
+    Width = 11
     Caption = 'ld'
     ParentColor = False
   end
@@ -767,8 +768,8 @@ object Form1: TForm1
     Caption = 'btConv'
     Images = TabImages
     ImageIndex = 10
-    OnClick = btConvClick
     TabOrder = 2
+    OnClick = btConvClick
   end
   object ProgressFile: TProgressBar
     Left = 582

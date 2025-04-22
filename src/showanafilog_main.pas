@@ -146,6 +146,7 @@ History:
      2021-08-24 Column header statistics and colors for blackbock JSON updated.
      2023-10-21 Action list introduced
      2024-04-20 KML: RC track selectable
+     2025-04-21 Added filter like Autofilter in Excel
 
 Icon and splash screen by Augustine (Canada):
 https://parrotpilots.com/threads/json-files-and-airdata-com.1156/page-5#post-10388
@@ -330,6 +331,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure Chart2MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure csvGridDblClick(Sender: TObject);
     procedure lbLegendeDblClick(Sender: TObject);
     procedure cmnClipbrd2Click(Sender: TObject);
     procedure cmnClipbrdClick(Sender: TObject);
@@ -454,8 +456,8 @@ type
 
 const
   appName='ShowAnafiLog';
-  appVersion='V2.0 04/2024';                       {Major version}
-  appBuildno='2024-04-20';                         {Build per day}
+  appVersion='V2.0 04/2025';                       {Major version}
+  appBuildno='2025-04-21';                         {Build per day}
   versfile='/v';
 
   hpmydat='/pdf/';
@@ -1050,6 +1052,40 @@ begin
   result:=(RadToGrad180(r)+360) mod 360;
 end;
 
+function FilterColumn(var aGrid: TStringGrid;          {Like Autofilter in Excel}
+                      const aCol: integer; aText: string): integer;
+var
+  i: integer;
+
+begin
+  result:=0;
+  aGrid.BeginUpdate;
+  try
+    for i:=aGrid.FixedRows to aGrid.RowCount-1 do begin
+      if aGrid.Cells[aCol, i]=aText then begin
+        aGrid.RowHeights[i]:=aGrid.DefaultRowHeight;
+        result:=result+1;
+      end else
+        aGrid.RowHeights[i]:=0;
+    end;
+  finally
+    aGrid.EndUpdate;
+  end;
+end;
+
+procedure ResetAllFilterColumn(var aGrid: TStringGrid);
+var
+  i: integer;
+
+begin
+  aGrid.BeginUpdate;
+  try
+    for i:=aGrid.FixedRows to aGrid.RowCount-1 do
+      aGrid.RowHeights[i]:=aGrid.DefaultRowHeight;
+  finally
+    aGrid.EndUpdate;
+  end;
+end;
 
 //////////////////////////// Sub-thread overview //////////////////////////////
 
@@ -2195,6 +2231,18 @@ begin
     Chart2.ZoomFull;
 end;
 
+procedure TForm1.csvGridDblClick(Sender: TObject);
+var
+  matches: integer;
+
+begin
+  if csvGrid.Col>4 then begin
+    matches:=FilterColumn(csvGrid, csvGrid.Col, csvGrid.Cells[csvGrid.Col, csvGrid.Row]);
+    StatusBar1.Panels[2].Text:=IntToStr(matches);
+  end else
+    ResetAllFilterColumn(csvGrid);
+end;
+
 procedure TForm1.lbLegendeDblClick(Sender: TObject); {Toggle Attitude Charts}
 var i: integer;
 
@@ -2736,6 +2784,7 @@ procedure TForm1.csvGridHeaderClick(Sender: TObject; IsColumn: Boolean;
    end;
 
 begin
+  ResetAllFilterColumn(csvGrid);
   if IsColumn and (csvGrid.RowCount>2) then begin
     Form2.addGrid.RowCount:=1;                     {Kill all}
     Form2.addGrid.Visible:=false;
